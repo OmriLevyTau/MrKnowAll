@@ -14,11 +14,12 @@ async def test_is_healthy():
 @pytest.mark.asyncio
 async def test_user_gets_all_documents_metadata():
     """_summary_
-    should create an authenticated user,
-    insert 3 documents and store aside their metadata.
-    then call client.get(/documents) and verify
-    status==200 & response contains a list of 3 documents-metadata
-    and assert all fields are correct
+    1. Create an authenticated user
+    2. Insert 3 documents and store aside their metadata.
+    3. Call client.get(/documents) and store response
+    4. Verify status==200 and that the response contains a list of 3 documents-metadata
+    5. Assert all fields are correct
+    6. Use the documents id to verify the VectorStorage store this documnets as well
     """
     pass
 

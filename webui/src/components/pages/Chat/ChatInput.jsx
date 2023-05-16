@@ -81,13 +81,15 @@ function ChatInput(props) {
           /* onPressEnter={sendMsg} */
           onChange={(e) => setMsg(e.target.value)}
           value={msg}
+          placeholder="Ask me anything, and get answers based on your data!" 
           style={{
             boxSizing: "border-box",
             fontFamily: "Nunito, sans-serif",
             boxShadow: "1px 1px 1px 1px #F9F7F7",
             position: "absolute",
             fontSize: "100%",
-            fontWeight: "50%"
+            fontWeight: "50%",
+            
           }}
         />
         <Button

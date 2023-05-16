@@ -1,6 +1,6 @@
 import { Button, Collapse } from "antd";
 import HomeCard from "../../common/Card/HomeCard";
-import mustach from "../../../images/mustach3.png"
+import mustach from "../../../images/mustach-home.png"
 import { CloudUploadOutlined, QuestionAnswerOutlined, QuestionMarkSharp } from "@mui/icons-material";
 
 import { useNavigate } from "react-router-dom";
@@ -26,7 +26,7 @@ function Landing(){
         <div className="generic-page-holder" >
             <TopMenu/>
             <div style={{ justifyContent:"space-evenly", width:"100%", display:"flex", flexDirection:"column", alignItems:"center", }} >
-                <div style={{ display:"flex", flexDirection:"row", background:"black", height:"60%" }}>
+                <div style={{ display:"flex", flexDirection:"row", background:"black", height:"50%" }}>
                     <div style={{background:"black", marginRight:"2%"}}>
                         <img src={ mustach} alt="mustach" width="130%" />
                     </div>

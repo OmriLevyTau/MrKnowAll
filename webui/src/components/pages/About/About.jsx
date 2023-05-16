@@ -1,5 +1,5 @@
 import TopMenu from "../../common/Menu/TopMenu";
-import imageAbout from "../../../images/about.jpg"
+import imageAbout from "../../../images/workflow-ask.png"
 import { Button } from "antd";
 import { useNavigate } from "react-router-dom";
 
@@ -27,9 +27,15 @@ function About(){
                     </p>
                     <p class="text-blk description">
                         In today's reality, organizations need to manage and restore huge amounts of data. But, the current tools are not enough, and this is why we are here.
-                        We want to allow every employee get all the best answers for every question he has, based on the materials of the organization, and his specifically.
-                        We are here to give you the option to ask questions, and get the answers you are looking for. 
-                        And what if the organization doesn't have the answer?  we also provide the option to search online, using chatGPT! 
+                        <br/><br/>
+                        Mr. Know All allows you to upload your data and store it.
+                        Once uploaded, you can immediately access an AI assistant that can answer your questions - based on your data. 
+                        <br/><br/> 
+                        behind the scenes, we break your document into sentences, embed each one into a vector using a dedicated pipeline, 
+                        and store them in a vector database that is best suited for semantic search."
+                        <br/><br/> 
+                        when you ask a question, We retrieve the most relevant data from the vector database and inject it into ChatGPT along with your question. 
+                        Then, we prompt the system to generate the best answer based on your data, and you get it - the best answer based on your data!
                     </p>
                     <Button type="primary" key="submit" size="large" style={{marginBottom:"4%" ,marginLeft:"2%"}} onClick={onClick}>Let us begin!</Button>
                     </div>

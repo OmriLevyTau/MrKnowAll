@@ -35,11 +35,12 @@ function ChatInput(props) {
     }
     if (dataSource.length === 0) {
       Modal.confirm({
-        title: "Your workspace is empty, please upload file",
-        okText: "Upload",
+        title: "Mr. Know All gives you the opportunity to ask questions about your data. You should upload your files before you ask questions, so we will be able to give you answers based on them.  So, Please, upload files to your workspace, and help us help you.",        okText: "Upload",
+
         onOk: () => {
           navigate("/my-workspace");
         },
+        style:{textAlign:"fit-content"}
       });
     } else if (location.pathname !== "chat") {
       navigate("/chat");
@@ -81,13 +82,15 @@ function ChatInput(props) {
           /* onPressEnter={sendMsg} */
           onChange={(e) => setMsg(e.target.value)}
           value={msg}
+          placeholder="Ask me anything, and get answers based on your data!" 
           style={{
             boxSizing: "border-box",
             fontFamily: "Nunito, sans-serif",
             boxShadow: "1px 1px 1px 1px #F9F7F7",
             position: "absolute",
             fontSize: "100%",
-            fontWeight: "50%"
+            fontWeight: "50%",
+            
           }}
         />
         <Button

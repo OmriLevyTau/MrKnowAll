@@ -20,8 +20,10 @@ function ChatMessage(props) {
     }}
   >
     <div style={{ display:"flex", flexDirection:"row", }}>
-      <Avatar src={"https://xsgames.co/randomusers/avatar.php?g=pixel&key="+avatar} style={{marginRight:"10px"}} />
-      <div style={{ display:"flex", flexDirection:"row", overflowWrap: "anywhere" }} >
+      <div style={{width:'25px', marginRight: '20px'}}>
+        <Avatar src={"https://xsgames.co/randomusers/avatar.php?g=pixel&key="+avatar}  />
+      </div>
+      <div style={{ display:"flex", flexDirection:"row", overflowWrap: "anywhere" , fontFamily:'sans-serif'}} >
         {content}
       </div>
     </div>

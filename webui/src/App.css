@@ -140,6 +140,7 @@ Home
   width:100%;
 }
 
+
 .side-menu:hover{
   background-color:"#EEBC1D" !important
 }
@@ -341,8 +342,8 @@ About Page
 
 .mainImg {
   color: #e1b2ba;
-  width: 25vw;
-  height: 25vh;
+  width: 30vw;
+  height: 30vh;
   border-top-left-radius: 4%;
   border-top-right-radius: 1  4%;
   border-bottom-right-radius: 4%;
@@ -375,13 +376,13 @@ About Page
   margin-right: 0px;
   margin-bottom: 0px;
   margin-left: 5%;
-  width: 35%;
+  width: 40%;
   margin: 0 0 0 0;
 }
 
 .text-blk.subHeadingText {
   color: rgb(102, 102, 102);
-  font-size: max(2vh,2vw);
+  font-size: max(1.8vh,1.8vw);
   line-height: 130%;
   font-weight: 700;
   padding-top: 0px;
@@ -395,7 +396,7 @@ About Page
 }
 
 .text-blk.description {
-  font-size: max(1.3vh,1.3vw);
+  font-size: max(1.1vh,1.1vw);
   line-height: 130%;
   color: rgb(102, 102, 102);
   margin-top: 0px;

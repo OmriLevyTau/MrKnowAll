@@ -7,11 +7,11 @@ docs_router = APIRouter(
 )
 
 
-doc_list = [ DocumentMetaData(user_id=1, document_description="desc", 
+doc_list = [ DocumentMetaData(user_id="1", document_description="desc", 
                               document_title="title", document_id=1, creation_time=dt.datetime.now(),
                               document_size=12) ]
 
-doc_sample = Document(user_id=1, document_id=1, document_title="sample_doc", document_content="content" )
+doc_sample = Document(user_id="1", document_id=1, document_title="sample_doc", document_content="content" )
 
 
 @docs_router.get("/")

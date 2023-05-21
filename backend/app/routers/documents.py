@@ -1,10 +1,11 @@
 from fastapi import APIRouter
 from typing import List
-from app.models.documents import (
-    Document, 
-    UploadDocumentResponse, 
-    GetAllDocumentsMetadataResponse
-    )
+from app.models.documents import Document
+from app.models.api_models import (
+    GetAllDocumentsMetadataResponse,
+    UploadDocumentResponse
+)
+
 import datetime as dt
 
 docs_router = APIRouter(

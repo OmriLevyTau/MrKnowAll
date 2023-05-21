@@ -1,7 +1,7 @@
+from pydantic import BaseModel
 from typing import List
 from enum import Enum
 from app.models.documents import DocumentMetaData
-from pydantic import BaseModel
 
 
 class Status(str, Enum):

@@ -1,5 +1,5 @@
-from typing import Optional, List
 from pydantic import BaseModel
+from typing import Optional, List
 
 
 class Query(BaseModel):
@@ -13,12 +13,12 @@ class Query(BaseModel):
 
     def get_query_content(self) -> str:
         return self.query_content
-    
+
     def get_embedding(self) -> Optional[List[str]]:
         return self.embedding
+
 
 class QueryResult(BaseModel):
     user_id: int
     query_id: int
     answer: str
-    

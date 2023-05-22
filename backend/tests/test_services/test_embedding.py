@@ -1,9 +1,9 @@
-import pytest
 from app.services.embeddings import get_embeddings
+import pytest
 
 
 def test_embeddings():
-    
+
     sentences = [
         "I love to chat with you!",
         "This tool is really helpful.",
@@ -13,8 +13,4 @@ def test_embeddings():
     embeddings = get_embeddings(sentences)
     assert (len(embeddings) == 3)
     for vec in embeddings:
-        assert (len(vec)==384)
-    
-    
-
-    
+        assert (len(vec) == 384)

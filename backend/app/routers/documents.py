@@ -12,6 +12,7 @@ docs_router = APIRouter(
     prefix="/documents"
 )
 
+
 @docs_router.get("/")
 async def get_all_docs_metadata() -> GetAllDocumentsMetadataResponse:
     pass
@@ -21,11 +22,12 @@ async def get_all_docs_metadata() -> GetAllDocumentsMetadataResponse:
 async def get_doc_by_id(doc_id: int) -> Document:
     pass
 
+
 @docs_router.post("/")
 async def upload_doc(doc: Document) -> UploadDocumentResponse:
     pass
 
 
 @docs_router.delete("/{doc_id}")
-async def delete_doc(doc_id: int)-> dict: 
+async def delete_doc(doc_id: int) -> dict:
     pass

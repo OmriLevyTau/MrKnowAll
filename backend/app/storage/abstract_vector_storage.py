@@ -1,9 +1,9 @@
 from typing import List
 from abc import ABC, abstractmethod
-from app.models.documents import(
-    Document, 
-    DocumentMetaData, 
-    DocumentVectorChunk, 
+from app.models.documents import (
+    Document,
+    DocumentMetaData,
+    DocumentVectorChunk,
     DocumentVectorChunkMetadata
 )
 from app.models.query import Query, QueryResult
@@ -15,10 +15,12 @@ from app.services.embeddings import get_embeddings
 An abstract class defining basic functionallity each
 vector database provider should implement
 """
+
+
 class AbstractVectorStorage(ABC):
 
     MAX_CHUNK_SIZE = 100
-    
+
     async def upload(self, user_id: str, document: Document) -> str:
         """
         Given a document, uploads it into a vector database.
@@ -29,16 +31,17 @@ class AbstractVectorStorage(ABC):
             str: id of the inserted document (if succsseful), otherwise None.
         """
         # returns a list of sentences composing the document
-        text_chunks = get_documents_chunks(document, AbstractVectorStorage.MAX_CHUNK_SIZE)
+        text_chunks = get_documents_chunks(
+            document, AbstractVectorStorage.MAX_CHUNK_SIZE)
         # returns a list of embeddings corresponding to the previous list
         embeddings = get_embeddings(text_chunks)
         doc_metadata = document.get_document_metadata()
         payload = AbstractVectorStorage._assemble_documents_vector_chunks(
-                doc_metadata, text_chunks, embeddings
-            )
-        
+            doc_metadata, text_chunks, embeddings
+        )
+
         return await self._upload(user_id, doc_metadata, payload)
-    
+
     @abstractmethod
     async def _upload(self, user_id: str, payload: List[DocumentVectorChunk]) -> str:
         """
@@ -48,7 +51,6 @@ class AbstractVectorStorage(ABC):
             str: document id (if succsseful), otherwise None.
         """
         raise NotImplementedError
-    
 
     @abstractmethod
     async def delete(self, user_id: str, document_id: str) -> bool:
@@ -60,22 +62,23 @@ class AbstractVectorStorage(ABC):
         Returns:
             bool: True is deleted successfully, False otherwise (failed or not exists).
         """
-        raise NotImplementedError    
-    
-    async def query (self, user_id: str, query: Query) -> QueryResult:
+        raise NotImplementedError
+
+    async def query(self, user_id: str, query: Query) -> QueryResult:
         if not AbstractVectorStorage._validate_query(query):
             raise ValueError(f'''
                     Query should not be empty and must not exceed 
                     {AbstractVectorStorage.MAX_CHUNK_SIZE} characters.
                 ''')
-        
+
         query_embedding = get_embeddings([query.get_query_content()])
         query.embedding = query_embedding
         return await self._query(user_id, query)
 
+    @abstractmethod
     async def _query(self, user_id: str, query: Query) -> QueryResult:
-        raise NotImplementedError
-        
+        pass
+
     @staticmethod
     def _validate_query(query: Query):
         content_length = len(query.get_query_content())
@@ -84,17 +87,18 @@ class AbstractVectorStorage(ABC):
         return (not_empty_check and max_length_check)
 
     @staticmethod
-    def _assemble_documents_vector_chunks(doc_metadata: DocumentMetaData, text_chunks: List[str], 
-                                embeddings: List[List[float]]) -> List[DocumentVectorChunk]:
-        if (len(text_chunks)!=len(embeddings)):
+    def _assemble_documents_vector_chunks(doc_metadata: DocumentMetaData, text_chunks: List[str],
+                                          embeddings: List[List[float]]) -> List[DocumentVectorChunk]:
+        if (len(text_chunks) != len(embeddings)):
             raise ValueError('''AbstractVectorStorage: _assemble_vector_chunks: 
                                 chunks and embeddings must agree on size.''')
-        
+
         doc_id = doc_metadata.get_document_id()
         payload = []
-        
+
         for i in range(len(text_chunks)):
-            meta = DocumentVectorChunkMetadata(document_id=doc_id, original_content=text_chunks[i])
+            meta = DocumentVectorChunkMetadata(
+                document_id=doc_id, original_content=text_chunks[i])
             payload.append(
                 DocumentVectorChunk(
                     vector_id=str(i),
@@ -102,8 +106,5 @@ class AbstractVectorStorage(ABC):
                     metadata=meta
                 )
             )
-        
+
         return payload
-    
-    
-    

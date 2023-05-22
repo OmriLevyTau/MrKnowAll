@@ -1,13 +1,14 @@
 from typing import List
 from app.models.documents import Document
 import PyPDF2
+from app.services.embeddings import MAX_SEQ
 import nltk
 # # Download the necessary data for sentence tokenization
 nltk.download('punkt')
 
 
-def get_documents_chunks(document: Document, MAX_CHUNK_SIZE: int) -> List[str]:
-    pass
+# def get_documents_chunks(document: Document, MAX_CHUNK_SIZE: int) -> List[str]:
+#     pass
 
 
 def get_document_chunks_helper(path: str) -> List[str]:
@@ -15,7 +16,9 @@ def get_document_chunks_helper(path: str) -> List[str]:
     result = []
     for page in pages:
         page_sentences = nltk.sent_tokenize(page)
-        result.append(page_sentences)
+        for sentence in page_sentences:
+            if sentence.count(' ') < MAX_SEQ:
+                result.append(sentence)
     return result
 
 
@@ -37,6 +40,16 @@ def read_pdf_in_chunks(pdf_reader, pdf_file):
 
 # https://stackoverflow.com/questions/4576077/how-can-i-split-a-text-into-sentences
 
-# if __name__ == "__main__":
-#     pdf_gen = read_pdf_generator("C:\\Users\\Omri\\Desktop\\dev\\MrKnowAll\\backend\\resources\\israel-gaza.pdf")
-#     print(pdf_gen.__next__())
+
+if __name__ == "__main__":
+    answer = get_document_chunks_helper(
+        "C:\\Users\\idani\\Desktop\\dev\\MrKnowAll\\backend\\resources\\israel-gaza.pdf")
+    maximum = 0
+    sentence = ""
+    for j in range(len(answer)):
+        if (len(answer[j]) > maximum):
+            maximum = len(answer[j])
+            sentence = answer[j]
+        print(answer[j])
+    print(maximum)
+    print(sentence.count(' '))

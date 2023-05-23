@@ -1,6 +1,7 @@
 import requests
-from app.models.query import Query
+
 from app.models.api_models import OpenAIResponse, Status
+from app.models.query import Query
 
 
 class OpenAIAPI:
@@ -8,7 +9,7 @@ class OpenAIAPI:
         self.api_key = api_key
         self.endpoint = 'https://api.openai.com/v1/chat/completions'
 
-    def generate_answer(self, query: Query) -> str:
+    def generate_answer(self, query: Query) -> OpenAIResponse:
         headers = {
             'Authorization': f'Bearer {self.api_key}',
         }

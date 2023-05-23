@@ -1,6 +1,7 @@
-from pydantic import BaseModel
-from typing import Optional, List
 import datetime as dt
+from typing import List, Optional
+
+from pydantic import BaseModel
 
 
 class DocumentMetaData(BaseModel):
@@ -18,7 +19,7 @@ class DocumentMetaData(BaseModel):
     def get_document_id(self) -> str:
         return self.document_id
     
-    def get_document_title(self) -> str:
+    def get_document_title(self) -> Optional[str]:
         return self.document_title
     class Config:
         allow_mutation = True
@@ -26,15 +27,18 @@ class DocumentMetaData(BaseModel):
 class Document(BaseModel):
     """
     @@@ How to hold pdf?
+    meanwhile a path
     """
     document_metadata: DocumentMetaData
+    path: str
 
-    def get_document_metadata(self) -> Optional[DocumentMetaData]:
+    def get_document_metadata(self) -> DocumentMetaData:
         return self.document_metadata
     class Config:
         allow_mutation = True
 
 class DocumentVectorChunkMetadata(BaseModel):
+    user_id: str
     document_id: str
     original_content: str
 
@@ -46,5 +50,6 @@ class DocumentVectorChunk(BaseModel):
     vector_id: Optional[str] = None
     embedding: Optional[List[float]] = None
     metadata: Optional[DocumentVectorChunkMetadata] = None
+
     
 

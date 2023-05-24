@@ -1,6 +1,8 @@
-from pydantic import BaseModel
-from typing import List
 from enum import Enum
+from typing import List
+
+from pydantic import BaseModel
+
 from app.models.documents import DocumentMetaData
 
 

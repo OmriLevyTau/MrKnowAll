@@ -1,25 +1,21 @@
-from typing import List
 from abc import ABC, abstractmethod
-from app.models.documents import (
-    Document,
-    DocumentMetaData,
-    DocumentVectorChunk,
-    DocumentVectorChunkMetadata
-)
+from typing import List
+
+from app.models.documents import (Document, DocumentMetaData,
+                                  DocumentVectorChunk,
+                                  DocumentVectorChunkMetadata)
 from app.models.query import Query, QueryResult
 from app.services.document_proccessing import get_documents_chunks
 from app.services.embeddings import get_embeddings
 
-
-"""
+'''
 An abstract class defining basic functionallity each
 vector database provider should implement
-"""
+
+'''
 
 
 class AbstractVectorStorage(ABC):
-
-    MAX_CHUNK_SIZE = 100
 
     async def upload(self, user_id: str, document: Document) -> str:
         """
@@ -31,16 +27,15 @@ class AbstractVectorStorage(ABC):
             str: id of the inserted document (if succsseful), otherwise None.
         """
         # returns a list of sentences composing the document
-        text_chunks = get_documents_chunks(
-            document, AbstractVectorStorage.MAX_CHUNK_SIZE)
+        text_chunks = get_documents_chunks(document)
         # returns a list of embeddings corresponding to the previous list
         embeddings = get_embeddings(text_chunks)
         doc_metadata = document.get_document_metadata()
-        payload = AbstractVectorStorage._assemble_documents_vector_chunks(
-            doc_metadata, text_chunks, embeddings
+        payload = AbstractVectorStorage.assemble_documents_vector_chunks(
+            user_id, doc_metadata, text_chunks, embeddings
         )
 
-        return await self._upload(user_id, doc_metadata, payload)
+        return await self._upload(user_id, payload)
 
     @abstractmethod
     async def _upload(self, user_id: str, payload: List[DocumentVectorChunk]) -> str:
@@ -64,41 +59,35 @@ class AbstractVectorStorage(ABC):
         """
         raise NotImplementedError
 
-    async def query(self, user_id: str, query: Query) -> QueryResult:
+    async def query(self, user_id: str, query: Query):
         if not AbstractVectorStorage._validate_query(query):
-            raise ValueError(f'''
-                    Query should not be empty and must not exceed 
-                    {AbstractVectorStorage.MAX_CHUNK_SIZE} characters.
-                ''')
+            raise ValueError(f"Query must be non-empty")
 
-        query_embedding = get_embeddings([query.get_query_content()])
+        query_embedding = get_embeddings([query.get_query_content()])[0]
         query.embedding = query_embedding
         return await self._query(user_id, query)
 
     @abstractmethod
-    async def _query(self, user_id: str, query: Query) -> QueryResult:
+    async def _query(self, user_id: str, query: Query):
         pass
 
     @staticmethod
     def _validate_query(query: Query):
-        content_length = len(query.get_query_content())
-        not_empty_check = content_length > 0
-        max_length_check = content_length <= AbstractVectorStorage.MAX_CHUNK_SIZE
-        return (not_empty_check and max_length_check)
+        return len(query.get_query_content())>0
 
     @staticmethod
-    def _assemble_documents_vector_chunks(doc_metadata: DocumentMetaData, text_chunks: List[str],
-                                          embeddings: List[List[float]]) -> List[DocumentVectorChunk]:
+    def assemble_documents_vector_chunks(user_id: str, doc_metadata: DocumentMetaData, text_chunks: List[str],
+                                          embeddings) -> List[DocumentVectorChunk]:
         if (len(text_chunks) != len(embeddings)):
-            raise ValueError('''AbstractVectorStorage: _assemble_vector_chunks: 
+            raise ValueError('''AbstractVectorStorage: _assemble_vector_chunks:
                                 chunks and embeddings must agree on size.''')
 
         doc_id = doc_metadata.get_document_id()
         payload = []
 
-        for i in range(len(text_chunks)):
+        for i, chunk in enumerate(text_chunks):
             meta = DocumentVectorChunkMetadata(
-                document_id=doc_id, original_content=text_chunks[i])
+                user_id=user_id, document_id=doc_id, original_content=chunk)
             payload.append(
                 DocumentVectorChunk(
                     vector_id=str(i),

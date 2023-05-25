@@ -1,0 +1,25 @@
+[
+    {
+        "namespace": "",
+        "vectors": {
+        "2": {
+            "id": "2",
+            "metadata": {
+                "document_id": "test",
+                "original_content": "Hi, I will assit you to test your vectorDB and I'm number 2",
+                "user_id": "test"
+            },
+            "values": [-0.0426500551,-0.0353951901]
+        },
+        "4": {
+            "id": "4",
+            "metadata": {
+                "document_id": "test",
+                "original_content": "Hi, I will assit you to test your vectorDB and I'm number 4",
+                "user_id": "test"
+            },
+            "values": [-0.0508197211,-0.0339883044]
+            }
+        }
+    }
+]

@@ -6,8 +6,8 @@ import pinecone
 from pinecone import Index
 
 from app.config import PINECONE_API_KEY, PINECONE_ENVIRONMENT, PINECONE_INDEX
-from app.models.documents import DocumentVectorChunk
-from app.models.query import Query, QueryResult
+from app.models.documents import DocumentVectorChunk, VectorContextQuery
+from app.models.query import Query
 from app.storage.abstract_vector_storage import AbstractVectorStorage
 
 # Note this values should be pre-configured by us.
@@ -77,7 +77,13 @@ class PineconeVectorStorage(AbstractVectorStorage):
 
 
     async def delete(self, user_id: str, document_id: str) -> Dict:
-        # TODO: maybe should add delete_all=True
+        """
+        Given a user_id and a document_id, delete all vectors
+        associated with this user and document.
+
+        Returns:
+            Dict: _description_
+        """
         delete_response = self.index.delete(
             filter={
                 "user_id": {"$eq": user_id},
@@ -107,3 +113,19 @@ class PineconeVectorStorage(AbstractVectorStorage):
     async def get_stats(self):
         return self.index.describe_index_stats()
     
+
+    async def get_context(self, user_id: str, context_query: VectorContextQuery):
+        """
+        refer superclass for detalis.
+        """
+
+        target_vec_id = int(context_query.get_vector_id())
+        window_size = context_query.get_context_window()
+        ids_window = [str(i) for i in range(target_vec_id-window_size, target_vec_id+window_size+1)
+                      if i!=target_vec_id ]
+        context_response = self.index.fetch(
+            ids=ids_window
+        )
+        return context_response
+    
+        

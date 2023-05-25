@@ -1,0 +1,22 @@
+[
+    {
+        "id": "9",
+        "metadata": {
+            "document_id": "test",
+            "original_content": "Traveling to exotic destinations allows for cultural exploration and adventure ",
+            "user_id": "test"
+            },
+        "score": 0.080188334,
+        "values": []
+        }, 
+        {
+            "id": "6",
+            "metadata": {
+                "document_id": "test",
+                "original_content": "Cooking delicious meals is an art form that requires creativity and skill ",
+                "user_id": "test"
+            },
+            "score": 0.0673602894,
+            "values": []
+        }
+]

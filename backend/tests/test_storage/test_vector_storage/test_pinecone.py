@@ -1,3 +1,4 @@
+
 '''
     This class tests basic funcionaliy of pinecone vector database.
     As in their free plan, there's no way to create a multipile indices
@@ -13,7 +14,7 @@ from typing import List
 
 import pytest
 
-from app.models.documents import DocumentMetaData, DocumentVectorChunk
+from app.models.documents import DocumentMetaData, DocumentVectorChunk, VectorContextQuery
 from app.models.query import Query
 from app.services.embeddings import get_embeddings
 from app.storage.abstract_vector_storage import AbstractVectorStorage
@@ -32,7 +33,11 @@ MASKING_SENTENCES = [
     "The history of ancient civilizations fascinates archaeologists and historians",
     "Sports enthusiasts enjoy the thrill of competition and physical exertion",
     "Traveling to exotic destinations allows for cultural exploration and adventure"
-]
+    ]
+
+generic_sentence = "Hi, I will assit you to test your vectorDB and I'm number "
+CONTEXT_SENTNCES = [generic_sentence + str(i) for i in range(10)]
+
 TEST_USER_ID = "test"
 TEST_DOCUMENT_ID = "test"
 TEST_DOCUMENT_METADATA = DocumentMetaData(user_id=TEST_USER_ID, document_id=TEST_DOCUMENT_ID)
@@ -140,6 +145,48 @@ async def test_should_not_get_similar_sentences() -> None:
         top_match = matches[0]
         # should be different!
         assert (1-top_match.get('score')) > 0.5
+    
+    except Exception as error:
+        print("Error in test: " + str(error))
+        raise
+
+@pytest.mark.asyncio
+async def test_get_vector_context() -> None:
+    text_chunks = CONTEXT_SENTNCES
+    payload = get_payload(sentences=text_chunks)
+    try:
+        # populate DB
+        upload_response = await pinecone_client._upload(TEST_USER_ID, payload)
+        assert upload_response is not None and upload_response.get("upserted_count") == len(text_chunks)
+
+        # Try to query vector number 3 with default windows size of 2.
+        expected_ids =  [str(j) for j in range(1,6) if j != 3]
+        context_query = VectorContextQuery(
+            user_id=TEST_USER_ID,
+            document_id=TEST_DOCUMENT_ID,
+            vector_id="3"
+        )
+
+        context_response = await pinecone_client.get_context(
+            user_id=TEST_USER_ID,
+            context_query=context_query
+        )
+
+        assert ((context_response is not None) and (context_response.get("vectors") is not None))
+        vectors = context_response.get("vectors")
+        assert (len(vectors)==4)
+
+        for i,key in enumerate(vectors):
+            # vec is a key to dict
+            assert (key in expected_ids)
+            res = vectors.get(key)
+            assert(
+                    (res is not None) and 
+                    (res.get("metadata") is not None) and
+                    (res.get("metadata").get("original_content") is not None)
+                )
+            context = res.get("metadata").get("original_content")
+            assert context == CONTEXT_SENTNCES[int(key)]
     
     except Exception as error:
         print("Error in test: " + str(error))

@@ -52,4 +52,24 @@ class DocumentVectorChunk(BaseModel):
     metadata: Optional[DocumentVectorChunkMetadata] = None
 
     
+class VectorContextQuery(BaseModel):
+    """
+    This model represents a vector context query. That is,
+    given a vector_id='c' represents original sentence:='C',
+    get its context, that is sentence A,B,D,E
+    """
+    user_id: str
+    document_id: str
+    vector_id: str
+    context_window: Optional[int] = 2
+
+    def get_document_id(self) -> str:
+        return self.document_id
+
+    def get_vector_id(self) -> str:
+        return self.vector_id
+
+    def get_context_window(self) -> Optional[int]:
+        return self.context_window
+
 

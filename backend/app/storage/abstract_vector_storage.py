@@ -3,7 +3,9 @@ from typing import List
 
 from app.models.documents import (Document, DocumentMetaData,
                                   DocumentVectorChunk,
-                                  DocumentVectorChunkMetadata)
+                                  DocumentVectorChunkMetadata,
+                                  VectorContextQuery
+                                  )
 from app.models.query import Query, QueryResult
 from app.services.document_proccessing import get_documents_chunks
 from app.services.embeddings import get_embeddings
@@ -60,6 +62,20 @@ class AbstractVectorStorage(ABC):
         raise NotImplementedError
 
     async def query(self, user_id: str, query: Query):
+        """
+        Given a user_id and a Query object, performs
+        vector similarity search.
+
+        Args:
+            user_id (str): unique user identifier
+            query (Query): A query object. Query.embedding expected to
+                           be None and will be created here
+        Raises:
+            ValueError: Not valid query
+
+        Returns:
+            _type_: _description_
+        """
         if not AbstractVectorStorage._validate_query(query):
             raise ValueError(f"Query must be non-empty")
 
@@ -67,27 +83,69 @@ class AbstractVectorStorage(ABC):
         query.embedding = query_embedding
         return await self._query(user_id, query)
 
+    
     @abstractmethod
     async def _query(self, user_id: str, query: Query):
-        pass
+        raise NotImplementedError()
+    
+
+    @abstractmethod
+    async def get_context(self, user_id: str, context_query: VectorContextQuery):
+        '''
+        Given user_id, docoument_id and a vector_id (id),
+        get the context of the original sentence that represented
+        by the vector_id.
+        '''
+        raise NotImplementedError()
 
     @staticmethod
     def _validate_query(query: Query):
+        """
+        Asserts a given Query is valid.
+
+        Args:
+            query (Query): _description_
+
+        Returns:
+            bool: True if valid, False otherwise
+        """
         return len(query.get_query_content())>0
 
     @staticmethod
     def assemble_documents_vector_chunks(user_id: str, doc_metadata: DocumentMetaData, text_chunks: List[str],
                                           embeddings) -> List[DocumentVectorChunk]:
+        """
+        Given a user_id, metadata, text chunks and its corresponding embeddings,
+        assemble a list of DocumentVectorChunks.
+        Args:
+            user_id (str): unique user_id
+            doc_metadata (DocumentMetaData): additional information about the document
+            text_chunks (List[str]): a list of sentences
+            embeddings (_type_): a list of corresponding embeddings for the sentences
+
+        Raises:
+            ValueError: if number of text chunks != number of embeddings
+
+        Returns:
+            List[DocumentVectorChunk]: 
+                ready to insert to db DocumentVectorChunk.
+                each vector_id should be an integer represented as string.
+
+        """
+        # number of text chunks and emneddings must agree
         if (len(text_chunks) != len(embeddings)):
             raise ValueError('''AbstractVectorStorage: _assemble_vector_chunks:
                                 chunks and embeddings must agree on size.''')
 
+        
         doc_id = doc_metadata.get_document_id()
         payload = []
 
         for i, chunk in enumerate(text_chunks):
             meta = DocumentVectorChunkMetadata(
-                user_id=user_id, document_id=doc_id, original_content=chunk)
+                user_id=user_id, document_id=doc_id, 
+                original_content=chunk
+                )
             payload.append(
                 DocumentVectorChunk(
                     vector_id=str(i),
@@ -97,3 +155,4 @@ class AbstractVectorStorage(ABC):
             )
 
         return payload
+

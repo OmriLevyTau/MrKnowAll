@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-
+import json
 from app.main import app
 from app.models.api_models import Status
 
@@ -22,7 +22,8 @@ async def test_openai_integration():
         "query_content": "how are you today?"
     })
     assert (query_response.status_code == 200)
-    query_response = query_response.content
+    query_response_content = query_response.content.decode('utf-8')
+    data = json.loads(query_response_content)
 
     '''
     for example:
@@ -37,8 +38,11 @@ async def test_openai_integration():
     }
 
     '''
-    assert query_response.status == Status.Ok
-    assert (query_response.response is not None)
+    print('hello')
+    print(data['response'])
+    assert (data['status'] == Status.Ok)
+    assert (data['response'] is not None)
     # Cannot predict what chatGPT answer will look like
-    assert (query_response.response.status is not None)
-    assert (query_response.response.content is not None)
+    assert (data['response']['status'] is not None)
+    assert (data['response']['content'] is not None)
+    

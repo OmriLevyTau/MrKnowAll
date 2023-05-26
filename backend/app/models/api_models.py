@@ -38,3 +38,4 @@ class OpenAIResponse(BaseModel):
 class QueryResponse(BaseModel):
     status: Status
     response: OpenAIResponse
+    query_content: str

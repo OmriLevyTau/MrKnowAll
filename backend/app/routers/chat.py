@@ -33,6 +33,7 @@ async def query(query: Query) -> QueryResponse:
     top_k_closest_vectors = vector_db_query_response.get("matches")
 
     all_context = []
+    map_vec_id_to_context = {}
 
     for vector_data in top_k_closest_vectors:
         cur_vec_doc_id = vector_data.get('metadata').get('document_id')
@@ -44,11 +45,19 @@ async def query(query: Query) -> QueryResponse:
         for i,key in enumerate(vectors):
             # vec is a key to dict
             res = vectors.get(key)
+            vec_id = res.get("id")
             context = res.get("metadata").get("original_content")
-            all_context.append(context)
+            map_vec_id_to_context[vec_id] = context
 
-    prompt_prefix = "Please generate response based solely on the information I provide in this text. Do not reference any external knowledge or provide additional details beyond what I've given."
-    prompt = prompt_prefix + '\n' + 'the information is: ' + ' '.join(all_context) + '\n' + 'and my question is: ' + query_content
+    vec_ids_as_str = list(map_vec_id_to_context)
+    vec_ids = [int(vec_id) for vec_id in vec_ids_as_str]
+    vec_ids.sort()
+    for vec_id in vec_ids:
+        all_context.append(map_vec_id_to_context[str(vec_id)])
+
+    
+    prompt_prefix = "Please generate response based solely on the information I provide in this text. Do not reference any external knowledge or provide additional details beyond what I have given."
+    prompt = prompt_prefix + '\n' + 'the information is: ' + ' '.join(all_context) + '\n' + 'my question is: ' + query_content
     AI_assistant_query = Query(user_id=user_id, query_id=query_id, query_content=prompt)
     answer = openai_api.generate_answer(AI_assistant_query)
     

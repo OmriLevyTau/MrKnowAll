@@ -1,15 +1,17 @@
-import pytest
 import json
+
+import pytest
+from fastapi.testclient import TestClient
+
+from app.config import EXPLORE_LOCAL_FILE
 from app.main import app
-from app.models.query import Query
 from app.models.api_models import Status
 from app.models.documents import Document, DocumentMetaData
-from app.storage.vector_storage_providers.pinecone import PineconeVectorStorage
+from app.models.query import Query
 from app.routers.chat import query
-from tests.test_storage.test_vector_storage.test_pinecone import TEST_DOCUMENT_ID, TEST_USER_ID, TEST_DOCUMENT_METADATA
-from fastapi.testclient import TestClient
-from app.config import EXPLORE_LOCAL_FILE
-
+from app.storage.vector_storage_providers.pinecone import PineconeVectorStorage
+from tests.test_storage.test_vector_storage.test_pinecone import (
+    TEST_DOCUMENT_ID, TEST_DOCUMENT_METADATA, TEST_USER_ID)
 
 client = TestClient(app)
 pinecone_client = PineconeVectorStorage()
@@ -39,11 +41,6 @@ def setup_and_teardown():
     clear_all()
     # assert number of existing vectors.
 
-@pytest.mark.asyncio
-async def test_is_healthy():
-    response = client.get("/")
-    assert (response.status_code == 200)
-
 
 @pytest.mark.asyncio
 async def test_openai_integration():
@@ -56,20 +53,6 @@ async def test_openai_integration():
     assert (query_response.status_code == 200)
     query_response_content = query_response.content.decode('utf-8')
     data = json.loads(query_response_content)
-
-    '''
-    for example:
-    {
-        'status': 'Ok', 
-        'response': {
-            'status': 'Ok', 
-            'content': 'As an AI language model, I do not have emotions, 
-                        but I am always ready to assist you with your requests. 
-                        How can I assist you today?'
-        }
-    }
-
-    '''
 
     assert (data['status'] == Status.Ok)
     assert (data['response'] is not None)

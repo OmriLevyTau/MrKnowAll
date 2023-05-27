@@ -29,6 +29,8 @@ async def query(query: Query) -> QueryResponse:
     # query vector DB 
     vector_db_query_response = await pinecone_client.query(user_id=user_id, query=query)
 
+    ### what if we dont have any matches? try-catch
+
     # get the matches to the vector DB query
     top_k_closest_vectors = vector_db_query_response.get("matches")
 

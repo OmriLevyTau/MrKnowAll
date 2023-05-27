@@ -36,9 +36,11 @@ async def query(query: Query) -> QueryResponse:
 
     all_context = []
     map_vec_id_to_context = {}
+    references = set()
 
     for vector_data in top_k_closest_vectors:
         cur_vec_doc_id = vector_data.get('metadata').get('document_id')
+        references.add(str(cur_vec_doc_id))
         context_query = VectorContextQuery(user_id=user_id, document_id=cur_vec_doc_id,vector_id=vector_data.get('id'))
         context_response = await pinecone_client.get_context(user_id=user_id, context_query=context_query)
 
@@ -57,10 +59,15 @@ async def query(query: Query) -> QueryResponse:
     for vec_id in vec_ids:
         all_context.append(map_vec_id_to_context[str(vec_id)])
 
-    
+    references_str = ', '.join(references)
     prompt_prefix = "Please generate response based solely on the information I provide in this text. Do not reference any external knowledge or provide additional details beyond what I have given."
-    prompt = prompt_prefix + '\n' + 'the information is: ' + ' '.join(all_context) + '\n' + 'my question is: ' + query_content
+    all_context_as_str = ' '.join(all_context)
+    prompt = prompt_prefix + '\n' + 'my question is: ' + query_content + '\n'+ 'the information is: ' + all_context_as_str + '\n'  + 'the documents referenced in the question are: ' + references_str
     AI_assistant_query = Query(user_id=user_id, query_id=query_id, query_content=prompt)
     answer = openai_api.generate_answer(AI_assistant_query)
     
-    return QueryResponse(status=Status.Ok, response=answer, query_content=prompt)
+    return QueryResponse(status=Status.Ok,
+                        query_content=prompt_prefix + '\n' + 'my question is: ' + query_content,
+                        context = all_context_as_str,
+                        response=answer,
+                        references=references)

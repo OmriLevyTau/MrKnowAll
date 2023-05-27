@@ -39,3 +39,5 @@ class QueryResponse(BaseModel):
     status: Status
     response: OpenAIResponse
     query_content: str
+    context: str
+    references: list[str]

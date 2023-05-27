@@ -123,8 +123,15 @@ async def test_full_query_process():
     prompt_finish = "my question is: what did the Islamic Jihad spokesman say?"
     assert (prompt_finish in original_query)
 
+    assert (response_data['references'] is not None)
+    prompt_references = response_data['references']
+    assert ('test' in prompt_references)
+
+    assert (response_data['context'] is not None)
+    context = response_data['context']
+    
     prompt_important_sentence_1 = "\nIn Gaza, Islamic Jihad spokesman Tareq Selmi said Israel had agreed to halt its policy"
     prompt_important_sentence_2 = "or assassination by the \noccupation will be met with a response and the Zionist enemy bears the responsibility"
 
-    assert (prompt_important_sentence_1 in original_query)
-    assert (prompt_important_sentence_2 in original_query)
+    assert (prompt_important_sentence_1 in context)
+    assert (prompt_important_sentence_2 in context)

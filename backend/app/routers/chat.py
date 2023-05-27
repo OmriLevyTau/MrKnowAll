@@ -27,48 +27,54 @@ async def query(query: Query) -> QueryResponse:
     query_id = query.query_id
     query_content = query.query_content
 
-    # query vector DB 
-    vector_db_query_response = await pinecone_client.query(user_id=user_id, query=query)
-
-    ### what if we dont have any matches? try-catch
-
-    # get the matches to the vector DB query
-    top_k_closest_vectors = vector_db_query_response.get("matches")
-
-    all_context = []
-    map_vec_id_to_context = {}
-    references = set()
-
-    for vector_data in top_k_closest_vectors:
-        cur_vec_doc_id = vector_data.get('metadata').get('document_id')
-        references.add(str(cur_vec_doc_id))
-        context_query = VectorContextQuery(user_id=user_id, document_id=cur_vec_doc_id,vector_id=vector_data.get('id'))
-        context_response = await pinecone_client.get_context(user_id=user_id, context_query=context_query)
-
-        vectors = context_response.get("vectors")
-
-        for i,key in enumerate(vectors):
-            # vec is a key to dict
-            res = vectors.get(key)
-            vec_id = res.get("id")
-            context = res.get("metadata").get("original_content")
-            map_vec_id_to_context[vec_id] = context
-
-    vec_ids_as_str = list(map_vec_id_to_context)
-    vec_ids = [int(vec_id) for vec_id in vec_ids_as_str]
-    vec_ids.sort()
-    for vec_id in vec_ids:
-        all_context.append(map_vec_id_to_context[str(vec_id)])
-
-    references_str = ', '.join(references)
-    prompt_prefix = "Please generate response based solely on the information I provide in this text. Do not reference any external knowledge or provide additional details beyond what I have given."
-    all_context_as_str = ' '.join(all_context)
-    prompt = prompt_prefix + '\n' + 'my question is: ' + query_content + '\n'+ 'the information is: ' + all_context_as_str + '\n'  + 'the documents referenced in the question are: ' + references_str
-    AI_assistant_query = Query(user_id=user_id, query_id=query_id, query_content=prompt)
-    answer = openai_api.generate_answer(AI_assistant_query)
+    try:
+        # query vector DB 
+        vector_db_query_response = await pinecone_client.query(user_id=user_id, query=query)
     
-    return QueryResponse(status=Status.Ok,
-                        query_content=prompt_prefix + '\n' + 'my question is: ' + query_content,
-                        context = all_context_as_str,
-                        response=answer,
-                        references=references)
+        # get the matches to the vector DB query
+        top_k_closest_vectors = vector_db_query_response.get("matches")
+
+        all_context = []
+        map_vec_id_to_context = {}
+        references = set()
+
+        for vector_data in top_k_closest_vectors:
+            cur_vec_doc_id = vector_data.get('metadata').get('document_id')
+            references.add(str(cur_vec_doc_id))
+            context_query = VectorContextQuery(user_id=user_id, document_id=cur_vec_doc_id,vector_id=vector_data.get('id'))
+            context_response = await pinecone_client.get_context(user_id=user_id, context_query=context_query)
+
+            vectors = context_response.get("vectors")
+
+            for i,key in enumerate(vectors):
+                # vec is a key to dict
+                res = vectors.get(key)
+                vec_id = res.get("id")
+                context = res.get("metadata").get("original_content")
+                map_vec_id_to_context[vec_id] = context
+
+        vec_ids_as_str = list(map_vec_id_to_context)
+        vec_ids = [int(vec_id) for vec_id in vec_ids_as_str]
+        vec_ids.sort()
+        for vec_id in vec_ids:
+            all_context.append(map_vec_id_to_context[str(vec_id)])
+
+        references_str = ', '.join(references)
+        prompt_prefix = "Please generate response based solely on the information I provide in this text. Do not reference any external knowledge or provide additional details beyond what I have given."
+        all_context_as_str = ' '.join(all_context)
+        prompt = prompt_prefix + '\n' + 'my question is: ' + query_content + '\n'+ 'the information is: ' + all_context_as_str + '\n'  + 'the documents referenced in the question are: ' + references_str
+        AI_assistant_query = Query(user_id=user_id, query_id=query_id, query_content=prompt)
+        answer = openai_api.generate_answer(AI_assistant_query)
+        
+        return QueryResponse(status=Status.Ok,
+                            query_content=prompt_prefix + '\n' + 'my question is: ' + query_content,
+                            context = all_context_as_str,
+                            response=answer,
+                            references=references)
+
+    except:
+        return QueryResponse(status=Status.Failed,
+                        query_content=query_content,
+                        context = '',
+                        response='',
+                        references='')

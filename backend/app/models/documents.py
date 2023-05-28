@@ -24,6 +24,9 @@ class DocumentMetaData(BaseModel):
     class Config:
         allow_mutation = True
 
+    def get_user_id(self) -> str:
+        return self.user_id
+
 class Document(BaseModel):
     """
     @@@ How to hold pdf?

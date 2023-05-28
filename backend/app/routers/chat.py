@@ -72,9 +72,9 @@ async def query(query: Query) -> QueryResponse:
                             response=answer,
                             references=references)
 
-    except:
+    except Exception as e:
         return QueryResponse(status=Status.Failed,
                         query_content=query_content,
                         context = '',
-                        response='',
+                        response=str(e),
                         references='')

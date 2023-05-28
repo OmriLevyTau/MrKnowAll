@@ -24,6 +24,7 @@ class GetDocumentByIdResponse(BaseModel):
 class UploadDocumentResponse(BaseModel):
     status: Status  # change to enum
     doc_metadata: DocumentMetaData
+    uploaded_vectors_num: int
 
 
 class DeleteDocumentResponse(BaseModel):

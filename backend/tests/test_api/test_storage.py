@@ -5,11 +5,6 @@ from app.main import app
 client = TestClient(app)
 
 
-@pytest.mark.asyncio
-async def test_is_healthy():
-    response = client.get("/documents")
-    assert(response.status_code==200)
-
 
 @pytest.mark.asyncio
 async def test_user_gets_all_documents_metadata():

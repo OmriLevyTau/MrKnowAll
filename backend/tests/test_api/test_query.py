@@ -69,15 +69,16 @@ async def test_full_query_process():
         path=EXPLORE_LOCAL_FILE
     )
 
-    upload_response = await pinecone_client.upload(user_id=TEST_USER_ID, document=doc)
-    # upload_response = client.post(url="/documents", json={
-    #     "user_id": TEST_USER_ID,
-    #     "query_id": 1,
-    #     "query_content": 'what did the Islamic Jihad spokesman say?'
-    # })
+    # upload_response = await pinecone_client.upload(user_id=TEST_USER_ID, document=doc)
+    upload_response = client.post(url="/documents", json={
+         'path':EXPLORE_LOCAL_FILE,
+         'document_metadata': {
+             'user_id':TEST_USER_ID, 
+             'document_id': TEST_DOCUMENT_ID
+         }
+    })
     
     
-    #query_to_be_sent = Query(user_id=TEST_USER_ID, query_id='1', query_content='what did the Islamic Jihad spokesman say?')
     query_response = client.post(url="/query", json={
         "user_id": TEST_USER_ID,
         "query_id": 1,

@@ -1,7 +1,7 @@
 import { Button, Collapse } from "antd";
-import Product from "./Landing"
 import mustach from "../../../images/mustach3.png"
 import LandingCard from "./LandingCard";
+import  Product  from "./Product";
 import { CloudUploadOutlined, QuestionAnswerOutlined, QuestionMarkSharp } from "@mui/icons-material";
 import LandingTopMenu from "../../common/Menu/LandingTopMenu";
 
@@ -72,11 +72,7 @@ function Landing(){
                             <Product 
                                 title="Sign up or Sign in "
                                 description=
-                                "To get started, simply sign up, granting us permission to create your personalized private workspace. \
-                                Within this workspace, you'll have the freedom to securely store all of your important documents. \
-                                If you already have an account, you can effortlessly sign in to access your workspace. \
-                                We offer the added convenience of signing in using your Google account or via email, \
-                                ensuring a seamless experience for you."
+                                "To get started, simply sign up, granting us permission to create your personalized private workspace. Within this workspace, you'll have the freedom to securely store all of your important documents. If you already have an account, you can effortlessly sign in to access your workspace. We offer the added convenience of signing in using your Google account or via email, ensuring a seamless experience for you."
                                 imageName="step1_signup"
                                 reverse={false}
                                  />
@@ -84,7 +80,7 @@ function Landing(){
                         <div>
                             <Product 
                                 title="Upload files or documents"
-                                description="We are excited to introduce a new feature that empowers you to effortlessly upload the files you'd like to receive valuable responses on. To take advantage of this functionality, simply navigate to `My Workspace` and conveniently locate the designated upload button. Feel free to upload any files that pique your interest, as these are the very files our system will provide comprehensive answers and insights on."
+                                description="We are excited to introduce a feature that empowers you to effortlessly upload the files you'd like to receive valuable responses on. To take advantage of this functionality, simply navigate to `My Workspace` and conveniently locate the designated upload button. Feel free to upload any files that pique your interest, as these are the very files our system will provide comprehensive answers and insights on."
                                 imageName="step2_upload"
                                 reverse={true} />
                         </div>

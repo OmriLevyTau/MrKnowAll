@@ -12,8 +12,8 @@ function Product({title, description, imageName, reverse}) {
               <h3 style={{fontSize: `max(20px, 1.8vw)`}} >{title}</h3>
               <p style={{fontSize: `max(16px, 1.2vw)`}} >{description}</p>
             </div>
-            <div className="product-imgae"  style={{display:"flex", justifyContent:"end"}} >
-              <img src={ step1_signup } alt="workflow"  style={{ height:"90%", width:"90%", aspectRatio:"auto" }} />
+            <div className="product-imgae"  style={{display:"flex", justifyContent:"end", width:"160%"}} >
+              <img src={ step1_signup } alt="workflow"  style={{ height:"98%", width:"98%", aspectRatio:"auto" }} />
             </div>        
           </div>
         )
@@ -26,8 +26,8 @@ function Product({title, description, imageName, reverse}) {
                 <h3 style={{fontSize: `max(20px, 1.8vw)`}} >{title}</h3>
                 <p style={{fontSize: `max(16px, 1.2vw)`}} >{description}</p>
               </div>
-              <div className="product-imgae"  style={{display:"flex", justifyContent:"end"}} >
-                <img src={ step3_chat } alt="workflow"  style={{ height:"90%", width:"90%", aspectRatio:"auto" }} />
+              <div className="product-imgae"  style={{display:"flex", justifyContent:"end", width:"160%"}} >
+                <img src={ step3_chat } alt="workflow"  style={{ height:"98%", width:"98%", aspectRatio:"auto" }} />
               </div>        
             </div>
           )
@@ -36,11 +36,11 @@ function Product({title, description, imageName, reverse}) {
       
     }
   return (
-      <div className="landing-product" style={{ display:"flex", flexDirection:"row", marginTop:"10%" }}>
+      <div className="landing-product" style={{ display:"flex", flexDirection:"row", marginTop:"7%" }}>
         <div className="product-imgae"  style={{display:"flex", justifyContent:"start", marginRight:"3%",}} >
-          <img src={ step2_upload}  alt="workflow" style={{ height:"95%", width:"95%", aspectRatio:"auto" }} />
+          <img src={ step2_upload}  alt="workflow" style={{ height:"98%", width:"98%", aspectRatio:"auto" }} />
         </div>
-        <div className="product-description" style={{display:"flex", flexDirection:"column", justifyContent:"flex-start" }} >
+        <div className="product-description" style={{display:"flex", flexDirection:"column", justifyContent:"flex-start", width:"140%" }} >
           <h3 style={{fontSize: `max(20px, 1.8vw)`}} >{title}</h3>
           <p style={{fontSize: `max(16px, 1.2vw)`}} >{description}</p>
         </div>       
@@ -48,4 +48,4 @@ function Product({title, description, imageName, reverse}) {
   )
 }
 
-export default Product
+export default Product;

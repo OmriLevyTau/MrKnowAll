@@ -4,7 +4,7 @@ import workflowUpload from "../../../images/workflow-upload.png"
 import workflowAsk from "../../../images/workflow-ask.png"
 
 
-function Product({title, description, imageName, reverse}) {
+function ProductAbout({title, description, imageName, reverse}) {
   
 
     if (!reverse){
@@ -33,4 +33,4 @@ function Product({title, description, imageName, reverse}) {
   )
 }
 
-export default Product
+export default ProductAbout

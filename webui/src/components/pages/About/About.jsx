@@ -1,5 +1,5 @@
 import { Button, Collapse } from "antd";
-import Product from "./Product";
+import ProductAbout from "./ProductAbout";
 import mustach from "../../../images/mustach3.png"
 import AboutCard from "./AboutCard";
 import { CloudUploadOutlined, QuestionAnswerOutlined, QuestionMarkSharp } from "@mui/icons-material";
@@ -68,7 +68,7 @@ function About(){
                     <h2 style={{textAlign:"center", fontSize: `max(24px, 3vw)`}}>So, How this magic works?</h2>
                     <div className="landing-products-holder" style={{ display:"flex", flexDirection:"column", width:"100%", alignItems:"center", marginBottom:"10%", justifyContent:"space-between" }}>
                         <div >
-                            <Product 
+                            <ProductAbout 
                                 title="Upload data"
                                 description="We break your documents into sentences, embed each one into a vector using a dedicated pipeline. 
                                 Finally, we store them in a vector database that is best suited for semantic search."
@@ -77,7 +77,7 @@ function About(){
                                  />
                         </div>
                         <div>
-                            <Product 
+                            <ProductAbout 
                                 title="Ask a question" 
                                 description="We retrieve the most relevant data from the vector database and inject it into ChatGPT along with your question. 
                                 Then, we prompt the system to generate the best answer based on your data.

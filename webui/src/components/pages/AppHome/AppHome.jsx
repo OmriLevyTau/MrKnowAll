@@ -14,9 +14,8 @@ function AppHome(){
                 
                     <div className="home-header-search" style={{marginBottom:"0%", marginTop:"10%", display:"flex", flexDirection:"column", alignItems:"center"}}>                    
                         <h2 className = "home-header-title" >What do you want to know?</h2>
-                        <ChatInput width={"30%"} />
+                        <ChatInput width={"50%"} />
                         
-
                     </div>
                     {/*}
                     <div className = "home-header-checkbox">

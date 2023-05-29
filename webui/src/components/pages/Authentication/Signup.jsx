@@ -53,7 +53,7 @@ const Signup = () => {
                 paddingTop: "3%",
                 marginLeft: "1px",
               }}>
-              <GoogleButton type="light"  onClick={handleGoogleSignIn} >Sign up with google</GoogleButton>
+              <GoogleButton type="light"  onClick={handleGoogleSignIn}>Sign up with google</GoogleButton>
               </div>
 
           <p>

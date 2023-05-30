@@ -1,32 +1,39 @@
-from fastapi import APIRouter, UploadFile, File, FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+import base64
+from fastapi import APIRouter, FastAPI, File, UploadFile
 from app.storage.object_storage_providers.google_object_store import (
-    uploadFile,
-    deleteFile,
-)
+    deleteFile, uploadFile)
+import os
 
 upload_router = APIRouter()
-app = FastAPI()
-
-# CORS Configuration
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Update with your frontend URL
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 
 @upload_router.post("/upload")
-async def upload_file(user_name: str, file: UploadFile = File(...)):
+async def upload_file(body: dict):
     # Call the uploadFile function with the provided user name and uploaded file path
-    uploadFile(user_name, file.file.name)
-    return {"message": "File uploaded successfully"}
+    
+    # generate a UUID and write it down to a specific location!
+    # print(body)
+    prefix = 'data:application/pdf;base64,'
+    file_string = body['file'][len(prefix):]
+    # print(file_string)
+    user_name = body['user_id']['email']
+    file_name = body['file_name']
+    
+    with open(f'./tmp_files/{file_name}.pdf', 'wb') as pdfFile:
+        pdfFile.write(base64.b64decode(file_string))
+    
+    print("user name type is:", type(user_name))
+    print("user_name: ", user_name)
+    uploadFile(user_name, f'.//tmp_files//{file_name}.pdf', file_name)
+    os.remove(f'./tmp_files/{file_name}.pdf')
+    return {"status": "ok"}
 
 
 @upload_router.delete("/delete")
-async def delete_file(user_name: str, file_name: str):
+async def delete_file(body: dict):
+    user_name = body['user_id']['email']
+    file_name = body['file_name']
+    print("user name is: ", user_name)
+    print("file_name is: ", file_name)
     # Call the deleteFile function with the provided user name and file name
     deleteFile(user_name, file_name)
     return {"message": "File deleted successfully"}

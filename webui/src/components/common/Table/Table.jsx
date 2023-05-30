@@ -1,5 +1,5 @@
-import { Table, Button, Modal, Upload, name } from "antd";
-import { useContext, useState } from "react";
+import { Table, Button, Modal } from "antd";
+import { useContext, useState, useEffect } from "react";
 import { DeleteOutlined, FileTextOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { ChatLogContext } from "../../pages/AppContent/ChatContext";
@@ -57,21 +57,34 @@ function FileTable() {
       cancelText: "No",
       okType: "danger",
       onOk: () => {
-        setDataSource((pre) => {
-          return pre.filter((file) => file.name !== record.name);
-        });
+        console.log("delete file");
+        axios
+          .delete("http://localhost:8000/delete", {
+            data: {
+              file_name: "hello",
+              user_id: user,
+            },
+          })
+          .then((response) => {
+            console.log("Response:", response.data);
+            if (response["status"] === "ok") {
+              setDataSource((pre) => {
+                pre.filter((file) => file.name !== record.name);
+              });
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
       },
     });
   };
 
   const UploadFile = (event) => {
     if (event.file.status !== "uploading") {
-      console.log("Here!");
       let reader = new FileReader();
       reader.onload = (e) => {
-        console.log(e.target.result);
         setPdfFile(e.target.result);
-        console.log("FILEEEEE");
       };
       reader.readAsDataURL(event.file.originFileObj);
     } else {
@@ -88,41 +101,22 @@ function FileTable() {
       setDataSource((pre) => [...pre, newFile]);
     }
   };
-  /*
-  const UploadFile = async (event) => {
-    const uploadedFile = event.file;
-    const formData = new FormData();
-    formData.append("file", uploadedFile);
-    formData.append("user_name", user);
-    console.log(formData);
 
-    try {
-      const newFile = {
-        name: uploadedFile.name.split(".")[0],
-        size: `${Math.round(uploadedFile.size / 1024)} KB`,
-        dateModified: new Date().toLocaleDateString(),
-      };
-      const isFileExists = dataSource.some(
-        (file) => file.name === newFile.name
-      );
-      if (!isFileExists) {
-        setDataSource((prev) => [...prev, newFile]);
-      }
-      const response = await axios.post(
-        "http://localhost:8000/gooogle/upload",
-        formData
-      );
-
-      if (response.status === 200) {
-        console.log("File uploaded successfully");
-      } else {
-        console.error("Upload fail");
-      }
-    } catch (error) {
-      console.error("An error occurred during upload", error);
-    }
-  };
-  */
+  useEffect(() => {
+    console.log("useEffect!");
+    axios
+      .post("http://localhost:8000/upload", {
+        user_id: user,
+        file: pdfFile,
+        file_name: "hello",
+      })
+      .then((response) => {
+        console.log("Response:", response.data);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  }, [pdfFile]);
 
   return (
     <div

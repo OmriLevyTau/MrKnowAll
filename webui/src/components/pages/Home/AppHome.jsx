@@ -1,6 +1,6 @@
 import { Button, Collapse } from "antd";
 import HomeCard from "../../common/Card/HomeCard";
-import mustach from "../../../images/mustach-home.png"
+import mustach from "../../../images/mustach-home2.png"
 import { CloudUploadOutlined, QuestionAnswerOutlined, QuestionMarkSharp } from "@mui/icons-material";
 
 import { useNavigate } from "react-router-dom";
@@ -28,9 +28,9 @@ function Landing(){
             <div style={{ justifyContent:"space-evenly", width:"100%", display:"flex", flexDirection:"column", alignItems:"center", }} >
                 <div style={{ display:"flex", flexDirection:"row", background:"black", height:"50%" }}>
                     <div style={{background:"black", marginRight:"2%"}}>
-                        <img src={ mustach} alt="mustach" width="130%" />
+                        <img src={ mustach} alt="mustach" width="100%" />
                     </div>
-                    <div  style={{ display:"flex", flexDirection:"column", width:"100%", height:"100%", justifyContent:"flex-start", marginRight:"3%", marginTop:"10%" }} >
+                    <div  style={{ display:"flex", flexDirection:"column", width:"100%", height:"100%", justifyContent:"flex-start", marginRight:"3%", marginTop:"10%"}} >
                         <div style={{ textAlign:"left", wordWrap:"break-word", color:"white" }} >
                             <h1 style={{ fontSize: `max(24px, 2.75vw)`,   fontFamily: "Nunito, sans-serif", fontWeight:"bold"}} >Mr. Know All <br /> your new AI powered assitant.</h1>
                         </div>
@@ -39,9 +39,9 @@ function Landing(){
                         </div>
                     </div>
                 </div>
-                <div className="new-home-layout" style={{backgroundColor:'black', width:"100%", marginTop:'0px'}}>
+                <div className="new-home-layout" style={{backgroundColor:'black', width:"100%", marginTop:'0%'}}>
                     <div className="new-home-header-search" style={{marginBottom:"0%", marginTop:"0%", display:"flex", flexDirection:"column", alignItems:"center"}}>                    
-                        <h2 className = "new-home-header-title" style={{color:'white',  fontFamily: "Nunito, sans-serif"}} >Ask me anything.. on your data!</h2>
+                        <h2 className = "new-home-header-title" style={{color:'white',  fontFamily: "Nunito, sans-serif"}} >Ask me anything.. about your data!</h2>
                         <ChatInput width={"55%"} />
                     </div>
                 </div>

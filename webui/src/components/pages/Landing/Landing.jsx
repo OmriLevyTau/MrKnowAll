@@ -1,8 +1,7 @@
 import { Button, Collapse } from "antd";
-
-import Product from "./Product";
 import mustach from "../../../images/mustach3.png"
 import LandingCard from "./LandingCard";
+import  Product  from "./Product";
 import { CloudUploadOutlined, QuestionAnswerOutlined, QuestionMarkSharp } from "@mui/icons-material";
 import LandingTopMenu from "../../common/Menu/LandingTopMenu";
 
@@ -58,38 +57,49 @@ function Landing(){
                     />
                 </div>
                 <div className="home-page-content" style={{width:"80%", alignItems:"center", display:"flex", flexDirection:"column"}}>
+                    <h2 style={{textAlign:"center", fontSize: `max(24px, 3vw)`, marginBottom: '4%'}}>TLDR - who is Mr. Know All?</h2>
                      <div style={{ textAlign:"center", wordWrap:"break-word", color:"black", width:"80%",
                         letterSpacing:"1px", fontSize:`max(20px, 1.5vw)`, fontWeight:"450", marginBottom:"3%" }} >
                         <p>
-                            Mr. Know All allows you to upload your data and store it.
-                            Once uploaded, you can immediately access an AI assistant that can answer your questions -
-                            based on your data. <br/><br/> It's a chatGPT level AI assistant on the most recent data and without the need of training your own model.
+                            Aren't you tired of wasting time, searching for a specific sentence, in a specific line,<br></br> in a specific folder, too many times a day? <br></br> <br></br>
+                            Instead of wasting so much efforts and time, wouldn't you prefer to ask someone a question, and get an answer, based solely on yor data and files? <br></br> <br></br>
+                            This is exactly what Mr. Know All is here for! <br></br>
+                            We know, pretty awesome. <br></br> <br></br>
+                            Mr. Know All allows you to upload your data and store it. <br/><br/>
+                            Once uploaded, you can immediately access an AI assistant that can answer your questions - based on your data. <br/><br/> 
+                            
                         </p>
                     </div>
-                    <h2 style={{textAlign:"center", fontSize: `max(24px, 3vw)`}}>So, How this magic works?</h2>
+                    <h2 style={{textAlign:"center", fontSize: `max(24px, 3vw)`}}>How can you work with Mr. Know All?</h2>
                     <div className="landing-products-holder" style={{ display:"flex", flexDirection:"column", width:"100%", alignItems:"center", marginBottom:"10%", justifyContent:"space-between" }}>
-                        <div >
+                        
+                        <div>
                             <Product 
-                                title="Upload data"
-                                description="We break your documents into sentences, embed each one into a vector using a dedicated pipeline. 
-                                Finally, we store them in a vector database that is best suited for semantic search."
-                                imageName="img1"
-                                reverse={false}
-                                 />
+                                title="Upload files or documents"
+                                description="We are excited to introduce a feature that empowers you to effortlessly upload the files you'd like to receive valuable responses on. To take advantage of this functionality, simply navigate to `My Workspace` and conveniently locate the designated upload button. Feel free to upload any files that pique your interest, as these are the very files our system will provide comprehensive answers and insights on."
+                                imageName="upload_file_land"
+                                reverse={false} />
                         </div>
                         <div>
                             <Product 
                                 title="Ask a question" 
-                                description="We retrieve the most relevant data from the vector database and inject it into ChatGPT along with your question. 
-                                Then, we prompt the system to generate the best answer based on your data.
-                                " 
-                                imageName="img2" 
+                                description="After you uploaded your files, you may ask any questions you want. You will be sent to the chat page, and Mr. Know All will give you answers, based on the data which is located in the files you uploaded. you can chat with him, ask further questions, and enjoy. For further technicall details, go to the About page after you sign up or login."
+                                imageName="ask_land" 
                                 reverse={true} />
+                        </div>
+                        <div >
+                            <Product 
+                                title="Chat with AI assistant"
+                                description=
+                                "After uploading a file, you can ask questions about it. Once you receive a response to any of your questions, you can ask follow-up questions and engage in a chat with our AI assistant."
+                                imageName="chat_land"
+                                reverse={false}
+                                 />
                         </div>
                     </div>
                 </div>
                 <div style={{ width:"60%", justifyContent:"center", alignItems:"center", display:"flex", marginBottom:"5%" }}>
-                    <Button size="large" shape="round" type="primary" onClick={handleLetsStart} >
+                    <Button size="large" shape="round" type="primary" onClick={handleLetsStart} style={{width:"30%", height: "100%"}}>
                          Let's start!
                     </Button>
                 </div>

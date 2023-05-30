@@ -41,7 +41,7 @@ function Landing(){
                 </div>
                 <div className="new-home-layout" style={{backgroundColor:'black', width:"100%", marginTop:'0%'}}>
                     <div className="new-home-header-search" style={{marginBottom:"0%", marginTop:"0%", display:"flex", flexDirection:"column", alignItems:"center"}}>                    
-                        <h2 className = "new-home-header-title" style={{color:'white',  fontFamily: "Nunito, sans-serif"}} >Ask me anything.. on your data!</h2>
+                        <h2 className = "new-home-header-title" style={{color:'white',  fontFamily: "Nunito, sans-serif"}} >Ask me anything.. about your data!</h2>
                         <ChatInput width={"55%"} />
                     </div>
                 </div>

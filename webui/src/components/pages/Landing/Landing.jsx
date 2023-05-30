@@ -57,44 +57,49 @@ function Landing(){
                     />
                 </div>
                 <div className="home-page-content" style={{width:"80%", alignItems:"center", display:"flex", flexDirection:"column"}}>
+                    <h2 style={{textAlign:"center", fontSize: `max(24px, 3vw)`, marginBottom: '4%'}}>TLDR - who is Mr. Know All?</h2>
                      <div style={{ textAlign:"center", wordWrap:"break-word", color:"black", width:"80%",
                         letterSpacing:"1px", fontSize:`max(20px, 1.5vw)`, fontWeight:"450", marginBottom:"3%" }} >
                         <p>
-                            Mr. Know All allows you to upload your data and store it.
-                            <br></br>
-                            Once uploaded, you can immediately access an AI assistant that can answer your questions -
-                            based on your data. <br/><br/> It's a chatGPT level AI assistant on the most recent data and without the need of training your own model.
+                            Aren't you tired of wasting time, searching for a specific sentence, in a specific line,<br></br> in a specific folder, too many times a day? <br></br> <br></br>
+                            Instead of wasting so much efforts and time, wouldn't you prefer to ask someone a question, and get an answer, based solely on yor data and files? <br></br> <br></br>
+                            This is exactly what Mr. Know All is here for! <br></br>
+                            We know, pretty awesome. <br></br> <br></br>
+                            Mr. Know All allows you to upload your data and store it. <br/><br/>
+                            Once uploaded, you can immediately access an AI assistant that can answer your questions - based on your data. <br/><br/> 
+                            
                         </p>
                     </div>
-                    <h2 style={{textAlign:"center", fontSize: `max(24px, 3vw)`}}>So, How can you use Mr. Know All?</h2>
+                    <h2 style={{textAlign:"center", fontSize: `max(24px, 3vw)`}}>How can you work with Mr. Know All?</h2>
                     <div className="landing-products-holder" style={{ display:"flex", flexDirection:"column", width:"100%", alignItems:"center", marginBottom:"10%", justifyContent:"space-between" }}>
-                        <div >
-                            <Product 
-                                title="Sign up or Sign in "
-                                description=
-                                "To get started, simply sign up, granting us permission to create your personalized private workspace. Within this workspace, you'll have the freedom to securely store all of your important documents. If you already have an account, you can effortlessly sign in to access your workspace. We offer the added convenience of signing in using your Google account or via email, ensuring a seamless experience for you."
-                                imageName="step1_signup"
-                                reverse={false}
-                                 />
-                        </div>
+                        
                         <div>
                             <Product 
                                 title="Upload files or documents"
                                 description="We are excited to introduce a feature that empowers you to effortlessly upload the files you'd like to receive valuable responses on. To take advantage of this functionality, simply navigate to `My Workspace` and conveniently locate the designated upload button. Feel free to upload any files that pique your interest, as these are the very files our system will provide comprehensive answers and insights on."
-                                imageName="step2_upload"
-                                reverse={true} />
+                                imageName="upload_file_land"
+                                reverse={false} />
                         </div>
                         <div>
                             <Product 
                                 title="Ask a question" 
                                 description="After you uploaded your files, you may ask any questions you want. You will be sent to the chat page, and Mr. Know All will give you answers, based on the data which is located in the files you uploaded. you can chat with him, ask further questions, and enjoy. For further technicall details, go to the About page after you sign up or login."
-                                imageName="step3_chat" 
-                                reverse={false} />
+                                imageName="ask_land" 
+                                reverse={true} />
+                        </div>
+                        <div >
+                            <Product 
+                                title="Chat with AI assistant"
+                                description=
+                                "After uploading a file, you can ask questions about it. Once you receive a response to any of your questions, you can ask follow-up questions and engage in a chat with our AI assistant."
+                                imageName="chat_land"
+                                reverse={false}
+                                 />
                         </div>
                     </div>
                 </div>
                 <div style={{ width:"60%", justifyContent:"center", alignItems:"center", display:"flex", marginBottom:"5%" }}>
-                    <Button size="large" shape="round" type="primary" onClick={handleLetsStart} >
+                    <Button size="large" shape="round" type="primary" onClick={handleLetsStart} style={{width:"30%", height: "100%"}}>
                          Let's start!
                     </Button>
                 </div>

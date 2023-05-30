@@ -4,8 +4,7 @@ from typing import List
 from app.models.documents import (Document, DocumentMetaData,
                                   DocumentVectorChunk,
                                   DocumentVectorChunkMetadata,
-                                  VectorContextQuery
-                                  )
+                                  VectorContextQuery)
 from app.models.query import Query, QueryResult
 from app.services.document_proccessing import get_documents_chunks
 from app.services.embeddings import get_embeddings
@@ -148,7 +147,7 @@ class AbstractVectorStorage(ABC):
                 )
             payload.append(
                 DocumentVectorChunk(
-                    vector_id=str(i),
+                    vector_id=str(i)+"@"+doc_id,
                     embedding=embeddings[i],
                     metadata=meta
                 )

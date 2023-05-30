@@ -14,7 +14,8 @@ from typing import List
 
 import pytest
 
-from app.models.documents import DocumentMetaData, DocumentVectorChunk, VectorContextQuery
+from app.models.documents import (DocumentMetaData, DocumentVectorChunk,
+                                  VectorContextQuery)
 from app.models.query import Query
 from app.services.embeddings import get_embeddings
 from app.storage.abstract_vector_storage import AbstractVectorStorage
@@ -108,7 +109,7 @@ async def test_should_get_target_sentence() -> None:
 
         # validates some basic properties
         top_match = matches[0]
-        assert top_match.get('id') == '10' # as it was inserted last
+        assert top_match.get('id') == '10'+"@"+TEST_DOCUMENT_ID # as it was inserted last
         assert top_match.get('metadata').get('document_id') == 'test' # sanity check
         assert top_match.get('metadata').get('original_content') == TARGET_SENTENCE
         # Should be similar!
@@ -160,11 +161,11 @@ async def test_get_vector_context() -> None:
         assert upload_response is not None and upload_response.get("upserted_count") == len(text_chunks)
 
         # Try to query vector number 3 with default windows size of 2.
-        expected_ids =  [str(j) for j in range(1,6) if j != 3]
+        expected_ids =  [str(j)+"@"+TEST_DOCUMENT_ID for j in range(1,6) if j != 3]
         context_query = VectorContextQuery(
             user_id=TEST_USER_ID,
             document_id=TEST_DOCUMENT_ID,
-            vector_id="3"
+            vector_id="3"+"@"+TEST_DOCUMENT_ID
         )
 
         context_response = await pinecone_client.get_context(
@@ -186,7 +187,7 @@ async def test_get_vector_context() -> None:
                     (res.get("metadata").get("original_content") is not None)
                 )
             context = res.get("metadata").get("original_content")
-            assert context == CONTEXT_SENTNCES[int(key)]
+            assert context == CONTEXT_SENTNCES[int(key.split("@")[0])]
     
     except Exception as error:
         print("Error in test: " + str(error))

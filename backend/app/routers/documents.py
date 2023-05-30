@@ -33,9 +33,9 @@ async def get_doc_by_id(doc_id: int) -> Document:
 
 
 @docs_router.delete("/{doc_id}")
-async def delete_doc(doc_id: int, user_id:str) -> dict:
+async def delete_doc(doc_id: str) -> dict:
     try:
-        result = pinecone_client.delete(user_id=user_id, document_id=doc_id)
+        result = await pinecone_client.delete(user_id="test", document_id=doc_id)
         if len(result) == 0:
             return {'status': Status.Ok}
         raise Exception('delete failed')

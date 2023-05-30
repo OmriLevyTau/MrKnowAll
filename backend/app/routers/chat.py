@@ -40,8 +40,8 @@ async def query(query: Query) -> QueryResponse:
 
         for vector_data in top_k_closest_vectors:
             cur_vec_doc_id = vector_data.get('metadata').get('document_id')
-            references.add(str(cur_vec_doc_id))
-            context_query = VectorContextQuery(user_id=user_id, document_id=cur_vec_doc_id,vector_id=vector_data.get('id'))
+            references.add(cur_vec_doc_id)
+            context_query = VectorContextQuery(user_id=user_id, document_id=cur_vec_doc_id, vector_id=vector_data.get('id'))
             context_response = await pinecone_client.get_context(user_id=user_id, context_query=context_query)
 
             vectors = context_response.get("vectors")
@@ -49,7 +49,7 @@ async def query(query: Query) -> QueryResponse:
             for i,key in enumerate(vectors):
                 # vec is a key to dict
                 res = vectors.get(key)
-                vec_id = res.get("id")
+                vec_id = res.get("id").split("@")[0] # TODO: add "int"?
                 context = res.get("metadata").get("original_content")
                 map_vec_id_to_context[vec_id] = context
 

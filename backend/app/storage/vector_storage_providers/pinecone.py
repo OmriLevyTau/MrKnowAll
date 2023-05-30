@@ -95,7 +95,7 @@ class PineconeVectorStorage(AbstractVectorStorage):
 
     async def _query(self, user_id: str, query: Query):
 
-        top = 5
+        top = 3
         if (query.top_k):
             top = query.top_k
         
@@ -119,9 +119,10 @@ class PineconeVectorStorage(AbstractVectorStorage):
         refer superclass for detalis.
         """
 
-        target_vec_id = int(context_query.get_vector_id())
+        target_vec_id = int(context_query.get_vector_id().split("@")[0])
         window_size = context_query.get_context_window()
-        ids_window = [str(i) for i in range(target_vec_id-window_size, target_vec_id+window_size+1)
+        doc_id = context_query.get_document_id()
+        ids_window = [(str(i)+"@"+doc_id) for i in range(target_vec_id-window_size, target_vec_id+window_size+1)
                       if i!=target_vec_id ]
         context_response = self.index.fetch(
             ids=ids_window

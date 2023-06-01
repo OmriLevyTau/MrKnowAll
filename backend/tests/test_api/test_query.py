@@ -69,7 +69,6 @@ async def test_full_query_process():
         path=EXPLORE_LOCAL_FILE
     )
 
-    # upload_response = await pinecone_client.upload(user_id=TEST_USER_ID, document=doc)
     upload_response = client.post(url="/documents", json={
         'path': EXPLORE_LOCAL_FILE,
         'document_metadata': {

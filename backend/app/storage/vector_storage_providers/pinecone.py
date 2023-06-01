@@ -32,6 +32,7 @@ class PineconeVectorStorage(AbstractVectorStorage):
     @property
     def index(self) -> Index:
         return self._index # type: ignore
+    
 
     @staticmethod
     def _get_index():
@@ -59,7 +60,7 @@ class PineconeVectorStorage(AbstractVectorStorage):
             str: document_id if successful, otherwise None
         """
         batch_size = 100
-        upsert_response = None
+        upserted_count = 0
         for i in range(0, len(payload), batch_size):
             objects_to_insert = []
             for j in range(i, min(i+batch_size, len(payload))):
@@ -70,10 +71,13 @@ class PineconeVectorStorage(AbstractVectorStorage):
                         doc_vec_chunk.get("metadata")
                     )
                 objects_to_insert.append(obj)
-            # upsert_response = self.index.upsert(vectors=objects_to_insert, namespace=user_id)
-            upsert_response = self.index.upsert(vectors=objects_to_insert)
+            try:
+                upserted_count += self.index.upsert(vectors=objects_to_insert)["upserted_count"]
+            except Exception as error:
+                print(f"Failed to upsert vectors into pinecone. upserted {upserted_count} out of {len(payload)} vectors")
+                raise
 
-        return upsert_response
+        return {"upserted_count": upserted_count}
 
 
     async def delete(self, user_id: str, document_id: str) -> Dict:
@@ -84,12 +88,17 @@ class PineconeVectorStorage(AbstractVectorStorage):
         Returns:
             Dict: _description_
         """
-        delete_response = self.index.delete(
-            filter={
-                "user_id": {"$eq": user_id},
-                "document_id": {"$eq": document_id}
-            },
-        )
+        try:
+            delete_response = self.index.delete(
+                filter={
+                    "user_id": {"$eq": user_id},
+                    "document_id": {"$eq": document_id}
+                },
+            )
+        except Exception as error:
+            print(f"Failed to delete {document_id} " + str(error))
+            raise
+        
         #TODO: validate which object is delete_response
         return delete_response
 
@@ -99,14 +108,18 @@ class PineconeVectorStorage(AbstractVectorStorage):
         if (query.top_k):
             top = query.top_k
         
-        query_response = self.index.query(
-            vector = query.embedding,
-            top_k = top,
-            filter={
-                "user_id": {"$eq": user_id}
-            },
-            include_metadata=True
-        )
+        try:
+            query_response = self.index.query(
+                vector = query.embedding,
+                top_k = top,
+                filter={
+                    "user_id": {"$eq": user_id}
+                },
+                include_metadata=True
+            )
+        except Exception as error:
+            print("Failed to perform query: " + str(error))
+            raise
         #TODO: assemble QueryResult from query_response
         return query_response
     
@@ -124,9 +137,12 @@ class PineconeVectorStorage(AbstractVectorStorage):
         doc_id = context_query.get_document_id()
         ids_window = [(str(i)+"@"+doc_id) for i in range(target_vec_id-window_size, target_vec_id+window_size+1)
                       if i!=target_vec_id ]
-        context_response = self.index.fetch(
-            ids=ids_window
-        )
+        try:
+            context_response = self.index.fetch(ids=ids_window)
+        except Exception as error:
+            print("Failed to fetch ids: " + str(error))
+            raise
+
         return context_response
     
         

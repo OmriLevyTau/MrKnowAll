@@ -49,7 +49,7 @@ async def query(query: Query) -> QueryResponse:
             for i,key in enumerate(vectors):
                 # vec is a key to dict
                 res = vectors.get(key)
-                vec_id = res.get("id").split("@")[0] # TODO: add "int"?
+                vec_id = res.get("id").split("@")[0]
                 context = res.get("metadata").get("original_content")
                 map_vec_id_to_context[vec_id] = context
 

@@ -32,6 +32,7 @@ class PineconeVectorStorage(AbstractVectorStorage):
     @property
     def index(self) -> Index:
         return self._index # type: ignore
+    
 
     @staticmethod
     def _get_index():
@@ -59,7 +60,7 @@ class PineconeVectorStorage(AbstractVectorStorage):
             str: document_id if successful, otherwise None
         """
         batch_size = 100
-        upsert_response = None
+        upserted_count = 0
         for i in range(0, len(payload), batch_size):
             objects_to_insert = []
             for j in range(i, min(i+batch_size, len(payload))):
@@ -70,10 +71,12 @@ class PineconeVectorStorage(AbstractVectorStorage):
                         doc_vec_chunk.get("metadata")
                     )
                 objects_to_insert.append(obj)
-            # upsert_response = self.index.upsert(vectors=objects_to_insert, namespace=user_id)
-            upsert_response = self.index.upsert(vectors=objects_to_insert)
+            try:
+                upserted_count += self.index.upsert(vectors=objects_to_insert)["upserted_count"]
+            except Exception as error:
+                print("Failed to upsert vectors into pinecone")
 
-        return upsert_response
+        return {"upserted_count": upserted_count}
 
 
     async def delete(self, user_id: str, document_id: str) -> Dict:

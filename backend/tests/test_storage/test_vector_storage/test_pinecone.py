@@ -10,8 +10,9 @@
     - as a convention each vector inserted will have as a metadata:
       {"user_id": "test", "document_id": "test"} (among the others) 
 '''
-from typing import List
+from typing import Generator, List
 
+import numpy as np
 import pytest
 
 from app.models.documents import (DocumentMetaData, DocumentVectorChunk,
@@ -36,51 +37,60 @@ MASKING_SENTENCES = [
     "Traveling to exotic destinations allows for cultural exploration and adventure"
     ]
 
-generic_sentence = "Hi, I will assit you to test your vectorDB and I'm number "
-CONTEXT_SENTNCES = [generic_sentence + str(i) for i in range(10)]
+GENERIC_SENTENCE = "Hi, I will assit you to test your vectorDB and I'm number "
+CONTEXT_SENTNCES = [GENERIC_SENTENCE + str(i) for i in range(10)]
 
 TEST_USER_ID = "test"
 TEST_DOCUMENT_ID = "test"
 TEST_DOCUMENT_METADATA = DocumentMetaData(user_id=TEST_USER_ID, document_id=TEST_DOCUMENT_ID)
 
 
-pinecone_client = PineconeVectorStorage()
+@pytest.fixture
+def pinecone_client() -> Generator[PineconeVectorStorage, None, None]:
+    # Generator[YieldType, SendType, ReturnType]
+    # type of values that can be sent into the generator
+    # generator does not explicitly return any value
+    connection = PineconeVectorStorage()
+    yield connection
 
-def clear_all() -> None:
-    delete_response = pinecone_client.index.delete(
+def clear_all(client) -> None:
+    delete_response = client.index.delete(
         filter={
             "user_id": {"$eq": TEST_USER_ID},
-            "document_id": {"$eq": TEST_DOCUMENT_ID}            
         }
     )
 
-def get_payload(sentences: List[str]) -> List[DocumentVectorChunk]:
+def get_payload(
+        sentences: List[str], 
+        user_id=TEST_USER_ID, 
+        doc_metadata=TEST_DOCUMENT_METADATA
+        ) -> List[DocumentVectorChunk]:
     embeddings = get_embeddings(sentences)
     payload = AbstractVectorStorage.assemble_documents_vector_chunks(
-        user_id=TEST_USER_ID, doc_metadata=TEST_DOCUMENT_METADATA,
+        user_id=user_id, doc_metadata=doc_metadata,
         text_chunks=sentences, embeddings=embeddings
     )
     return payload
 
 
 @pytest.fixture(autouse=True)
-def setup_and_teardown():
+def setup_and_teardown(pinecone_client):
     '''
     Validates that no test data stored in the vector database. 
     '''
     # Will run before each test
     # save number of existing vectors
     # index.describe_index_stats()
-    clear_all()
+    clear_all(pinecone_client)
     # test will run at this point
     yield
     # will run after the test
-    clear_all()
+    clear_all(pinecone_client)
     # assert number of existing vectors.
 
 
 @pytest.mark.asyncio
-async def test_should_get_target_sentence() -> None:
+async def test_should_get_target_sentence(pinecone_client) -> None:
     '''
     in this test one "target sentence" and 10 different
     "masking sentences" are uploaded. This 10 "masking" sentences are 
@@ -121,7 +131,7 @@ async def test_should_get_target_sentence() -> None:
 
 
 @pytest.mark.asyncio
-async def test_should_not_get_similar_sentences() -> None:
+async def test_should_not_get_similar_sentences(pinecone_client) -> None:
     '''
     Similar to the previous test, but this time the target sentence
     is not uploaded. Expectation is that the top match will be 
@@ -152,7 +162,7 @@ async def test_should_not_get_similar_sentences() -> None:
         raise
 
 @pytest.mark.asyncio
-async def test_get_vector_context() -> None:
+async def test_get_vector_context(pinecone_client) -> None:
     text_chunks = CONTEXT_SENTNCES
     payload = get_payload(sentences=text_chunks)
     try:
@@ -192,3 +202,67 @@ async def test_get_vector_context() -> None:
     except Exception as error:
         print("Error in test: " + str(error))
         raise
+
+
+@pytest.mark.asyncio
+async def test_batch_upload(pinecone_client):
+    n = 310
+    text_chunks = [GENERIC_SENTENCE+str(i) for i in range(n)]
+    payload = get_payload(sentences=text_chunks)
+    try:
+        upload_response = await pinecone_client._upload(TEST_USER_ID, payload)
+        assert (upload_response is not None) and (upload_response.get("upserted_count") == n)
+
+        stats = await pinecone_client.get_stats()
+        assert (stats is not None) and (stats["total_vector_count"] == n) 
+
+    except Exception as error:
+        print("Error in test: " + str(error))
+        raise
+
+
+@pytest.mark.asyncio
+async def test_upload_multipile_documnets(pinecone_client):
+    vec_n = 10
+    doc_n = 10
+    text_chunks = [
+        [GENERIC_SENTENCE+str(i) for i in range(vec_n)]
+        for j in range(doc_n)
+    ]
+    documents_metadata = [
+        DocumentMetaData(
+            user_id=TEST_USER_ID, 
+            document_id=TEST_DOCUMENT_ID+"-"+str(i)
+        ) for i in range(doc_n)
+    ]
+
+    payloads = [
+        get_payload(text_chunks[i], 
+                    user_id=TEST_USER_ID, 
+                    doc_metadata=documents_metadata[i]
+        ) for i in range(doc_n)
+    ]
+
+    try:
+        for i in range(doc_n):
+            upload_response = await pinecone_client._upload(TEST_USER_ID, payloads[i])
+            assert (upload_response is not None) and (upload_response.get("upserted_count") == vec_n)
+    except Exception as error:
+        raise
+
+    
+    stats = await pinecone_client.get_stats()
+    assert (stats is not None) and (stats["total_vector_count"] == doc_n*vec_n) 
+
+    # validate there is distiction between documnets
+
+    try:
+        delete_response = await pinecone_client.delete(
+            user_id=TEST_USER_ID, 
+            document_id=documents_metadata[-1].get_document_id()
+        )
+    except Exception as error:
+        raise
+
+    stats = await pinecone_client.get_stats()
+    assert (stats is not None) and (stats["total_vector_count"] == (doc_n-1)*vec_n)

@@ -33,7 +33,8 @@ class Document(BaseModel):
     meanwhile a path
     """
     document_metadata: DocumentMetaData
-    path: str
+    path: Optional[str] = None
+    pdf_encoding: Optional[str] = None
 
     def get_document_metadata(self) -> DocumentMetaData:
         return self.document_metadata

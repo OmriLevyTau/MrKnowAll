@@ -1,13 +1,23 @@
-import { Table, Button, Modal, Upload, name } from "antd";
-import { useContext, useState } from "react";
+import { Table, Modal,  } from "antd";
+import { useContext, useState,} from "react";
 import { DeleteOutlined, FileTextOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { ChatLogContext } from "../../pages/AppContent/ChatContext";
+import { UserContext } from "../../pages/AppContent/AppContext";
+import { uploadDocument, deleteDocument } from "../../../services/Api";
+import GenericModal from "../Modal/GenericModal";
+import DragFile from "./DragFile";
+
 
 function FileTable() {
   const navigate = useNavigate();
-  const [file, setFile] = useState();
-  const {dataSource, setDataSource} = useContext(ChatLogContext);
+  const [pdfFile, setPdfFile] = useState(null);
+  const [fileMetaData, setFileMetaData] = useState(null);
+
+  const { dataSource, setDataSource } = useContext(ChatLogContext);
+  const { user } = useContext(UserContext);
+  const [open, setOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
 
 
   const columns = [
@@ -54,6 +64,8 @@ function FileTable() {
       cancelText: "No",
       okType: "danger",
       onOk: () => {
+        console.log(record)
+        deleteDocument(record.name)
         setDataSource((pre) => {
           return pre.filter((file) => file.name !== record.name);
         });
@@ -61,27 +73,87 @@ function FileTable() {
     });
   };
 
-  const UploadFile = (event) => {
-    const uploadedFile = event.file;
-    const newFile = {
-      name: uploadedFile.name.split(".")[0],
-      size: `${Math.round(uploadedFile.size / 1024)} KB`,
-      dateModified: new Date().toLocaleDateString(),
-    };
-    const isFileExists = dataSource.some((file) => file.name === newFile.name);
-    if (!isFileExists) {
-      setDataSource((pre) => [...pre, newFile]);
+
+  const onCancel = () => {
+    if (!loading){
+      setOpen(false);
+      setLoading(false);
+      setPdfFile(null);
+      setFileMetaData(null);
     }
-  };
+    
+  }
+
+  const onUpload = async () => {
+
+    setLoading(true);
+    try {
+      const newFile = {
+        name: fileMetaData.name.split(".")[0],
+        size: `${Math.round(fileMetaData.size / 1024)} KB`,
+        dateModified: new Date().toLocaleDateString(),
+      };
+  
+      let data = {
+        "document_metadata": {
+            "user_id": "test",
+            "document_id": newFile.name
+        },
+        "pdf_encoding": pdfFile
+      }
+      let uploadDocResponse = await uploadDocument(data)
+      const isFileExists = dataSource.some((file) => file.name === newFile.name);
+      if (!isFileExists) {
+        setDataSource((pre) => [...pre, newFile]);
+      }
+    }
+    finally{
+      setOpen(false);
+      setPdfFile(null);
+      setFileMetaData(null);
+      setLoading(false);
+    }
+  }
+
+
+  const content = 
+    <div>
+      <DragFile 
+        onCancel={onCancel}
+        onSubmit={onUpload}
+        setFile={setPdfFile}
+        setFileMetaData={setFileMetaData}
+        dataSource={dataSource}
+        setDataSource={setDataSource}
+        loading={loading}
+      />
+    </div>
 
   return (
-    <div style={{display: "flex", flexDirection:"column", width:"97%", alignItems:"center"}} >
-        <Upload name="File" onChange={UploadFile} fileList={null} >
-          <Button type="primary">
-            Upload File
-          </Button>
-        </Upload>
-        <Table columns={columns} dataSource={dataSource} style={{paddingTop:"3%", width:"100%"}} rowKey="name" ></Table>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        width: "97%",
+        alignItems: "center",
+      }}
+    >
+      <GenericModal
+            open={open} 
+            setOpen={setOpen}
+            loading={loading}
+            setLoading={setLoading} 
+            onCancel={null}
+            modalButtonText="upload"
+            modalTitle={"Upload File"}
+            modalContent={content}            
+      />
+      <Table
+        columns={columns}
+        dataSource={dataSource}
+        style={{ paddingTop: "3%", width: "100%" }}
+        rowKey="name"
+      ></Table>
     </div>
   );
 }

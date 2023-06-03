@@ -4,9 +4,12 @@ import { Button, Modal } from "antd";
 function GenericModal(props){
     
     const {
-        open, setOpen, loading, setLoading, 
-        onCancel, modalButtonText, modalTitle,
-        modalContent } = props;
+        open, setOpen,
+        loading, setLoading,
+        onCancel,
+        modalButtonText, modalTitle,
+        modalContent
+    } = props;
 
     const showModal = () => {setOpen(true)}
     const handleCancel = () => {onCancel != null ? onCancel() : setOpen(false)}

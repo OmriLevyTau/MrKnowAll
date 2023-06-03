@@ -81,15 +81,6 @@ function FileTable() {
   };
 
   const UploadFile = (event) => {
-    if (event.file.status !== "uploading") {
-      let reader = new FileReader();
-      reader.onload = (e) => {
-        setPdfFile(e.target.result);
-      };
-      reader.readAsDataURL(event.file.originFileObj);
-    } else {
-      console.log("Error");
-    }
     const uploadedFile = event.file;
     const newFile = {
       name: uploadedFile.name.split(".")[0],
@@ -99,6 +90,15 @@ function FileTable() {
     const isFileExists = dataSource.some((file) => file.name === newFile.name);
     if (!isFileExists) {
       setDataSource((pre) => [...pre, newFile]);
+    }
+    if (event.file.status !== "uploading") {
+      let reader = new FileReader();
+      reader.onload = (e) => {
+        setPdfFile(e.target.result);
+      };
+      reader.readAsDataURL(event.file.originFileObj);
+    } else {
+      console.log("Error");
     }
   };
 

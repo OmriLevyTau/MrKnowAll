@@ -5,14 +5,14 @@ function HomeCard(props){
     const {title, content, icon} = props;
 
     return(
-            <div class="service-box">
-                <div class="service-icon yellow" style={{marginLeft:"auto", marginRight:"auto"}}>
-                    <div class="front-content">
-                        <i class={icon}></i>
+            <div className="service-box">
+                <div className="service-icon yellow" style={{marginLeft:"auto", marginRight:"auto"}}>
+                    <div className="front-content">
+                        <i className={icon}></i>
                         <h3>{title}</h3>
                     </div>
                 </div>
-                <div class="service-content" style={{marginLeft:"auto", marginRight:"auto"}}>
+                <div className="service-content" style={{marginLeft:"auto", marginRight:"auto"}}>
                     <h3>{title}</h3>
                     <p>{content}</p>
                 </div>

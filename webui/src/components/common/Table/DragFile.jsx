@@ -5,7 +5,7 @@ import Dragger from "antd/es/upload/Dragger";
 
 function DragFile(props) {
 
-    const {onCancel, onSubmit, setFile, setFileMetaData, dataSource, setDataSource, loading} = props;
+    const {onCancel, onSubmit, setFile, setFileMetaData, loading} = props;
 
     const onChange = (event) => {
         if (event.file.status !== "uploading") {
@@ -15,8 +15,6 @@ function DragFile(props) {
             setFileMetaData(event.file)
           };
           reader.readAsDataURL(event.file.originFileObj);
-        } else {
-          console.log("Error");
         }
       };
     

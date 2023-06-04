@@ -22,7 +22,6 @@ export const uploadDocument = async (data) => {
 }
 
 export const deleteDocument = async (doc_id) => {
-    console.log(doc_id);
     let config = {
         method: 'delete',
         maxBodyLength: Infinity,

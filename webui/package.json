@@ -29,8 +29,10 @@
     "react-google-button": "^0.7.2",
     "react-router-dom": "^6.10.0",
     "react-scripts": "5.0.1",
+    "simple-zustand-devtools": "^1.1.0",
     "styled-components": "^5.3.10",
-    "web-vitals": "^3.3.1"
+    "web-vitals": "^3.3.1",
+    "zustand": "^4.3.7"
   },
   "scripts": {
     "start": "react-scripts start",

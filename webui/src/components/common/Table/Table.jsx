@@ -2,11 +2,11 @@ import { Table, Modal,  } from "antd";
 import { useContext, useState,} from "react";
 import { DeleteOutlined, FileTextOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { ChatLogContext } from "../../pages/AppContent/ChatContext";
 import { UserContext } from "../../pages/AppContent/AppContext";
 import { uploadDocument, deleteDocument } from "../../../services/Api";
 import GenericModal from "../Modal/GenericModal";
 import DragFile from "./DragFile";
+import useFileStore from "./store";
 
 
 function FileTable() {
@@ -14,10 +14,11 @@ function FileTable() {
   const [pdfFile, setPdfFile] = useState(null);
   const [fileMetaData, setFileMetaData] = useState(null);
 
-  const { dataSource, setDataSource } = useContext(ChatLogContext);
   const { user } = useContext(UserContext);
-  const [open, setOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { files, addFileToStore, removeFileFromStore } = useFileStore();
+
 
 
   const columns = [
@@ -64,11 +65,9 @@ function FileTable() {
       cancelText: "No",
       okType: "danger",
       onOk: () => {
-        console.log(record)
-        deleteDocument(record.name)
-        setDataSource((pre) => {
-          return pre.filter((file) => file.name !== record.name);
-        });
+
+        deleteDocument(record.name); // backend
+        removeFileFromStore(record.name);
       },
     });
   };
@@ -101,11 +100,8 @@ function FileTable() {
         },
         "pdf_encoding": pdfFile
       }
-      let uploadDocResponse = await uploadDocument(data)
-      const isFileExists = dataSource.some((file) => file.name === newFile.name);
-      if (!isFileExists) {
-        setDataSource((pre) => [...pre, newFile]);
-      }
+      let uploadDocResponse = await uploadDocument(data); // backend
+      addFileToStore(newFile);
     }
     finally{
       setOpen(false);
@@ -123,8 +119,6 @@ function FileTable() {
         onSubmit={onUpload}
         setFile={setPdfFile}
         setFileMetaData={setFileMetaData}
-        dataSource={dataSource}
-        setDataSource={setDataSource}
         loading={loading}
       />
     </div>
@@ -150,7 +144,7 @@ function FileTable() {
       />
       <Table
         columns={columns}
-        dataSource={dataSource}
+        dataSource={files}
         style={{ paddingTop: "3%", width: "100%" }}
         rowKey="name"
       ></Table>

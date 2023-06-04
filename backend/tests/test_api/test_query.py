@@ -44,8 +44,7 @@ def setup_and_teardown():
 
 @pytest.mark.asyncio
 async def test_openai_integration():
-    print('hello')
-    query_response = client.post(url="/query", json={
+    query_response = client.post(url="/api/v0/query", json={
         "user_id": 1,
         "query_id": 2,
         "query_content": "how are you today?"
@@ -69,7 +68,7 @@ async def test_full_query_process():
         path=EXPLORE_LOCAL_FILE
     )
 
-    upload_response = client.post(url="/documents", json={
+    upload_response = client.post(url="/api/v0/documents", json={
         'path': EXPLORE_LOCAL_FILE,
         'document_metadata': {
             'user_id': TEST_USER_ID,

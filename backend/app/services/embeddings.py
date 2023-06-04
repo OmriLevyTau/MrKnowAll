@@ -1,8 +1,6 @@
-import logging
 from typing import List
 
 from sentence_transformers import SentenceTransformer
-from torch import Tensor
 
 MAX_SEQ = 128
 """
@@ -13,7 +11,6 @@ MAX_SEQ = 128
 model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 model.max_seq_length = 128
 
-logger = logging.getLogger(__name__)
 
 def get_embeddings(sentences: List[str]) -> List[List[float]]:
     embeddings = model.encode(sentences)

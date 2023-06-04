@@ -1,3 +1,8 @@
+'''
+    An abstract class defining basic functionallity each
+    vector database provider should implement
+'''
+
 from abc import ABC, abstractmethod
 from typing import List
 
@@ -5,18 +10,15 @@ from app.models.documents import (Document, DocumentMetaData,
                                   DocumentVectorChunk,
                                   DocumentVectorChunkMetadata,
                                   VectorContextQuery)
-from app.models.query import Query, QueryResult
+from app.models.query import Query
 from app.services.document_proccessing import get_documents_chunks
 from app.services.embeddings import get_embeddings
 
-'''
-An abstract class defining basic functionallity each
-vector database provider should implement
-
-'''
-
 
 class AbstractVectorStorage(ABC):
+    """
+    This class defines basic functionallity required from an Vector Storage.
+    """
 
     async def upload(self, user_id: str, document: Document) -> str:
         """
@@ -76,7 +78,7 @@ class AbstractVectorStorage(ABC):
             _type_: _description_
         """
         if not AbstractVectorStorage._validate_query(query):
-            raise ValueError(f"Query must be non-empty")
+            raise ValueError("Query must be non-empty")
 
         query_embedding = get_embeddings([query.get_query_content()])[0]
         query.embedding = query_embedding

@@ -22,22 +22,28 @@ function DragFile(props) {
     
 
     return (
-        <div className="drag-file">
-        <Space direction="vertical">
-            <p>currently, only pdf files are accepted.</p>
-            {loading ? <Spin top="Loading" size="large" /> :
-             <Dragger name="File" onChange={onChange} accept=".pdf">
-                <p><InboxOutlined /></p>
-                <p>Click here or drag</p>
-            </Dragger>}
-            <div>
-            <Space>
-                <Button key="cancel" onClick={onCancel} disabled={loading} >Cancel</Button>
-                <Button key="submit" type="primary" onClick={onSubmit} disabled={loading} >Upload</Button>
-            </Space>
-            </div>
-        </Space>
+    <div className="drag-file" style={{ display: "flex", flexDirection: "column" }}>
+      <Space direction="vertical" style={{ width: "100%" }}>
+        <p>currently, only pdf files are accepted.</p>
+        <div className="dragger-holder" >
+          {loading ? (
+            <Spin top="Loading" size="large" style={{ width: "100%", display: "flex", justifyContent:"center" }} />
+          ) : (
+            <Dragger name="File" onChange={onChange} accept=".pdf" style={{ width: "100%", display: "flex" }} >
+              <p><InboxOutlined /></p>
+              <p>Click here or drag</p>
+            </Dragger>
+          )}
         </div>
+        <div className="dragger-buttons" style={{ width: "100%", display: "flex", justifyContent: "flex-end" }}>
+          <Space>
+            <Button key="cancel" onClick={onCancel} disabled={loading}>Cancel</Button>
+            <Button key="submit" type="primary" onClick={onSubmit} disabled={loading}>Upload</Button>
+          </Space>
+        </div>
+      </Space>
+    </div>
+
     )
 }
 

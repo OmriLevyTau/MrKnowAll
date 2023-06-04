@@ -38,7 +38,7 @@ function MyWorkspace() {
               <h1 style={{textAlign:"center" ,  fontFamily:"Nunito, sans-serif" , width:"97%", fontSize:"200%", fontWeight:800, marginBottom:"1%"}}>my workspace</h1>
             </div>
           
-            <div style={{display:"flex", position:"relative"}}>
+            <div style={{display:"flex", position:"relative", marginTop:"1.5%"}}>
               <FileTable></FileTable>
             </div>
           </div>

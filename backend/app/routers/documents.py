@@ -1,11 +1,9 @@
-import datetime as dt
-from typing import List
 
 from fastapi import APIRouter
 
 from app.models.api_models import (GetAllDocumentsMetadataResponse, Status,
                                    UploadDocumentResponse)
-from app.models.documents import Document, DocumentMetaData
+from app.models.documents import Document
 from app.storage.vector_storage_providers.pinecone import PineconeVectorStorage
 
 docs_router = APIRouter(
@@ -48,7 +46,7 @@ async def upload_doc(doc: Document) -> UploadDocumentResponse:
     try:
         upload_response = await pinecone_client.upload(user_id=user_id, document=doc)
         return UploadDocumentResponse(status=Status.Ok, doc_metadata=doc.get_document_metadata(), uploaded_vectors_num=upload_response.get("upserted_count"))
-    except Exception as e:
+    except Exception:
         return UploadDocumentResponse(status=Status.Failed, doc_metadata=doc.get_document_metadata(), uploaded_vectors_num=0)
 
 @docs_router.get("/{doc_id}")

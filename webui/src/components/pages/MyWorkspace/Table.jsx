@@ -4,10 +4,9 @@ import { DeleteOutlined, FileTextOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../pages/AppContent/AppContext";
 import { uploadDocument, deleteDocument } from "../../../services/Api";
-import GenericModal from "../Modal/GenericModal";
 import DragFile from "./DragFile";
 import useFileStore from "./store";
-
+import GenericModal from "../../common/Modal/GenericModal"
 
 function FileTable() {
   const navigate = useNavigate();
@@ -20,6 +19,16 @@ function FileTable() {
   const { files, addFileToStore, removeFileFromStore } = useFileStore();
 
 
+  // Helpers and configs
+  // ======================================================
+  const onCancel = () => {
+    if (!loading){
+      setOpen(false);
+      setLoading(false);
+      setPdfFile(null);
+      setFileMetaData(null);
+    }    
+  }
 
   const columns = [
     {
@@ -47,7 +56,7 @@ function FileTable() {
       render: (record) => {
         return (
           <>
-            <DeleteOutlined onClick={() => removeFile(record)} />
+            <DeleteOutlined onClick={() => onDeleteFile(record)} />
             <FileTextOutlined
               style={{ color: "black", marginLeft: 10 }}
               onClick={() => navigate("/doc-view/" + record.name)}
@@ -58,14 +67,15 @@ function FileTable() {
     },
   ];
 
-  const removeFile = (record) => {
+  // Delete a File
+  // ======================================================
+  const onDeleteFile = (record) => {
     Modal.confirm({
       title: "Are you sure you want to delete this file?",
       okText: "yes",
       cancelText: "No",
       okType: "danger",
       onOk: () => {
-
         deleteDocument(record.name); // backend
         removeFileFromStore(record.name);
       },
@@ -73,18 +83,10 @@ function FileTable() {
   };
 
 
-  const onCancel = () => {
-    if (!loading){
-      setOpen(false);
-      setLoading(false);
-      setPdfFile(null);
-      setFileMetaData(null);
-    }
-    
-  }
+  // Upload a File
+  // ======================================================
 
-  const onUpload = async () => {
-
+  const onUploadFile = async () => {
     setLoading(true);
     try {
       const newFile = {
@@ -93,15 +95,25 @@ function FileTable() {
         dateModified: new Date().toLocaleDateString(),
       };
   
-      let data = {
+      let filePayload = {
         "document_metadata": {
             "user_id": "test",
             "document_id": newFile.name
         },
         "pdf_encoding": pdfFile
       }
-      let uploadDocResponse = await uploadDocument(data); // backend
-      addFileToStore(newFile);
+
+      let uploadDocResponse = await uploadDocument(filePayload); // backend
+
+    // check if error occured when communicating with the backend
+    if (uploadDocResponse.status!==200 && uploadDocResponse.status!==204){
+      alert("An error occured while trying uploading the file. Please try again.");
+      return; // finally will exectue of course.
+    }
+
+    // Otherwise, it was successfull. Add the file to the table.
+    addFileToStore(newFile);
+
     }
     finally{
       setOpen(false);
@@ -116,7 +128,7 @@ function FileTable() {
     <div>
       <DragFile 
         onCancel={onCancel}
-        onSubmit={onUpload}
+        onSubmit={onUploadFile}
         setFile={setPdfFile}
         setFileMetaData={setFileMetaData}
         loading={loading}

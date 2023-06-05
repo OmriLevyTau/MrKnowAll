@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import SideMenu from "../../common/Menu/SideMenu";
-import FileTable from "../../common/Table/Table";
+import FileTable from "./Table";
 import { UserContext } from "../AppContent/AppContext";
 import ChatInput from "../Chat/ChatInput";
 

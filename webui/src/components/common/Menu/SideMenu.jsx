@@ -16,12 +16,9 @@ function SideMenu(){
         e.target.style.color = "#e1b2ba";
         setTimeout(() => {
             e.target.style.color = "white";
-          }, 1500);
+          }, 10);
     };
     
-    
-    
-        
 
     return (
         <div 

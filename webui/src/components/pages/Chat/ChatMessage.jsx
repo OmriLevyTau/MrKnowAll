@@ -1,7 +1,21 @@
 import { Avatar, Card } from "antd";
 
+ 
+
+ /**
+  * content: {
+  *   "message": "message goes here" (not null), 
+  *   "ref": null | [ref1,...], 
+  *   "metadata": null | {
+  *     "query_content": data.query_content, 
+  *     "context": data.context 
+  *   }
+  * }
+  */
+
 function ChatMessage(props) {
   const { chatgpt, content } = props;
+  
 
   const avatar = chatgpt ? "1" : "2";
   const back = chatgpt ? "#FDF1F3" : "white";
@@ -23,8 +37,10 @@ function ChatMessage(props) {
       <div style={{width:'25px', marginRight: '20px'}}>
         <Avatar src={"https://xsgames.co/randomusers/avatar.php?g=pixel&key="+avatar}  />
       </div>
-      <div style={{ display:"flex", flexDirection:"row", overflowWrap: "anywhere" , fontFamily:'sans-serif'}} >
-        {content}
+      <div style={{ display:"flex", flexDirection:"column", overflowWrap: "anywhere" , fontFamily:'sans-serif'}} >
+        <p>{content.message}</p>
+        <br/>
+        {chatgpt && content.ref ? "Based-on: " + content.ref : null}        
       </div>
     </div>
   </Card>

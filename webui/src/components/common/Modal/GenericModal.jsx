@@ -4,9 +4,12 @@ import { Button, Modal } from "antd";
 function GenericModal(props){
     
     const {
-        open, setOpen, loading, setLoading, 
-        onCancel, modalButtonText, modalTitle,
-        modalContent } = props;
+        open, setOpen,
+        loading, setLoading,
+        onCancel,
+        modalButtonText, modalTitle,
+        modalContent
+    } = props;
 
     const showModal = () => {setOpen(true)}
     const handleCancel = () => {onCancel != null ? onCancel() : setOpen(false)}
@@ -15,11 +18,7 @@ function GenericModal(props){
         <div>
             {
                 modalButtonText!=null ? 
-                <Button variant="contained" onClick={showModal} footer={null} style={{
-                    width:85,
-                    height:40,
-                    backgroundColor: "#EEBC1D"
-                }}>
+                <Button type="primary" onClick={showModal} footer={null} size="large" style={{width:"100%"}}>
                     {modalButtonText}
                 </Button> : null
             }

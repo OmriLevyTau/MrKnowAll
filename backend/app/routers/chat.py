@@ -10,7 +10,7 @@ from app.services.openAIAPI import OpenAIAPI
 from app.storage.abstract_vector_storage import AbstractVectorStorage
 from app.storage.vector_storage_providers.pinecone import PineconeVectorStorage
 
-chat_router = APIRouter()
+chat_router = APIRouter(prefix="/api/v0")
 openai_api = OpenAIAPI(api_key=OPENAI_API_KEY)
 pinecone_client = PineconeVectorStorage()
 

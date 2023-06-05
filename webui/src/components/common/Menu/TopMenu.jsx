@@ -2,8 +2,6 @@ import { Button, Menu, Image } from "antd";
 import { useNavigate } from "react-router-dom";
 import { pages } from "./MenuUtils";
 import { useContext, useState } from "react";
-import { schema, uischema } from "../../resources/utils";
-import Form from "../Form/Form";
 import { UserContext } from "../../pages/AppContent/AppContext";
 import logo from "../../../images/hat.png"
 
@@ -36,17 +34,6 @@ function TopMenu(){
 
 
     const onCancel = () => {setOpen(false)};
-
-    const form = <>
-        <Form 
-            loading={loading}
-            setLoading={setLoading}
-            onSubmit={handleSubmit}
-            onCancel={onCancel}
-            schema={schema}
-            uischema={uischema}        
-        />
-    </>
 
     return (
         <div style={{ display:'flex', flexDirection:'row',  alignItems: 'center' , padding: "2px", justifyContent:"space-between", marginRight:"20px", }}>

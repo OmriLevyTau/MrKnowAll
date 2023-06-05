@@ -16,7 +16,7 @@ class OpenAIAPI:
         data = {
             "model": "gpt-3.5-turbo",
             'messages': [{'role': 'user', 'content': query.query_content}],
-            "temperature": 0.9,
+            "temperature": 1,
         }
 
         response = requests.post(self.endpoint, headers=headers, json=data)

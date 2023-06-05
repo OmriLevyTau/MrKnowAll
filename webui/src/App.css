@@ -141,9 +141,9 @@ Home
 }
 
 
-.side-menu:hover{
+/* .side-menu:hover{
   background-color:"#EEBC1D" !important
-}
+} */
 
 
 
@@ -201,10 +201,9 @@ Menu
   border-bottom: none !important;
 }
 
-.ant-menu-item:hover::after {
+/* .ant-menu-item:hover::after {
   border-color: #EE6983 !important;
-  /* border-bottom: none !important; */
-}
+} */
 
 
 

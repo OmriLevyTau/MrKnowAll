@@ -61,13 +61,12 @@ function FileTable() {
         console.log("delete file");
         console.log("file name is: ", record.name);
         axios
-          .delete("http://localhost:8000/delete", {
+          .delete("http://localhost:8000/documents/" + record.name, {
             data: {
-              file_name: record.name,
-              user_id: user,
+              user_id: user.email,
             },
           })
-          .then((response) => {
+          .then(() => {
             setDataSource((pre) => {
               return pre.filter((file) => file.name != record.name);
             });

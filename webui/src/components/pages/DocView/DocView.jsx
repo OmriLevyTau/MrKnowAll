@@ -15,7 +15,7 @@ function DocView() {
     async function fetchFile() {
       try {
         const response = await axios.get(
-          `http://localhost:8000/files/${user.email}/${fileName}`,
+          `http://localhost:8000/documents/${user.email}/${fileName}`,
           {
             responseType: "blob",
           }

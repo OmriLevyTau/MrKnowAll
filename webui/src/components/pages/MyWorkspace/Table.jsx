@@ -76,7 +76,7 @@ function FileTable() {
       cancelText: "No",
       okType: "danger",
       onOk: () => {
-        deleteDocument(record.name); // backend
+        deleteDocument(user.email, record.name); // backend
         removeFileFromStore(record.name);
       },
     });
@@ -97,7 +97,7 @@ function FileTable() {
   
       let filePayload = {
         "document_metadata": {
-            "user_id": "test",
+            "user_id": user.email,
             "document_id": newFile.name
         },
         "pdf_encoding": pdfFile

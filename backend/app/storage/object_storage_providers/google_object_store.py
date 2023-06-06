@@ -79,8 +79,7 @@ def getFileContent(user_name: str, file_name: str):
 
 
 def convertDocToPdf(doc: Document, file_name: str) -> str:
-    prefix = 'data:application/pdf;base64,'
-    file_string = doc.pdf_encoding[len(prefix):]
+    file_string = doc.pdf_encoding
     path = f'./tmp_files/{file_name}.pdf'
 
     with open(path, 'wb') as pdfFile:

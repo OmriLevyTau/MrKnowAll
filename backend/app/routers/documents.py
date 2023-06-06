@@ -1,13 +1,14 @@
+import os
+
 from fastapi import APIRouter, Response
 from fastapi.responses import StreamingResponse
-import os
 
 from app.models.api_models import (GetAllDocumentsMetadataResponse, Status,
                                    UploadDocumentResponse)
 from app.models.documents import Document
-from app.storage.vector_storage_providers.pinecone import PineconeVectorStorage
 from app.storage.object_storage_providers.google_object_store import (
-    deleteFile, uploadFile, convertDocToPdf, getFileContent, getFileList)
+    convertDocToPdf, deleteFile, getFileContent, getFileList, uploadFile)
+from app.storage.vector_storage_providers.pinecone import PineconeVectorStorage
 
 docs_router = APIRouter(
     prefix="/api/v0/documents"

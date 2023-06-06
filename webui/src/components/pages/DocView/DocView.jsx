@@ -4,6 +4,7 @@ import backArrow from "../../../images/back-arrow.png";
 import axios from "axios";
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../AppContent/AppContext";
+import { getDocById } from "../../../services/Api";
 
 function DocView() {
   const { fileName } = useParams();
@@ -14,13 +15,8 @@ function DocView() {
   useEffect(() => {
     async function fetchFile() {
       try {
-        const response = await axios.get(
-          `http://localhost:8000/documents/${user.email}/${fileName}`,
-          {
-            responseType: "blob",
-          }
-        );
-
+        const response = await getDocById(user.email, fileName)
+        console.log(response)
         // Create a Blob URL for the file content
         const blobUrl = URL.createObjectURL(response.data);
         setFileContent(blobUrl);

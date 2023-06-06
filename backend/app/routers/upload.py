@@ -6,10 +6,11 @@ import os
 
 upload_router = APIRouter()
 
+
 @upload_router.post("/upload")
 async def upload_file(body: dict):
     # Call the uploadFile function with the provided user name and uploaded file path
-    
+
     # generate a UUID and write it down to a specific location!
     # print(body)
     prefix = 'data:application/pdf;base64,'
@@ -17,10 +18,10 @@ async def upload_file(body: dict):
     # print(file_string)
     user_name = body['user_id']['email']
     file_name = body['file_name']
-    
+
     with open(f'./tmp_files/{file_name}.pdf', 'wb') as pdfFile:
         pdfFile.write(base64.b64decode(file_string))
-    
+
     print("user name type is:", type(user_name))
     print("user_name: ", user_name)
     uploadFile(user_name, f'.//tmp_files//{file_name}.pdf', file_name)
@@ -36,4 +37,4 @@ async def delete_file(body: dict):
     print("file_name is: ", file_name)
     # Call the deleteFile function with the provided user name and file name
     deleteFile(user_name, file_name)
-    return {"message": "File deleted successfully"}
+    return {"status": "ok", "message": "File deleted successfully"}

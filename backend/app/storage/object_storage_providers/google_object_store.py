@@ -46,6 +46,7 @@ def getFileList(user_name: str) -> list:
 
     return fileList
 
+
 def getFileContent(user_name: str, file_name: str):
     # Get the bucket
     bucket_name = "mr-know-all"
@@ -53,8 +54,6 @@ def getFileContent(user_name: str, file_name: str):
 
     # Specify the file path within the user's folder
     file_path = f"{user_name}/{file_name}"
-
-    # Get the blob (file) within the bucket
     blob = bucket.blob(file_path)
 
     # Download the file content as bytes

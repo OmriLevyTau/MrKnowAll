@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.responses import StreamingResponse
 
 from app.routers.chat import chat_router
 from app.routers.documents import docs_router
@@ -41,11 +42,13 @@ async def get_file(user_name: str, file_name: str, response: Response):
     # Retrieve the file content from GCS
     file_content = getFileContent(user_name, file_name)
 
-    # Set the appropriate content type for your file
-    response.headers["Content-Type"] = "application/pdf"  # Adjust as needed
+    if file_content is None:
+        return Response(status_code=404)
 
-    # Set the file content as the response body
-    response.body = file_content
+    content_type = "application/pdf"  # Adjust as needed
 
-    # Return the response
-    return response
+    # Stream the file content as the response body
+    return StreamingResponse(
+        iter([file_content]),
+        media_type=content_type,
+        headers={"Content-Disposition": f"attachment; filename={file_name}.pdf"},)

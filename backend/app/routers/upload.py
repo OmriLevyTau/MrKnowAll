@@ -33,8 +33,6 @@ async def upload_file(body: dict):
 async def delete_file(body: dict):
     user_name = body['user_id']['email']
     file_name = body['file_name']
-    print("user name is: ", user_name)
-    print("file_name is: ", file_name)
     # Call the deleteFile function with the provided user name and file name
     deleteFile(user_name, file_name)
     return {"status": "ok", "message": "File deleted successfully"}

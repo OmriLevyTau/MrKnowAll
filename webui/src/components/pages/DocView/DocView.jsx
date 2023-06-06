@@ -14,31 +14,23 @@ function DocView() {
   useEffect(() => {
     async function fetchFile() {
       try {
-        const response = await axios.get(`/files/${fileName}/${user.email}`, {
-          responseType: "blob",
-        });
+        const response = await axios.get(
+          `http://localhost:8000/files/${user.email}/${fileName}`,
+          {
+            responseType: "blob",
+          }
+        );
 
         // Create a Blob URL for the file content
-        const blobUrl = URL.createObjectURL(new Blob([response.data]));
+        const blobUrl = URL.createObjectURL(response.data);
         setFileContent(blobUrl);
       } catch (error) {
         alert("File does not exist! " + error.message);
-        // Handle error or redirect as needed
       }
     }
 
     fetchFile();
   }, [fileName]);
-
-  /*
-  let file = null;
-  try {
-    file = require("./" + fileName + ".pdf");
-  } catch (e) {
-    alert("File does not exist! " + e.message);
-    return <Navigate to="/my-workspace" replace={true} />;
-  }
-  */
 
   return (
     <div className="doc-view" style={{ overflow: "hidden" }}>

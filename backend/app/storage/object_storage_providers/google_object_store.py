@@ -49,6 +49,7 @@ def getFileList(user_name: str) -> list:
         blobs = bucket.list_blobs(prefix=str_folder_name_on_gcs)
     except Exception as e:
         raise e
+
     fileList = []
     for blob in blobs:
         doc = DocumentMetaData(user_id=user_name, document_id=blob.name.rpartition('/')[-1],
@@ -59,18 +60,22 @@ def getFileList(user_name: str) -> list:
 
 
 def getFileContent(user_name: str, file_name: str):
-    # Get the bucket
-    bucket_name = "mr-know-all"
-    bucket = client.get_bucket(bucket_name)
+    try:
+        # Get the bucket
+        bucket_name = "mr-know-all"
+        bucket = client.get_bucket(bucket_name)
 
-    # Specify the file path within the user's folder
-    file_path = f"{user_name}/{file_name}"
-    blob = bucket.blob(file_path)
+        # Specify the file path within the user's folder
+        file_path = f"{user_name}/{file_name}"
+        blob = bucket.blob(file_path)
 
-    # Download the file content as bytes
-    file_content = blob.download_as_bytes()
+        # Download the file content as bytes
+        file_content = blob.download_as_bytes()
 
-    return file_content
+        return file_content
+
+    except Exception as e:
+        raise e
 
 
 def convertDocToPdf(doc: Document, file_name: str) -> str:

@@ -56,7 +56,6 @@ async def get_doc(user_id: str, doc_id: str):
 
 @docs_router.delete("/{doc_id}")
 async def delete_doc(doc_id: str, body: dict) -> dict:
-    # Call the deleteFile function with the provided user name and file name
-    print(body)
+    # Call the deleteFile function with the provided user name and file name\
     deleteFile(body["user_id"], doc_id)
     return {"status": "ok", "message": "File deleted successfully"}

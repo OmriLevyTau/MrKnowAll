@@ -32,7 +32,7 @@ async def welcome() -> dict:
     }
 
 
-@app.get("/files/f{user_name}")
+@app.get("/files/{user_name}")
 async def filesByUser(user_name: str) -> list:
     return getFileList(user_name)
 

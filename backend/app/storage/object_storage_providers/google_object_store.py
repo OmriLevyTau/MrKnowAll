@@ -60,3 +60,7 @@ def getFileContent(user_name: str, file_name: str):
     file_content = blob.download_as_bytes()
 
     return file_content
+
+
+lst = getFileList("test1")
+print(lst)

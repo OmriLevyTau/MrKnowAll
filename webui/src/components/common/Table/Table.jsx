@@ -12,6 +12,7 @@ function FileTable() {
   const [pdfFile, setPdfFile] = useState();
   const { dataSource, setDataSource } = useContext(ChatLogContext);
   const { user } = useContext(UserContext);
+  const [uploadedFileProperties, setUploadedFileProperties] = useState({});
 
   const columns = [
     {
@@ -58,20 +59,18 @@ function FileTable() {
       okType: "danger",
       onOk: () => {
         console.log("delete file");
+        console.log("file name is: ", record.name);
         axios
           .delete("http://localhost:8000/delete", {
             data: {
-              file_name: "hello",
+              file_name: record.name,
               user_id: user,
             },
           })
           .then((response) => {
-            console.log("Response:", response.data);
-            if (response["status"] === "ok") {
-              setDataSource((pre) => {
-                pre.filter((file) => file.name !== record.name);
-              });
-            }
+            setDataSource((pre) => {
+              pre.filter((file) => file.name != record.name);
+            });
           })
           .catch((error) => {
             console.error("Error:", error);
@@ -87,14 +86,11 @@ function FileTable() {
       size: `${Math.round(uploadedFile.size / 1024)} KB`,
       dateModified: new Date().toLocaleDateString(),
     };
-    const isFileExists = dataSource.some((file) => file.name === newFile.name);
-    if (!isFileExists) {
-      setDataSource((pre) => [...pre, newFile]);
-    }
     if (event.file.status !== "uploading") {
       let reader = new FileReader();
       reader.onload = (e) => {
         setPdfFile(e.target.result);
+        setUploadedFileProperties(newFile);
       };
       reader.readAsDataURL(event.file.originFileObj);
     } else {
@@ -108,10 +104,15 @@ function FileTable() {
       .post("http://localhost:8000/upload", {
         user_id: user,
         file: pdfFile,
-        file_name: "hello",
+        file_name: uploadedFileProperties.name,
       })
       .then((response) => {
-        console.log("Response:", response.data);
+        const isFileExists = dataSource.some(
+          (file) => file.name === uploadedFileProperties.name
+        );
+        if (!isFileExists) {
+          setDataSource((pre) => [...pre, uploadedFileProperties]);
+        }
       })
       .catch((error) => {
         console.error("Error:", error);

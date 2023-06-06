@@ -22,4 +22,3 @@ async def welcome() -> dict:
     return {
         "message": "Hello from main"
     }
-

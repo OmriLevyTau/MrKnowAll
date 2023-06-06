@@ -69,7 +69,7 @@ function FileTable() {
           })
           .then((response) => {
             setDataSource((pre) => {
-              pre.filter((file) => file.name != record.name);
+              return pre.filter((file) => file.name != record.name);
             });
           })
           .catch((error) => {

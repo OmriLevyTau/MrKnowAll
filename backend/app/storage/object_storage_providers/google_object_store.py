@@ -1,12 +1,12 @@
-from google.cloud import storage
 import base64
-from app.models.documents import DocumentMetaData, Document
+
+from google.cloud import storage
+
+from app.config import GC_JSON_PATH
+from app.models.documents import Document, DocumentMetaData
 
 # Load the service account key and create a storage client
-client = storage.Client.from_service_account_json(
-    r"C:\Users\Talya\Documents\Studies\TAUComputerScience\2023B\GoogleWorkshop\MrKnowAll\backend\app\storage\object_storage_providers\mr-know-all-387618-f2bc1e5e3b0b.json"
-)
-
+client = storage.Client.from_service_account_json(GC_JSON_PATH)
 
 def uploadFile(user_name: str, file: str, file_name: str):
     try:

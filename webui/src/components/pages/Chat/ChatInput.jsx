@@ -49,7 +49,7 @@ function ChatInput(props) {
 
     // make an api call to the backend
     let chatResponse = await query({
-      "user_id": "test",
+      "user_id": user.email,
       "query_id": files.length,
       "query_content": msg
     });

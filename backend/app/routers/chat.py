@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from app.config import OPENAI_API_KEY
-from app.models.api_models import QueryResponse, Status
+from app.models.api_models import QueryResponse, Status, OpenAIResponse
 from app.models.documents import (DocumentMetaData, DocumentVectorChunk,
                                   VectorContextQuery)
 from app.models.query import Query, QueryResult
@@ -14,6 +14,9 @@ chat_router = APIRouter(prefix="/api/v0")
 openai_api = OpenAIAPI(api_key=OPENAI_API_KEY)
 pinecone_client = PineconeVectorStorage()
 
+SCORE_THRESHOLD = 0.4
+
+
 @chat_router.post("/query")
 async def query(query: Query) -> QueryResponse:
     """
@@ -23,58 +26,90 @@ async def query(query: Query) -> QueryResponse:
     4. retrieve the sentences and thier's context in the text
     5. engineer proper prompt and send to openAI API
     """
-    user_id =  query.user_id
+    user_id = query.user_id
     query_id = query.query_id
     query_content = query.query_content
 
     try:
-        # query vector DB 
+        # query vector DB
         vector_db_query_response = await pinecone_client.query(user_id=user_id, query=query)
-    
+
         # get the matches to the vector DB query
         top_k_closest_vectors = vector_db_query_response.get("matches")
 
-        all_context = []
-        map_vec_id_to_context = {}
+        all_context = ""
+
+        map_doc_id_to_context = {}
         references = set()
 
         for vector_data in top_k_closest_vectors:
+            map_vec_id_to_context = {}
             cur_vec_doc_id = vector_data.get('metadata').get('document_id')
-            references.add(cur_vec_doc_id)
-            context_query = VectorContextQuery(user_id=user_id, document_id=cur_vec_doc_id, vector_id=vector_data.get('id'))
-            context_response = await pinecone_client.get_context(user_id=user_id, context_query=context_query)
+            cur_vec_score = vector_data.get('score')
 
-            vectors = context_response.get("vectors")
+            if (cur_vec_score >= SCORE_THRESHOLD):
+                references.add(cur_vec_doc_id)
+                context_query = VectorContextQuery(
+                    user_id=user_id, document_id=cur_vec_doc_id, vector_id=vector_data.get('id'))
+                context_response = await pinecone_client.get_context(user_id=user_id, context_query=context_query)
 
-            for i,key in enumerate(vectors):
-                # vec is a key to dict
-                res = vectors.get(key)
-                vec_id = res.get("id").split("@")[0]
-                context = res.get("metadata").get("original_content")
-                map_vec_id_to_context[vec_id] = context
+                vectors = context_response.get("vectors")
 
-        vec_ids_as_str = list(map_vec_id_to_context)
-        vec_ids = [int(vec_id) for vec_id in vec_ids_as_str]
-        vec_ids.sort()
-        for vec_id in vec_ids:
-            all_context.append(map_vec_id_to_context[str(vec_id)])
+                for i, key in enumerate(vectors):
+                    # vec is a key to dict
+                    res = vectors.get(key)
+                    vec_id = res.get("id").split("@")[0]
+                    context = res.get("metadata").get("original_content")
+                    map_vec_id_to_context[vec_id] = context
+
+                map_doc_id_to_context[cur_vec_doc_id] = map_vec_id_to_context
+
+        # if there is no relevant sentence, we dont communicate with the AI assistant
+        if len(map_doc_id_to_context) == 0:
+            without_API_communication_response = OpenAIResponse(
+                status=Status.Ok, content='We are sorry, but it seems that there is no relevant sentences to your question in your files. You are more than welcome to ask a different question, or upload files which are relevant to your question')
+            return QueryResponse(status=Status.Ok,
+                                 query_content=query_content,
+                                 context='',
+                                 response=without_API_communication_response,
+                                 references=[])
+
+        # if we are here, it means that we have at least one sentence that is relevant to the question
+        doc_ids = list(map_doc_id_to_context)
+        doc_ids.sort()
+
+        for doc_id in doc_ids:
+            all_context = all_context + \
+                "The following context is coming from the document: " + doc_id + '\n'
+            cur_doc_id_dict = map_doc_id_to_context[doc_id]
+
+            vec_ids = list(cur_doc_id_dict)
+
+            vec_ids.sort()
+            for vec_id in vec_ids:
+                all_context = all_context + cur_doc_id_dict[vec_id]
+                all_context = all_context + "\n"
 
         references_str = ', '.join(references)
         prompt_prefix = "Please generate response based solely on the information I provide in this text. Do not reference any external knowledge or provide additional details beyond what I have given."
-        all_context_as_str = ' '.join(all_context)
-        prompt = prompt_prefix + '\n' + 'my question is: ' + query_content + '\n'+ 'the information is: ' + all_context_as_str + '\n'  + 'the documents referenced in the question are: ' + references_str
-        AI_assistant_query = Query(user_id=user_id, query_id=query_id, query_content=prompt)
+        # all_context_as_str = ' '.join(all_context)
+        prompt = prompt_prefix + '\n' + 'my question is: ' + query_content + '\n' + 'the information is: ' + \
+            all_context + '\n' + \
+            'the documents referenced in the question are: ' + references_str
+        AI_assistant_query = Query(
+            user_id=user_id, query_id=query_id, query_content=prompt)
         answer = openai_api.generate_answer(AI_assistant_query)
-        
+
         return QueryResponse(status=Status.Ok,
-                            query_content=prompt_prefix + '\n' + 'my question is: ' + query_content,
-                            context = all_context_as_str,
-                            response=answer,
-                            references=references)
+                             query_content=prompt_prefix + '\n' + 'my question is: ' + query_content,
+                             context=all_context,
+                             response=answer,
+                             references=references)
 
     except Exception as e:
         return QueryResponse(status=Status.Failed,
-                        query_content=query_content,
-                        context = '',
-                        response=str(e),
-                        references='')
+                             query_content=query_content,
+                             context='',
+                             response=OpenAIResponse(
+                                 status=Status.Failed, content=str(e)),
+                             references=[])

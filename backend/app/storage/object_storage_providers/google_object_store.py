@@ -1,5 +1,4 @@
 import base64
-
 from google.cloud import storage
 
 from app.config import GC_JSON_PATH
@@ -7,6 +6,7 @@ from app.models.documents import Document, DocumentMetaData
 
 # Load the service account key and create a storage client
 client = storage.Client.from_service_account_json(GC_JSON_PATH)
+
 
 def uploadFile(user_name: str, file: str, file_name: str):
     try:

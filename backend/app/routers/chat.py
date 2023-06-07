@@ -24,7 +24,7 @@ async def query(query: Query) -> QueryResponse:
     1. get the original question as a Query object
     2. convert the question into a vector and find the closest vectors based on the file credentials by query the vector DB
     4. retrieve the sentences and thier's context in the text
-    5. engineer proper prompt and send to openAI API
+    5. engineering of proper prompt and send to openAI API
     """
     user_id = query.user_id
     query_id = query.query_id
@@ -43,10 +43,12 @@ async def query(query: Query) -> QueryResponse:
         references = set()
 
         for vector_data in top_k_closest_vectors:
+            # every vector has its own context
             map_vec_id_to_context = {}
             cur_vec_doc_id = vector_data.get('metadata').get('document_id')
             cur_vec_score = vector_data.get('score')
 
+            # get context only for setnteces that are relevant to the question
             if (cur_vec_score >= SCORE_THRESHOLD):
                 references.add(cur_vec_doc_id)
                 context_query = VectorContextQuery(
@@ -90,12 +92,10 @@ async def query(query: Query) -> QueryResponse:
                 all_context = all_context + cur_doc_id_dict[vec_id]
                 all_context = all_context + "\n"
 
-        references_str = ', '.join(references)
         prompt_prefix = "Please generate response based solely on the information I provide in this text. Do not reference any external knowledge or provide additional details beyond what I have given."
-        # all_context_as_str = ' '.join(all_context)
-        prompt = prompt_prefix + '\n' + 'my question is: ' + query_content + '\n' + 'the information is: ' + \
-            all_context + '\n' + \
-            'the documents referenced in the question are: ' + references_str
+
+        prompt = prompt_prefix + '\n' + 'my question is: ' + \
+            query_content + '\n' + 'the information is: ' + all_context
         AI_assistant_query = Query(
             user_id=user_id, query_id=query_id, query_content=prompt)
         answer = openai_api.generate_answer(AI_assistant_query)

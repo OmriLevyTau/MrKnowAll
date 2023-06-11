@@ -18,16 +18,18 @@ PDF_PREFIX = 'data:application/pdf;base64,'
 
 pinecone_client = PineconeVectorStorage()
 
+
 @docs_router.get("/{user_id}")
 async def get_all_docs_metadata(user_id: str) -> GetAllDocumentsMetadataResponse:
     response = GetAllDocumentsMetadataResponse(
         status=Status.Ok, docs_metadata=getFileList(user_id))
     return response
 
+
 @docs_router.post("/")
 async def upload_doc(doc: Document) -> UploadDocumentResponse:
     """
-    Given a document it'll upload it to vector storage (after proccessing it)
+    Given a document it'll upload it to vector storage (after processing it)
     and to google-storage bucket as well.
 
     Args:
@@ -39,19 +41,28 @@ async def upload_doc(doc: Document) -> UploadDocumentResponse:
     user_id = doc.get_document_metadata().get_user_id()
     doc_id = doc.get_document_metadata().get_document_id()
     doc_encoding = doc.pdf_encoding
-    
+
     if (doc_encoding is not None) and (doc_encoding.startswith(PDF_PREFIX)):
         doc.pdf_encoding = doc.pdf_encoding[len(PDF_PREFIX):]
-    
+
     path = convertDocToPdf(doc, doc_id)
 
     try:
         upload_response = await pinecone_client.upload(user_id=user_id, document=doc)
         uploadFile(user_id, path, doc_id)
         os.remove(path)
-        return UploadDocumentResponse(status=Status.Ok, doc_metadata=doc.get_document_metadata(), uploaded_vectors_num=upload_response.get("upserted_count"))
+        return UploadDocumentResponse(
+            status=Status.Ok,
+            doc_metadata=doc.get_document_metadata(),
+            uploaded_vectors_num=upload_response.get("upserted_count")
+        )
     except Exception:
-        return UploadDocumentResponse(status=Status.Failed, doc_metadata=doc.get_document_metadata(), uploaded_vectors_num=0)
+        return UploadDocumentResponse(
+            status=Status.Failed,
+            doc_metadata=doc.get_document_metadata(),
+            uploaded_vectors_num=0
+        )
+
 
 @docs_router.get("/{user_id}/{doc_id}")
 async def get_doc_by_id(user_id: str, doc_id: str):
@@ -67,7 +78,7 @@ async def get_doc_by_id(user_id: str, doc_id: str):
     return StreamingResponse(
         iter([file_content]),
         media_type=content_type,
-        headers={"Content-Disposition": f"attachment; filename={doc_id}.pdf"},)
+        headers={"Content-Disposition": f"attachment; filename={doc_id}.pdf"}, )
 
 
 @docs_router.delete("/{doc_id}")
@@ -91,4 +102,3 @@ async def delete_doc(doc_id: str, body: dict) -> dict:
         raise Exception('delete failed')
     except Exception as e:
         return {'status': Status.Failed, 'error': str(e)}
-

@@ -1,5 +1,5 @@
 """
-    This module provides basic document proccessing capabilities 
+    This module provides basic document processing capabilities
     used for the various tasks in MrKnowAll implementation.
     Mainly around PDF handling, and breaking documents into sentences.
 """
@@ -8,7 +8,7 @@ import base64
 import io
 import re
 from io import BufferedReader
-from typing import List
+from typing import List, BinaryIO
 
 import nltk
 import PyPDF2
@@ -18,15 +18,16 @@ from app.models.documents import Document
 # Download the necessary data for sentence tokenization
 nltk.download("punkt")
 
-
-alphabets= "([A-Za-z])"
+alphabets = "([A-Za-z])"
 prefixes = "(Mr|St|Mrs|Ms|Dr)[.]"
 suffixes = "(Inc|Ltd|Jr|Sr|Co)"
-starters = "(Mr|Mrs|Ms|Dr|Prof|Capt|Cpt|Lt|He\s|She\s|It\s|They\s|Their\s|Our\s|We\s|But\s|However\s|That\s|This\s|Wherever)"
+starters = "(Mr|Mrs|Ms|Dr|Prof|Capt|Cpt|Lt|He\s|She\s|It\s|They\s|Their\s|Our\s|We\s|But\s|However\s|That\s|This\s" \
+           "|Wherever)"
 acronyms = "([A-Z][.][A-Z][.](?:[A-Z][.])?)"
 websites = "[.](com|net|org|io|gov|edu|me)"
 digits = "([0-9])"
 multiple_dots = r'\.{2,}'
+
 
 def split_into_sentences_by_hand(text: str) -> list[str]:
     """
@@ -42,65 +43,67 @@ def split_into_sentences_by_hand(text: str) -> list[str]:
     :rtype: list[str]
     """
     text = " " + text + "  "
-    text = text.replace("\n"," ")
-    text = re.sub(prefixes,"\\1<prd>",text)
-    text = re.sub(websites,"<prd>\\1",text)
-    text = re.sub(digits + "[.]" + digits,"\\1<prd>\\2",text)
+    text = text.replace("\n", " ")
+    text = re.sub(prefixes, "\\1<prd>", text)
+    text = re.sub(websites, "<prd>\\1", text)
+    text = re.sub(digits + "[.]" + digits, "\\1<prd>\\2", text)
     text = re.sub(multiple_dots, lambda match: "<prd>" * len(match.group(0)) + "<stop>", text)
-    if "Ph.D" in text: 
-        text = text.replace("Ph.D.","Ph<prd>D<prd>")
-    text = re.sub("\s" + alphabets + "[.] "," \\1<prd> ",text)
-    text = re.sub(acronyms+" "+starters,"\\1<stop> \\2",text)
-    text = re.sub(alphabets + "[.]" + alphabets + "[.]" + alphabets + "[.]","\\1<prd>\\2<prd>\\3<prd>",text)
-    text = re.sub(alphabets + "[.]" + alphabets + "[.]","\\1<prd>\\2<prd>",text)
-    text = re.sub(" "+suffixes+"[.] "+starters," \\1<stop> \\2",text)
-    text = re.sub(" "+suffixes+"[.]"," \\1<prd>",text)
-    text = re.sub(" " + alphabets + "[.]"," \\1<prd>",text)
+    if "Ph.D" in text:
+        text = text.replace("Ph.D.", "Ph<prd>D<prd>")
+    text = re.sub("\s" + alphabets + "[.] ", " \\1<prd> ", text)
+    text = re.sub(acronyms + " " + starters, "\\1<stop> \\2", text)
+    text = re.sub(alphabets + "[.]" + alphabets + "[.]" + alphabets + "[.]", "\\1<prd>\\2<prd>\\3<prd>", text)
+    text = re.sub(alphabets + "[.]" + alphabets + "[.]", "\\1<prd>\\2<prd>", text)
+    text = re.sub(" " + suffixes + "[.] " + starters, " \\1<stop> \\2", text)
+    text = re.sub(" " + suffixes + "[.]", " \\1<prd>", text)
+    text = re.sub(" " + alphabets + "[.]", " \\1<prd>", text)
     if "”" in text:
-        text = text.replace(".”","”.")
+        text = text.replace(".”", "”.")
     if "\"" in text:
-        text = text.replace(".\"","\".")
+        text = text.replace(".\"", "\".")
     if "!" in text:
-        text = text.replace("!\"","\"!")
+        text = text.replace("!\"", "\"!")
     if "?" in text:
-        text = text.replace("?\"","\"?")
-    text = text.replace(".",".<stop>")
-    text = text.replace("?","?<stop>")
-    text = text.replace("!","!<stop>")
-    text = text.replace("<prd>",".")
+        text = text.replace("?\"", "\"?")
+    text = text.replace(".", ".<stop>")
+    text = text.replace("?", "?<stop>")
+    text = text.replace("!", "!<stop>")
+    text = text.replace("<prd>", ".")
     sentences = text.split("<stop>")
     sentences = [s.strip() for s in sentences]
     if sentences and not sentences[-1]:
         sentences = sentences[:-1]
     return sentences
 
+
 def split_into_sentences_by_nltk(text: str) -> list[str]:
     return nltk.sent_tokenize(text)
 
+
 def get_documents_chunks(document: Document) -> List[str]:
     """
-    Given a Document object, return a list of senenteces.
+    Given a Document object, return a list of sentences.
     Args:
         document (Document)
     Returns:
-        List[str]: A list of senteces
+        List[str]: A list of sentences
     """
     doc_path = document.path
     doc_encoding = document.pdf_encoding
-    
+
     chunks = None
 
     # get text chunks from encoded pdf string
     if (doc_encoding is not None) and (doc_path is None):
-        chunks = get_document_chunks_helper(pdf_generator=read_pdf_from_bytes_generator, generator_input=doc_encoding)   
-    # get pdf chunks from pdf file
+        chunks = get_document_chunks_helper(pdf_generator=read_pdf_from_bytes_generator, generator_input=doc_encoding)
+        # get pdf chunks from pdf file
     if (doc_path is not None) and (doc_encoding is None):
         chunks = get_document_chunks_helper(pdf_generator=read_pdf_from_path_generator, generator_input=doc_path)
-    
+
     if chunks is not None:
-        return chunks    
-    
-    raise ValueError("document must have path or pdf_encoding only.")    
+        return chunks
+
+    raise ValueError("document must have path or pdf_encoding only.")
 
 
 def get_document_chunks_helper(pdf_generator, generator_input: str) -> List[str]:
@@ -144,9 +147,9 @@ def read_pdf_from_bytes_generator(encoded_pdf: str):
     return pdf_chunks_generator(pdf_reader, None)
 
 
-def pdf_chunks_generator(pdf_reader: PyPDF2.PdfReader, pdf_file_descriptor: BufferedReader):
+def pdf_chunks_generator(pdf_reader: PyPDF2.PdfReader, pdf_file_descriptor: BinaryIO | None):
     """
-    A generator method which yiels text of a single
+    A generator method which yields text of a single
     pdf page at a time.
     Args:
         pdf_reader (BufferedReader): a valid PyPDF2 PDReader object
@@ -159,8 +162,6 @@ def pdf_chunks_generator(pdf_reader: PyPDF2.PdfReader, pdf_file_descriptor: Buff
         page = pdf_reader.pages[page_num]
         text = page.extract_text()
         yield text
-    
+
     if pdf_file_descriptor is not None:
         pdf_file_descriptor.close()
-
-

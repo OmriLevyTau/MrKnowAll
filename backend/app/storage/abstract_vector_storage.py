@@ -13,7 +13,12 @@ from app.models.documents import (Document, DocumentMetaData,
 from app.models.query import Query
 from app.services.document_proccessing import get_documents_chunks
 from app.services.embeddings import get_embeddings
+from logging import getLogger
+from time import perf_counter
 
+
+timer = perf_counter
+Logger = getLogger(__name__)
 
 class AbstractVectorStorage(ABC):
     """
@@ -29,16 +34,21 @@ class AbstractVectorStorage(ABC):
         Returns:
             str: id of the inserted document (if succsseful), otherwise None.
         """
+        # not sure how this works but SE recommended it for async functions
         # returns a list of sentences composing the document
         text_chunks = get_documents_chunks(document)
         # returns a list of embeddings corresponding to the previous list
         embeddings = get_embeddings(text_chunks)
+        start_time = timer() 
         doc_metadata = document.get_document_metadata()
+        doc_id = doc_metadata.get_document_id()
         payload = AbstractVectorStorage.assemble_documents_vector_chunks(
             user_id, doc_metadata, text_chunks, embeddings
         )
-
-        return await self._upload(user_id, payload)
+        upload_response = await self._upload(user_id,payload)
+        elapsed_time = timer()-start_time
+        Logger.debug("uploading the %i vectors associted with doc with id: %s took %f seconds",len(text_chunks),doc_id,elapsed_time)
+        return upload_response
 
     @abstractmethod
     async def _upload(self, user_id: str, payload: List[DocumentVectorChunk]) -> str:

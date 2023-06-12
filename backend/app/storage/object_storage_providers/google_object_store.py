@@ -4,12 +4,18 @@ from google.cloud import storage
 
 from app.config import GC_JSON_PATH
 from app.models.documents import Document, DocumentMetaData
+from logging import getLogger
+from time import perf_counter
 
 # Load the service account key and create a storage client
 client = storage.Client.from_service_account_json(GC_JSON_PATH)
 
+Logger = getLogger(__name__)
+timer = perf_counter
+
 def uploadFile(user_name: str, file: str, file_name: str):
     try:
+        start_time = timer()
         # Create a user-specific folder path within the bucket
         bucket_name = "mr-know-all"
 
@@ -19,6 +25,8 @@ def uploadFile(user_name: str, file: str, file_name: str):
 
         # blob.upload_from_string(file)
         blob.upload_from_filename(file)
+        elapsed_time = timer()-start_time
+        Logger.debug("uploading file with name: %s for user with username: %s to google-cloud took %f seconds",file_name,user_name,elapsed_time)
 
     except Exception as e:
         raise e

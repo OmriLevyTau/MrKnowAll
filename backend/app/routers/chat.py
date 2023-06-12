@@ -9,10 +9,16 @@ from app.services.embeddings import get_embeddings
 from app.services.openAIAPI import OpenAIAPI
 from app.storage.abstract_vector_storage import AbstractVectorStorage
 from app.storage.vector_storage_providers.pinecone import PineconeVectorStorage
+from logging import getLogger
+from time import perf_counter
+
 
 chat_router = APIRouter(prefix="/api/v0")
 openai_api = OpenAIAPI(api_key=OPENAI_API_KEY)
 pinecone_client = PineconeVectorStorage()
+
+Logger = getLogger(__name__)
+timer = perf_counter
 
 @chat_router.post("/query")
 async def query(query: Query) -> QueryResponse:
@@ -26,7 +32,7 @@ async def query(query: Query) -> QueryResponse:
     user_id =  query.user_id
     query_id = query.query_id
     query_content = query.query_content
-
+    start_time = timer()
     try:
         # query vector DB 
         vector_db_query_response = await pinecone_client.query(user_id=user_id, query=query)
@@ -65,7 +71,8 @@ async def query(query: Query) -> QueryResponse:
         prompt = prompt_prefix + '\n' + 'my question is: ' + query_content + '\n'+ 'the information is: ' + all_context_as_str + '\n'  + 'the documents referenced in the question are: ' + references_str
         AI_assistant_query = Query(user_id=user_id, query_id=query_id, query_content=prompt)
         answer = openai_api.generate_answer(AI_assistant_query)
-        
+        elapsed_time = timer() - start_time
+        Logger.debug("answering query: \"%s\" took %f seconds",query_content[:-1],elapsed_time)
         return QueryResponse(status=Status.Ok,
                             query_content=prompt_prefix + '\n' + 'my question is: ' + query_content,
                             context = all_context_as_str,

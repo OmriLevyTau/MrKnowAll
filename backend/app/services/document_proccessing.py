@@ -15,8 +15,16 @@ import PyPDF2
 
 from app.models.documents import Document
 
+from logging import getLogger
+from time import time, perf_counter
+
 # Download the necessary data for sentence tokenization
 nltk.download("punkt")
+
+timer = perf_counter
+Logger = getLogger(__name__)
+
+
 
 
 alphabets= "([A-Za-z])"
@@ -77,6 +85,11 @@ def split_into_sentences_by_hand(text: str) -> list[str]:
 def split_into_sentences_by_nltk(text: str) -> list[str]:
     return nltk.sent_tokenize(text)
 
+
+# this is the function that get_document_chunks_helper will use to split each page
+split_method = split_into_sentences_by_hand
+
+
 def get_documents_chunks(document: Document) -> List[str]:
     """
     Given a Document object, return a list of senenteces.
@@ -85,6 +98,7 @@ def get_documents_chunks(document: Document) -> List[str]:
     Returns:
         List[str]: A list of senteces
     """
+    start_time = timer() 
     doc_path = document.path
     doc_encoding = document.pdf_encoding
     
@@ -98,6 +112,9 @@ def get_documents_chunks(document: Document) -> List[str]:
         chunks = get_document_chunks_helper(pdf_generator=read_pdf_from_path_generator, generator_input=doc_path)
     
     if chunks is not None:
+        doc_id = document.get_document_metadata().get_document_id()
+        elapsed_time = timer() - start_time
+        Logger.debug("getting chunks for doc with doc id: %s into %i chunks took %f seconds",doc_id,len(chunks),elapsed_time)
         return chunks    
     
     raise ValueError("document must have path or pdf_encoding only.")    
@@ -109,10 +126,14 @@ def get_document_chunks_helper(pdf_generator, generator_input: str) -> List[str]
     read_pdf_from_bytes_generator, and the generator matching input,
     returns a list of sentences composing the document.
     """
+    start_time = timer()
     pages = pdf_generator(generator_input)
+    elapsed_time = timer()
+    # (included in the time it took to get chunks)
+    Logger.debug("breaking doc into %i took %f seconds",len(pages),elapsed_time)
     result = []
     for page in pages:
-        page_sentences = split_into_sentences_by_nltk(page)
+        page_sentences = split_method(page)
         for sentence in page_sentences:
             result.append(sentence)
 

@@ -1,3 +1,4 @@
+import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -22,3 +23,6 @@ async def welcome() -> dict:
     return {
         "message": "Hello from main"
     }
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="localhost", port=8000)

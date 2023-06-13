@@ -12,6 +12,7 @@ import { mountStoreDevtool } from 'simple-zustand-devtools';
  *  duration of the current browser session.
  */
 
+
 const useFileStore = create(
     persist(
         (set) => ({
@@ -19,6 +20,7 @@ const useFileStore = create(
             // Method to add a file to the list
             addFileToStore: (file) => {set((state) => ({files: [...state.files, file]}));},
             removeFileFromStore: (name) => {set((state) => ({files: state.files.filter((file) => file.name !== name)}));},
+            setAllDocs: (docs) => {set((state) => ({files: [...docs]}) )}
       }), 
       {
         name: 'files-storage', // name of the item in the storage (must be unique)

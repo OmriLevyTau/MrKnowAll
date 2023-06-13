@@ -28,7 +28,6 @@ websites = "[.](com|net|org|io|gov|edu|me)"
 digits = "([0-9])"
 multiple_dots = r'\.{2,}'
 
-
 def split_into_sentences_by_hand(text: str) -> list[str]:
     """
     Split the text into sentences.

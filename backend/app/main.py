@@ -17,7 +17,6 @@ app.add_middleware(
 app.include_router(chat_router)
 app.include_router(docs_router)
 
-
 @app.get("/")
 async def welcome() -> dict:
     return {

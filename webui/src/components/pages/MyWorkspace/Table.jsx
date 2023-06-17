@@ -7,7 +7,7 @@ import { uploadDocument, deleteDocument, getAllDocsMetaData } from "../../../ser
 import DragFile from "./DragFile";
 import useFileStore from "./store";
 import GenericModal from "../../common/Modal/GenericModal"
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 
 function FileTable() {
@@ -19,8 +19,15 @@ function FileTable() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { files, addFileToStore, removeFileFromStore, setAllDocs } = useFileStore();
+  const queryClient = useQueryClient()
 
-  const {data} = useQuery({queryKey:["docs"], queryFn: () => getInitialData(user.email), enabled: user!=null})
+  
+  const {data} = useQuery({
+      queryKey:["docs"], 
+      queryFn: () => getInitialData(user.email), 
+      enabled: user!=null,
+    },
+    )
 
   // Fetch initial data
   // ======================================================
@@ -42,6 +49,11 @@ function FileTable() {
     }))
     return docs;
   }
+
+  const prefetch = async () => {
+    await queryClient.prefetchQuery({queryKey:['docs'], queryFn: () => getInitialData(user.email)})
+  }
+  prefetch()
 
   useEffect(()=>{
     if (data){

@@ -25,7 +25,7 @@ class AbstractVectorStorage(ABC):
     This class defines basic functionallity required from an Vector Storage.
     """
 
-    async def upload(self, user_id: str, document: Document) -> str:
+    async def upload(self, user_id: str, document: Document , log: bool = False) -> str:
         """
         Given a document, uploads it into a vector database.
         Args:
@@ -36,9 +36,9 @@ class AbstractVectorStorage(ABC):
         """
         # not sure how this works but SE recommended it for async functions
         # returns a list of sentences composing the document
-        text_chunks = get_documents_chunks(document)
+        text_chunks = get_documents_chunks(document,log=log)
         # returns a list of embeddings corresponding to the previous list
-        embeddings = get_embeddings(text_chunks)
+        embeddings = get_embeddings(text_chunks,log=log)
         start_time = timer() 
         doc_metadata = document.get_document_metadata()
         doc_id = doc_metadata.get_document_id()
@@ -47,7 +47,8 @@ class AbstractVectorStorage(ABC):
         )
         upload_response = await self._upload(user_id,payload)
         elapsed_time = timer()-start_time
-        Logger.debug("uploading the %i vectors associted with doc with id: %s took %f seconds",len(text_chunks),doc_id,elapsed_time)
+        if log:
+            Logger.debug("uploading the %i vectors associted with doc with id: %s took %f seconds",len(text_chunks),doc_id,elapsed_time)
         return upload_response
 
     @abstractmethod

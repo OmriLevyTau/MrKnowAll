@@ -18,10 +18,11 @@ timer = perf_counter
 Logger = getLogger(__name__)
 
 
-def get_embeddings(sentences: List[str]) -> List[List[float]]:
+def get_embeddings(sentences: List[str], log:bool = False) -> List[List[float]]:
     start_time = timer()
     embeddings = model.encode(sentences)
     embeddings =  [tensor.tolist() for tensor in embeddings]
     elapsed_time = timer()-start_time
-    Logger.debug("transforming %i sentences to vectors took %f seconds",len(sentences),elapsed_time)
+    if log:
+        Logger.debug("transforming %i sentences to vectors took %f seconds",len(sentences),elapsed_time)
     return embeddings

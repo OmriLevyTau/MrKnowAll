@@ -17,7 +17,7 @@ def test_read_pdf_file():
         document_metadata=TEST_DOCUMENT_METADATA,
         path=TESTDATA_FILENAME
     )
-    chunks = get_documents_chunks(doc)
+    chunks = get_documents_chunks(doc,log=False)
     assert (chunks is not None) and (len(chunks)>0)
     assert ("Hello world".lower() in chunks[0].lower())
     assert ("mr know all".lower() in chunks[1].lower())
@@ -32,7 +32,7 @@ def test_read_pdf_encoding():
         pdf_encoding=TEST_PDF_ENCODING
     )
 
-    chunks = get_documents_chunks(doc)
+    chunks = get_documents_chunks(doc,log=False)
     assert (chunks is not None) and (len(chunks)>0)
     assert ("Hello world".lower() in chunks[0].lower())
     assert ("mr know all".lower() in chunks[1].lower())

@@ -46,7 +46,7 @@ async def upload_doc(doc: Document) -> UploadDocumentResponse:
     path = convertDocToPdf(doc, doc_id)
 
     try:
-        upload_response = await pinecone_client.upload(user_id=user_id, document=doc)
+        upload_response = await pinecone_client.upload(user_id=user_id, document=doc, log=True)
         uploadFile(user_id, path, doc_id)
         os.remove(path)
         return UploadDocumentResponse(status=Status.Ok, doc_metadata=doc.get_document_metadata(), uploaded_vectors_num=upload_response.get("upserted_count"))

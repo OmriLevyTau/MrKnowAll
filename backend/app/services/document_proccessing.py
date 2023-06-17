@@ -16,7 +16,7 @@ import PyPDF2
 from app.models.documents import Document
 
 from logging import getLogger
-from time import time, perf_counter
+from time import perf_counter
 
 # Download the necessary data for sentence tokenization
 nltk.download("punkt")
@@ -90,7 +90,7 @@ def split_into_sentences_by_nltk(text: str) -> list[str]:
 split_method = split_into_sentences_by_hand
 
 
-def get_documents_chunks(document: Document) -> List[str]:
+def get_documents_chunks(document: Document, log:bool = False) -> List[str]:
     """
     Given a Document object, return a list of senenteces.
     Args:
@@ -106,21 +106,22 @@ def get_documents_chunks(document: Document) -> List[str]:
 
     # get text chunks from encoded pdf string
     if (doc_encoding is not None) and (doc_path is None):
-        chunks = get_document_chunks_helper(pdf_generator=read_pdf_from_bytes_generator, generator_input=doc_encoding)   
+        chunks = get_document_chunks_helper(pdf_generator=read_pdf_from_bytes_generator, generator_input=doc_encoding, log=log)   
     # get pdf chunks from pdf file
     if (doc_path is not None) and (doc_encoding is None):
-        chunks = get_document_chunks_helper(pdf_generator=read_pdf_from_path_generator, generator_input=doc_path)
+        chunks = get_document_chunks_helper(pdf_generator=read_pdf_from_path_generator, generator_input=doc_path, log=log)
     
     if chunks is not None:
         doc_id = document.get_document_metadata().get_document_id()
         elapsed_time = timer() - start_time
-        Logger.debug("getting chunks for doc with doc id: %s into %i chunks took %f seconds",doc_id,len(chunks),elapsed_time)
+        if log:
+            Logger.debug("getting chunks for doc with doc id: %s into %i chunks took %f seconds",doc_id,len(chunks),elapsed_time)
         return chunks    
     
     raise ValueError("document must have path or pdf_encoding only.")    
 
 
-def get_document_chunks_helper(pdf_generator, generator_input: str) -> List[str]:
+def get_document_chunks_helper(pdf_generator, generator_input: str, log: bool=False) -> List[str]:
     """
     given a pdf_generator, as constructed in read_pdf_from_path_generator or
     read_pdf_from_bytes_generator, and the generator matching input,
@@ -128,9 +129,10 @@ def get_document_chunks_helper(pdf_generator, generator_input: str) -> List[str]
     """
     start_time = timer()
     pages = pdf_generator(generator_input)
-    elapsed_time = timer()
+    elapsed_time = timer() - start_time
     # (included in the time it took to get chunks)
-    Logger.debug("breaking doc into %i took %f seconds",len(pages),elapsed_time)
+    if log:
+        Logger.debug("breaking doc into %i took %f seconds",len(pages),elapsed_time)
     result = []
     for page in pages:
         page_sentences = split_method(page)

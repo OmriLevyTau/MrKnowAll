@@ -15,7 +15,7 @@ function ChatInput(props) {
   const navigate = useNavigate();
   const { setChatLog, } = useContext(ChatLogContext);
   const { files, addFileToStore, removeFileFromStore } = useFileStore(); 
-  const { user } = useContext(UserContext);
+  const { user , token} = useContext(UserContext);
   const [msg, setMsg] = useState("");
   const [waitingChatGpt, setWaitingChatGpt] = useState(false);
   const { width } = props;
@@ -52,7 +52,7 @@ function ChatInput(props) {
       "user_id": user.email,
       "query_id": files.length,
       "query_content": msg
-    });
+    }, token);
    
     let chatGptResponse = {chatgpt: true,content: SERVER_ERROR}; // default.
     // check if error occured while communicating with the server

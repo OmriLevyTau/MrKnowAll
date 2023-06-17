@@ -13,7 +13,7 @@ function FileTable() {
   const [pdfFile, setPdfFile] = useState(null);
   const [fileMetaData, setFileMetaData] = useState(null);
 
-  const { user } = useContext(UserContext);
+  const { user, token } = useContext(UserContext);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { files, addFileToStore, removeFileFromStore } = useFileStore();
@@ -76,7 +76,7 @@ function FileTable() {
       cancelText: "No",
       okType: "danger",
       onOk: () => {
-        deleteDocument(user.email, record.name); // backend
+        deleteDocument(user.email, record.name, token); // backend
         removeFileFromStore(record.name);
       },
     });
@@ -98,12 +98,14 @@ function FileTable() {
       let filePayload = {
         "document_metadata": {
             "user_id": user.email,
-            "document_id": newFile.name
+            "document_id": newFile.name,
         },
         "pdf_encoding": pdfFile
       }
 
-      let uploadDocResponse = await uploadDocument(filePayload); // backend
+      console.log("token" +token)
+      let uploadDocResponse = await uploadDocument(filePayload, token); // backend
+    
 
     // check if error occured when communicating with the backend
     if (uploadDocResponse.status!==200 && uploadDocResponse.status!==204){

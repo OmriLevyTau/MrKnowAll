@@ -10,12 +10,12 @@ function DocView() {
   const { fileName } = useParams();
   const navigate = useNavigate();
   const [fileContent, setFileContent] = useState(null);
-  const { user } = useContext(UserContext);
+  const { user , token} = useContext(UserContext);
 
   useEffect(() => {
     async function fetchFile() {
       try {
-        const response = await getDocById(user.email, fileName)
+        const response = await getDocById(user.email, fileName, token)
         console.log(response)
         // Create a Blob URL for the file content
         const blobUrl = URL.createObjectURL(response.data);

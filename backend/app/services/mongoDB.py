@@ -2,6 +2,7 @@ from collections import defaultdict
 from datetime import datetime
 import pymongo
 from pymongo.mongo_client import MongoClient
+from app.config import MONGO_DB_KEY
 
 
 class ChatDatabase:
@@ -36,7 +37,9 @@ class ChatDatabase:
         return chat_history
 
 
-uri = "mongodb+srv://TalyaFrancus:13579qwe@chathistory.e3406tw.mongodb.net/?retryWrites=true&w=majority"
+uri = f"mongodb+srv://TalyaFrancus:{MONGO_DB_KEY}@chathistory.e3406tw.mongodb.net/?retryWrites=true&w=majority"
+print(uri)
+
 chat_db = ChatDatabase(uri)
 
 # Add a message to the database

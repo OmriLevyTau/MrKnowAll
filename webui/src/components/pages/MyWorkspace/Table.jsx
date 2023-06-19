@@ -44,7 +44,7 @@ function FileTable() {
 
   const getInitialData = async (user_id) => {
     console.log("get initial data.")
-    let initialDataResponse = await getAllDocsMetaData(user_id);
+    let initialDataResponse = await getAllDocsMetaData(user_id, token);
     if (initialDataResponse.status!==200 && initialDataResponse.status!==204){
       console.log("An error occured while trying to fetch initial data.");
       return []

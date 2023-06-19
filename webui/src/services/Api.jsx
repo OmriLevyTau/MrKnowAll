@@ -86,11 +86,14 @@ export const getDocById = async (user_id, doc_id, token) => {
     }
 }
 
-export const getAllDocsMetaData = async (user_id) => {
+export const getAllDocsMetaData = async (user_id, token) => {
     let config = {
         method: 'get',
         url: DOCUMENTS_URL + "/" + user_id,
-        headers: { }
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+        },
       };
 
     try{

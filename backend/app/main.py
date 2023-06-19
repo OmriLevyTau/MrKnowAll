@@ -1,13 +1,13 @@
+import uvicorn
+
 from app.routers.chat import chat_router
 from app.routers.documents import docs_router
 
-import uvicorn
 import firebase_admin
-import json
 
 from app.config import ENABLE_AUTH
 from firebase_admin import credentials, auth
-from fastapi import FastAPI, Request, HTTPException, Response
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import HTTPException
@@ -29,13 +29,13 @@ app.include_router(chat_router)
 app.include_router(docs_router)
 
 
-@app.exception_handler(HTTPException)
-async def unicorn_exception_handler(request: Request, exc: HTTPException):
-    return JSONResponse(
-        status_code=401,
-        content={
-            "message": f"Oops! {exc.name} did something. There goes a rainbow..."},
-    )
+# @app.exception_handler(HTTPException)
+# async def unicorn_exception_handler(request: Request, exc: HTTPException):
+#     return JSONResponse(
+#         status_code=401,
+#         content={
+#             "message": f"Oops! {exc.name} did something. There goes a rainbow..."},
+#     )
 
 
 app.add_middleware(
@@ -66,7 +66,7 @@ async def welcome() -> dict:
 
 
 @app.middleware("http")
-async def middleware_validatation(request: Request, call_next):
+async def middleware_validation(request: Request, call_next):
     # Get the authorization header
     # get the token data, passed in headers
 
@@ -84,7 +84,8 @@ async def middleware_validatation(request: Request, call_next):
         try:
             # Extract the token from the authorization header
             _, token = jwt.split(" ")
-            # Verify and decode the Firebase token. If it can’t verify the token, there will be an error thrown. If it can, we proceed as we should have.
+            # Verify and decode the Firebase token. If it can’t verify the token, there will be an error thrown. If
+            # it can, we proceed as we should have.
             decoded_token = auth.verify_id_token(token)
             # Store the decoded token in request state for later use
             request.state.user = decoded_token
@@ -93,7 +94,10 @@ async def middleware_validatation(request: Request, call_next):
             return response
 
         except ValueError as e:
-            return JSONResponse(status_code=401, content="you are not authorized!")
+            return JSONResponse(status_code=401, content="you are not authorized!" + str(e))
     else:
         return JSONResponse(status_code=401, content="you are not authorized!")
         # raise HTTPException(status_code=401, detail="Unauthorized",)
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="localhost", port=8000)

@@ -87,7 +87,7 @@ def split_into_sentences_by_nltk(text: str) -> list[str]:
 
 
 # this is the function that get_document_chunks_helper will use to split each page
-split_method = split_into_sentences_by_hand
+split_method = split_into_sentences_by_nltk
 
 
 def get_documents_chunks(document: Document, log:bool = False) -> List[str]:

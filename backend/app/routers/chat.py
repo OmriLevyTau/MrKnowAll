@@ -16,7 +16,7 @@ SCORE_THRESHOLD = 0.1
 
 
 @chat_router.post("/query")
-async def query(query: Query) -> QueryResponse:
+async def query(query_request: Query) -> QueryResponse:
     """
     the flow of query:
     1. get the original question as a Query object
@@ -25,13 +25,13 @@ async def query(query: Query) -> QueryResponse:
     5. engineering of proper prompt and send to openAI API
     """
 
-    user_id = query.user_id
-    query_id = query.query_id
-    query_content = query.query_content
+    user_id = query_request.user_id
+    query_id = query_request.query_id
+    query_content = query_request.query_content
 
     try:
         # query vector DB
-        vector_db_query_response = await pinecone_client.query(user_id=user_id, query=query)
+        vector_db_query_response = await pinecone_client.query(user_id=user_id, query=query_request)
 
         # get the matches to the vector DB query
         top_k_closest_vectors = vector_db_query_response.get("matches")

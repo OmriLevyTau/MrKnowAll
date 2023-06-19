@@ -74,7 +74,7 @@ async def test_full_query_process():
         }
     })
 
-    query_response = client.post(url="/query", json={
+    query_response = client.post(url="/api/v0/query", json={
         "user_id": TEST_USER_ID,
         "query_id": 1,
         "query_content": 'what did the Islamic Jihad spokesman say?'

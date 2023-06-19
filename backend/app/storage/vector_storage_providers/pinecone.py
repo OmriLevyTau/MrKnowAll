@@ -122,6 +122,33 @@ class PineconeVectorStorage(AbstractVectorStorage):
     async def get_stats(self):
         return self.index.describe_index_stats()
 
+    async def get_context_for_list(self, user_id: str, context_query_list: List[VectorContextQuery]):
+        target_vec_ids = []
+        window_sizes = []
+        docs_ids = []
+        ids_windows = []
+        for context_query in context_query_list:
+            target_vec_id = int(context_query.get_vector_id().split("@")[0])
+            target_vec_ids.append(target_vec_id)
+            window_size = context_query.get_context_window()
+            window_sizes.append(window_size)
+            doc_id = context_query.get_document_id()
+            docs_ids.append(doc_id)
+            ids_windows.append([(str(i) + "@" + doc_id) for i in
+                      range(target_vec_id - window_size, target_vec_id + window_size + 1)
+                      if i != target_vec_id])
+
+        flat_ids = [id for sublist in ids_windows for id in sublist]
+
+        try:
+            context_response = self.index.fetch(ids=flat_ids)
+        except Exception as error:
+            print("Failed to fetch ids: " + str(error))
+            raise error
+
+        return context_response
+
+
     async def get_context(self, user_id: str, context_query: VectorContextQuery):
         """
         refer superclass for details.
@@ -137,6 +164,6 @@ class PineconeVectorStorage(AbstractVectorStorage):
             context_response = self.index.fetch(ids=ids_window)
         except Exception as error:
             print("Failed to fetch ids: " + str(error))
-            raise
+            raise error
 
         return context_response

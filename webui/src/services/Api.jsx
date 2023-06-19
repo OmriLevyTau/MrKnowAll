@@ -4,82 +4,103 @@ const serverURL = window.location.origin.replace("3000","8000")
 const DOCUMENTS_URL = serverURL + "/api/v0/documents"
 const CHAT_URL = serverURL + "/api/v0/query"
 
-export const uploadDocument = async (data) => {
+
+export const uploadDocument = async (data, token) => {
+
     let config = {
         method: 'post',
         maxBodyLength: Infinity,
         url: DOCUMENTS_URL,
         headers: { 
-          'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
         },
-        data : data
+        data : data,
     };
     try{
         const result = await axios.request(config)
-        console.log(result)
         return result
     } catch(e){
         return e
     }
 }
 
-export const deleteDocument = async (user_id, doc_id) => {
+export const deleteDocument = async (user_id, doc_id, token) => {
     let config = {
         method: 'delete',
         maxBodyLength: Infinity,
         url: DOCUMENTS_URL + "/" + doc_id,
-        headers: { },
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+        },
         data: {user_id: user_id}
         
     };
     try{
         const result = await axios.request(config)
-        console.log(result)
         return result
     } catch(e){
         return e
     }
 }
 
-export const query = async (query) => {
+export const query = async (query, token) => {
     let config = {
         method: 'post',
         maxBodyLength: Infinity,
         url: CHAT_URL,
         headers: { 
-          'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
         },
         data : query
       };
 
     try{
         const result = await axios.request(config)
-        console.log(result)
         return result
     } catch(e){
         return e
     }
-
 }
 
 
-export const getDocById = async (user_id, doc_id) => {
+export const getDocById = async (user_id, doc_id, token) => {
     let config = {
         method: 'get',
         maxBodyLength: Infinity,
         url: DOCUMENTS_URL + "/" + user_id + "/" + doc_id,
         headers: { 
-          'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
         },
         responseType: "blob"
       };
 
     try{
         const result = await axios.request(config)
-        console.log(result)
         return result
     } catch(e){
         return e
     }
+}
 
+export const getAllDocsMetaData = async (user_id, token) => {
+    let config = {
+        method: 'get',
+        url: DOCUMENTS_URL + "/" + user_id,
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+        },
+      };
+
+    try{
+        const result = await axios.request(config)
+        console.log(result);
+        return result
+    } catch(e){
+        return e
+    }
 }

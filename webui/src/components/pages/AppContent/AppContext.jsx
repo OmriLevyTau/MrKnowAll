@@ -15,7 +15,7 @@ export const UserContext = createContext();
 
 function AppContext(props){
     const [user, setUser] = useState({});
-
+    const [token, setToken] = useState("");
 
     const createUser = (email, password) => {
         return createUserWithEmailAndPassword(auth, email, password);
@@ -29,6 +29,7 @@ function AppContext(props){
       return signInWithPopup(auth, GoogleProvider)
       .then((result) => {
         console.log(result);
+
       })
       .catch((error) => {
         console.log(error);
@@ -39,26 +40,35 @@ function AppContext(props){
         return signOut(auth)
     };
     
-    useEffect(() => {
-      const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-        if (currentUser){
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      
+      const getToken = async (currentUser) => {
+        const token = await currentUser.getIdToken();
+        setToken(token);
+      };
+     
+      
+      if (currentUser) {
+          getToken(currentUser);
           setUser(currentUser);
-        } else{
-          setUser("")
-        }
-        console.log(user)
-      });
-      return () => unsubscribe();        
-    }, []);
+          console.log(token);
+      } else {
+        setUser("");
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
-    // get user data from backend for initial display.
-    
-    return (
-        <UserContext.Provider value={{user, logout, signIn, signInWithGoogle, createUser}}>
-            {props.children}
-        </UserContext.Provider>
+  // get user data from backend for initial display.
 
-    )
+  return (
+    <UserContext.Provider
+      value={{ user, logout, signIn, signInWithGoogle, createUser, token, }} // Include the token and tokenReady in the context value
+    >
+      {props.children}
+    </UserContext.Provider>
+  );
 }
 
 export default AppContext;

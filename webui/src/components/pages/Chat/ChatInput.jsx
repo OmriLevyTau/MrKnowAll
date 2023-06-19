@@ -15,7 +15,7 @@ function ChatInput(props) {
   const navigate = useNavigate();
   const { setChatLog, } = useContext(ChatLogContext);
   const { files, addFileToStore, removeFileFromStore } = useFileStore(); 
-  const { user } = useContext(UserContext);
+  const { user , token} = useContext(UserContext);
   const [msg, setMsg] = useState("");
   const [waitingChatGpt, setWaitingChatGpt] = useState(false);
   const { width } = props;
@@ -47,12 +47,14 @@ function ChatInput(props) {
     setChatLog((prevChat) => [...prevChat, { chatgpt: false, content: {"message": msg, "ref": null, "metadata": null} }]);
     setMsg("");
 
+    setChatLog((prevChat) => [...prevChat, {chatgpt: true,content: {"message": "...", "ref": null, "metadata": null}}]);
+
     // make an api call to the backend
     let chatResponse = await query({
       "user_id": user.email,
       "query_id": files.length,
       "query_content": msg
-    });
+    }, token);
    
     let chatGptResponse = {chatgpt: true,content: SERVER_ERROR}; // default.
     // check if error occured while communicating with the server
@@ -75,7 +77,7 @@ function ChatInput(props) {
       }
       chatGptResponse = {chatgpt: true,content: content};
     }
-    setChatLog((prevChat) => [...prevChat, chatGptResponse]);
+    setChatLog((prevChat) => [...prevChat.slice(0, -1), chatGptResponse]);
     setWaitingChatGpt(false);
   };
 

@@ -5,6 +5,7 @@ import uvicorn
 import firebase_admin
 import json
 
+from app.config import ENABLE_AUTH
 from firebase_admin import credentials, auth
 from fastapi import FastAPI, Request, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,6 +29,15 @@ app.include_router(chat_router)
 app.include_router(docs_router)
 
 
+@app.exception_handler(HTTPException)
+async def unicorn_exception_handler(request: Request, exc: HTTPException):
+    return JSONResponse(
+        status_code=401,
+        content={
+            "message": f"Oops! {exc.name} did something. There goes a rainbow..."},
+    )
+
+
 app.add_middleware(
 
     # allow cross-origin requests from your frontend application to your FastAPI backend.
@@ -39,6 +49,11 @@ app.add_middleware(
     allow_headers=["Authorization"],
     expose_headers=["Authorization"],  # Expose all headers
 )
+
+
+# @app.exception_handler(HTTPException)
+# async def http_exception_handler(request: Request, exc: HTTPException):
+#     return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
 
 @app.get("/")
@@ -54,6 +69,10 @@ async def welcome() -> dict:
 async def middleware_validatation(request: Request, call_next):
     # Get the authorization header
     # get the token data, passed in headers
+
+    if not ENABLE_AUTH:
+        response = await call_next(request)
+        return response
 
     if (request.method == "OPTIONS"):
         response = await call_next(request)
@@ -74,7 +93,7 @@ async def middleware_validatation(request: Request, call_next):
             return response
 
         except ValueError as e:
-            print("error in authorization from middleware")
-            raise HTTPException(status_code=401, detail="Unauthorized")
+            return JSONResponse(status_code=401, content="you are not authorized!")
     else:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+        return JSONResponse(status_code=401, content="you are not authorized!")
+        # raise HTTPException(status_code=401, detail="Unauthorized",)

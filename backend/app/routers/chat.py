@@ -7,6 +7,7 @@ from app.models.query import Query
 from app.services.openAIAPI import OpenAIAPI
 from app.storage.vector_storage_providers.pinecone import PineconeVectorStorage
 
+
 chat_router = APIRouter(prefix="/api/v0")
 openai_api = OpenAIAPI(api_key=OPENAI_API_KEY)
 pinecone_client = PineconeVectorStorage()
@@ -23,6 +24,7 @@ async def query(query: Query) -> QueryResponse:
     4. retrieve the sentences and their's context in the text
     5. engineering of proper prompt and send to openAI API
     """
+
     user_id = query.user_id
     query_id = query.query_id
     query_content = query.query_content

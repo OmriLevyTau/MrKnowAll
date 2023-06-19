@@ -6,9 +6,7 @@ from fastapi.testclient import TestClient
 from app.config import EXPLORE_LOCAL_FILE
 from app.main import app
 from app.models.api_models import Status
-from app.models.documents import Document, DocumentMetaData
-from app.models.query import Query
-from app.routers.chat import query
+from app.models.documents import Document
 from app.storage.vector_storage_providers.pinecone import PineconeVectorStorage
 from tests.test_storage.test_vector_storage.test_pinecone import (
     TEST_DOCUMENT_ID, TEST_DOCUMENT_METADATA, TEST_USER_ID)
@@ -18,7 +16,7 @@ pinecone_client = PineconeVectorStorage()
 
 
 def clear_all() -> None:
-    delete_response = pinecone_client.index.delete(
+    pinecone_client.index.delete(
         filter={
             "user_id": {"$eq": TEST_USER_ID},
             "document_id": {"$eq": TEST_DOCUMENT_ID}
@@ -28,9 +26,9 @@ def clear_all() -> None:
 
 @pytest.fixture(autouse=True)
 def setup_and_teardown():
-    '''
-    Validates that no test data stored in the vector database. 
-    '''
+    """
+    Validates that no test data stored in the vector database.
+    """
     # Will run before each test
     # save number of existing vectors
     # index.describe_index_stats()
@@ -82,8 +80,8 @@ async def test_full_query_process():
         "query_content": 'what did the Islamic Jihad spokesman say?'
     })
 
-    # ai_asistant_response = await query(query=query_to_be_sent)
-    # assert(ai_asistant_response.status == Status.Ok)
+    # ai_assistant_response = await query(query=query_to_be_sent)
+    # assert(ai_assistant_response.status == Status.Ok)
     assert (query_response.status_code == 200)
     query_response_content = query_response.content.decode('utf-8')
     response_data = json.loads(query_response_content)
@@ -100,7 +98,8 @@ async def test_full_query_process():
     assert (response_data['query_content'] is not None)
     original_query = response_data['query_content']
     assert (original_query is not None)
-    prompt_start = "Please generate response based solely on the information I provide in this text. Do not reference any external knowledge or provide additional details beyond what I have given"
+    prompt_start = "Please generate response based solely on the information I provide in this text. Do not reference " \
+                   "any external knowledge or provide additional details beyond what I have given"
     assert (prompt_start in original_query)
     prompt_finish = "my question is: what did the Islamic Jihad spokesman say?"
     assert (prompt_finish in original_query)
@@ -112,8 +111,10 @@ async def test_full_query_process():
     assert (response_data['context'] is not None)
     context = response_data['context']
 
-    prompt_important_sentence_1 = "\nIn Gaza, Islamic Jihad spokesman Tareq Selmi said Israel had agreed to halt its policy"
-    prompt_important_sentence_2 = "or assassination by the \noccupation will be met with a response and the Zionist enemy bears the responsibility"
+    prompt_important_sentence_1 = "\nIn Gaza, Islamic Jihad spokesman Tareq Selmi said Israel had agreed to halt its " \
+                                  "policy"
+    prompt_important_sentence_2 = "or assassination by the \noccupation will be met with a response and the Zionist " \
+                                  "enemy bears the responsibility"
 
     assert (prompt_important_sentence_1 in context)
     assert (prompt_important_sentence_2 in context)

@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 
 class DocumentMetaData(BaseModel):
-    """"
+    """
     This represents the object that is finally
     shown in the UI workspace.
     """

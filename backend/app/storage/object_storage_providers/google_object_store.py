@@ -5,84 +5,88 @@ from google.cloud import storage
 from app.config import GC_JSON_PATH
 from app.models.documents import Document, DocumentMetaData
 
-# Load the service account key and create a storage client
-client = storage.Client.from_service_account_json(GC_JSON_PATH)
 
-def uploadFile(user_name: str, file: str, file_name: str):
-    try:
-        # Create a user-specific folder path within the bucket
-        bucket_name = "mr-know-all"
+class GoogleStorageClient:
+    def __init__(self, credentials_path: str, bucket_name: str) -> None:
+        """
+        Initialize Google Storage client.
+        Args:
+            credentials_path (str): Path to the credentials JSON file.
+            bucket_name (str): Name of the Google Storage bucket.
+        """
+        self.client = storage.Client.from_service_account_json(credentials_path)
+        self.bucket_name = bucket_name
+        self.bucket = self.client.get_bucket(self.bucket_name)
 
-        # Upload the file to the user's folder in the bucket
-        bucket = client.get_bucket(bucket_name)
-        blob = bucket.blob(f"{user_name}/{file_name}")
+    def upload_file(self, user_name: str, file: str, file_name: str):
+        """
+        Uploads a file to the user's folder in the Google Storage bucket.
 
-        # blob.upload_from_string(file)
-        blob.upload_from_filename(file)
+        Args:
+            user_name (str): Name of the user.
+            file (str): Path to the file to be uploaded.
+            file_name (str): Name of the file in the user's folder.
+        """
+        try:
+            # Create a user-specific folder path within the bucket
+            # Upload the file to the user's folder in the bucket
+            blob = self.bucket.blob(f"{user_name}/{file_name}")
 
-    except Exception as e:
-        raise e
+            blob.upload_from_filename(file)
 
+        except Exception as e:
+            raise e
 
-def deleteFile(user_name: str, file_name: str):
-    try:
-        # Get the bucket
-        bucket = client.get_bucket("mr-know-all")
+    def delete_file(self, user_name: str, file_name: str):
+        try:
+            # Specify the file path within the user's folder
+            file_path = f"{user_name}/{file_name}"
 
-        # Specify the file path within the user's folder
-        file_path = f"{user_name}/{file_name}"
+            # Get the blob (file) within the bucket
+            blob = self.bucket.blob(file_path)
 
-        # Get the blob (file) within the bucket
-        blob = bucket.blob(file_path)
+            # Delete the blob
+            blob.delete()
 
-        # Delete the blob
-        blob.delete()
+        except Exception as e:
+            raise e
 
-    except Exception as e:
-        raise e
+    def get_file_list(self, user_name: str) -> list:
+        try:
+            # bucket = storage.Bucket(self.client, self.bucket_name)
+            str_folder_name_on_gcs = user_name + '/'
+            blobs = self.bucket.list_blobs(prefix=str_folder_name_on_gcs)
+        except Exception as e:
+            raise e
 
+        file_list = []
+        for blob in blobs:
+            doc = DocumentMetaData(user_id=user_name, document_id=blob.name.rpartition('/')[-1],
+                                   document_size=blob.size, creation_time=blob.updated)
+            file_list.append(doc)
 
-def getFileList(user_name: str) -> list:
-    try:
-        bucket = storage.Bucket(client, 'mr-know-all')
-        str_folder_name_on_gcs = user_name + '/'
-        blobs = bucket.list_blobs(prefix=str_folder_name_on_gcs)
-    except Exception as e:
-        raise e
+        return file_list
 
-    fileList = []
-    for blob in blobs:
-        doc = DocumentMetaData(user_id=user_name, document_id=blob.name.rpartition('/')[-1],
-                               document_size=blob.size, creation_time=blob.updated)
-        fileList.append(doc)
+    def get_file_content(self, user_name: str, file_name: str):
+        try:
+            # Specify the file path within the user's folder
+            file_path = f"{user_name}/{file_name}"
+            blob = self.bucket.blob(file_path)
 
-    return fileList
+            # Download the file content as bytes
+            file_content = blob.download_as_bytes()
 
+            return file_content
 
-def getFileContent(user_name: str, file_name: str):
-    try:
-        # Get the bucket
-        bucket_name = "mr-know-all"
-        bucket = client.get_bucket(bucket_name)
+        except Exception as e:
+            raise e
 
-        # Specify the file path within the user's folder
-        file_path = f"{user_name}/{file_name}"
-        blob = bucket.blob(file_path)
+    @staticmethod
+    def convert_doc_to_pdf(doc: Document, file_name: str) -> str:
+        file_string = doc.pdf_encoding
+        path = f'./tmp_files/{file_name}.pdf'
 
-        # Download the file content as bytes
-        file_content = blob.download_as_bytes()
+        with open(path, 'wb') as pdfFile:
+            pdfFile.write(base64.b64decode(file_string))
 
-        return file_content
-
-    except Exception as e:
-        raise e
-
-
-def convertDocToPdf(doc: Document, file_name: str) -> str:
-    file_string = doc.pdf_encoding
-    path = f'./tmp_files/{file_name}.pdf'
-
-    with open(path, 'wb') as pdfFile:
-        pdfFile.write(base64.b64decode(file_string))
-
-    return path
+        return path

@@ -47,6 +47,8 @@ function ChatInput(props) {
     setChatLog((prevChat) => [...prevChat, { chatgpt: false, content: {"message": msg, "ref": null, "metadata": null} }]);
     setMsg("");
 
+    setChatLog((prevChat) => [...prevChat, {chatgpt: true,content: {"message": "...", "ref": null, "metadata": null}}]);
+
     // make an api call to the backend
     let chatResponse = await query({
       "user_id": user.email,
@@ -75,7 +77,7 @@ function ChatInput(props) {
       }
       chatGptResponse = {chatgpt: true,content: content};
     }
-    setChatLog((prevChat) => [...prevChat, chatGptResponse]);
+    setChatLog((prevChat) => [...prevChat.slice(0, -1), chatGptResponse]);
     setWaitingChatGpt(false);
   };
 

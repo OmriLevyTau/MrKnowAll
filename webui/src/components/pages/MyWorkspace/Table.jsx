@@ -1,23 +1,79 @@
-import { Table, Modal,  } from "antd";
-import { useContext, useState,} from "react";
-import { DeleteOutlined, FileTextOutlined } from "@ant-design/icons";
+import { Table, Modal, Spin, Result,  } from "antd";
+import { useContext, useEffect, useState,} from "react";
+import { DeleteOutlined, FileTextOutlined, LoadingOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../pages/AppContent/AppContext";
-import { uploadDocument, deleteDocument } from "../../../services/Api";
+import { uploadDocument, deleteDocument, getAllDocsMetaData } from "../../../services/Api";
 import DragFile from "./DragFile";
 import useFileStore from "./store";
 import GenericModal from "../../common/Modal/GenericModal"
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { CheckOutlined } from "@mui/icons-material";
+
 
 function FileTable() {
   const navigate = useNavigate();
+  const [prefetched, setPrefetched] = useState(false)
   const [pdfFile, setPdfFile] = useState(null);
   const [fileMetaData, setFileMetaData] = useState(null);
 
   const { user, token } = useContext(UserContext);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { files, addFileToStore, removeFileFromStore } = useFileStore();
+  const { files, addFileToStore, removeFileFromStore, setAllDocs } = useFileStore();
 
+  /**
+   * {
+   *  file1: {metadata: null, pdfFile: null, loading: false },
+   *  file2: {metadata: null, pdfFile: null, loading: false }
+   * }
+   */
+
+  const queryClient = useQueryClient()
+
+  const {data} = useQuery({
+      queryKey:["docs"], 
+      queryFn: () => getInitialData(user.email), 
+      enabled: user!=null,
+      refetchOnWindowFocus: false
+    },
+  )
+
+  // Fetch initial data
+  // ======================================================
+
+  const getInitialData = async (user_id) => {
+    console.log("get initial data.")
+    let initialDataResponse = await getAllDocsMetaData(user_id);
+    if (initialDataResponse.status!==200 && initialDataResponse.status!==204){
+      console.log("An error occured while trying to fetch initial data.");
+      return []
+    }
+    let docs = initialDataResponse.data ? initialDataResponse.data.docs_metadata : null
+    if (docs == null){return [];}
+    
+    docs = docs.map((d) => ({
+      name: d.document_id,
+      size: `${Math.round(d.document_size / 1024)} KB`,
+      dateModified: d.creation_time,
+    }))
+    return docs;
+  }
+
+  const prefetch = async () => {
+    // if (!prefetched){
+      await queryClient.prefetchQuery({queryKey:['docs'], queryFn: () => getInitialData(user.email)});
+      setPrefetched(true);
+    // }
+  }
+  prefetch()
+
+  useEffect(()=>{
+    if (data){
+      setAllDocs(data)
+    }
+  },[data])
+  
 
   // Helpers and configs
   // ======================================================
@@ -39,7 +95,6 @@ function FileTable() {
         return record1.name.localeCompare(record2.name);
       },
     },
-
     {
       title: "Size",
       dataIndex: "size",
@@ -49,6 +104,17 @@ function FileTable() {
       title: "Date Modified",
       dataIndex: "dateModified",
       key: "dateModified",
+    },
+    {
+      title: "Progress",
+      key: "progress",
+      render: (record) => {
+        return (
+          <>
+            {loading ? <Spin indicator={<LoadingOutlined style={{fontSize:24}} />} /> : <CheckOutlined /> }
+          </>
+        )
+      }
     },
     {
       title: "Action",
@@ -81,7 +147,6 @@ function FileTable() {
       },
     });
   };
-
 
   // Upload a File
   // ======================================================
@@ -122,6 +187,45 @@ function FileTable() {
       setPdfFile(null);
       setFileMetaData(null);
       setLoading(false);
+    }
+  }
+
+  // Async upload a File
+  // ======================================================
+
+  const onAsyncUploadFile = async () => {
+    setLoading(true);
+    try {
+      const newFile = {
+        name: fileMetaData.name.split(".")[0],
+        size: `${Math.round(fileMetaData.size / 1024)} KB`,
+        dateModified: new Date().toLocaleDateString(),
+      };
+  
+      let filePayload = {
+        "document_metadata": {
+            "user_id": user.email,
+            "document_id": newFile.name
+        },
+        "pdf_encoding": pdfFile
+      }
+    addFileToStore(newFile);
+
+    uploadDocument(filePayload)
+      .then((uploadDocResponse) => {
+        // check if error occured when communicating with the backend
+        if (uploadDocResponse.status!==200 && uploadDocResponse.status!==204){
+          alert("An error occured while trying uploading the file. Please try again.");
+          return; // finally will exectue of course.
+        }
+        // Otherwise, it was successfull. Add the file to the table.
+        setLoading(false);
+      })
+    }
+    finally{
+      setOpen(false);
+      setPdfFile(null);
+      setFileMetaData(null);
     }
   }
 

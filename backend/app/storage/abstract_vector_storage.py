@@ -1,7 +1,7 @@
-'''
-    An abstract class defining basic functionallity each
+"""
+    An abstract class defining basic functionality each
     vector database provider should implement
-'''
+"""
 
 from abc import ABC, abstractmethod
 from typing import List
@@ -17,7 +17,7 @@ from app.services.embeddings import get_embeddings
 
 class AbstractVectorStorage(ABC):
     """
-    This class defines basic functionallity required from an Vector Storage.
+    This class defines basic functionality required from a Vector Storage.
     """
 
     async def upload(self, user_id: str, document: Document) -> str:
@@ -27,7 +27,7 @@ class AbstractVectorStorage(ABC):
             user_id (str): unique id which identifies the user.
             document (Document): pdf document object
         Returns:
-            str: id of the inserted document (if succsseful), otherwise None.
+            str: id of the inserted document (if successful), otherwise None.
         """
         # returns a list of sentences composing the document
         text_chunks = get_documents_chunks(document)
@@ -46,7 +46,7 @@ class AbstractVectorStorage(ABC):
         Given a user_id, document metadata and list of DocumentVectorChunk,
         inserts it to vector database.
         Returns:
-            str: document id (if succsseful), otherwise None.
+            str: document id (if successful), otherwise None.
         """
         raise NotImplementedError
 
@@ -84,19 +84,17 @@ class AbstractVectorStorage(ABC):
         query.embedding = query_embedding
         return await self._query(user_id, query)
 
-    
     @abstractmethod
     async def _query(self, user_id: str, query: Query):
         raise NotImplementedError()
-    
 
     @abstractmethod
     async def get_context(self, user_id: str, context_query: VectorContextQuery):
-        '''
-        Given user_id, docoument_id and a vector_id (id),
+        """
+        Given user_id, document_id and a vector_id (id),
         get the context of the original sentence that represented
         by the vector_id.
-        '''
+        """
         raise NotImplementedError()
 
     @staticmethod
@@ -110,11 +108,11 @@ class AbstractVectorStorage(ABC):
         Returns:
             bool: True if valid, False otherwise
         """
-        return len(query.get_query_content())>0
+        return len(query.get_query_content()) > 0
 
     @staticmethod
     def assemble_documents_vector_chunks(user_id: str, doc_metadata: DocumentMetaData, text_chunks: List[str],
-                                          embeddings) -> List[DocumentVectorChunk]:
+                                         embeddings) -> List[DocumentVectorChunk]:
         """
         Given a user_id, metadata, text chunks and its corresponding embeddings,
         assemble a list of DocumentVectorChunks.
@@ -133,27 +131,25 @@ class AbstractVectorStorage(ABC):
                 each vector_id should be an integer represented as string.
 
         """
-        # number of text chunks and emneddings must agree
-        if (len(text_chunks) != len(embeddings)):
+        # number of text chunks and embeddings must agree
+        if len(text_chunks) != len(embeddings):
             raise ValueError('''AbstractVectorStorage: _assemble_vector_chunks:
                                 chunks and embeddings must agree on size.''')
 
-        
         doc_id = doc_metadata.get_document_id()
         payload = []
 
         for i, chunk in enumerate(text_chunks):
             meta = DocumentVectorChunkMetadata(
-                user_id=user_id, document_id=doc_id, 
+                user_id=user_id, document_id=doc_id,
                 original_content=chunk
-                )
+            )
             payload.append(
                 DocumentVectorChunk(
-                    vector_id=str(i)+"@"+doc_id,
+                    vector_id=str(i) + "@" + doc_id,
                     embedding=embeddings[i],
                     metadata=meta
                 )
             )
 
         return payload
-

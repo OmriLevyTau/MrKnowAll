@@ -19,7 +19,6 @@ export const uploadDocument = async (data, token) => {
     };
     try{
         const result = await axios.request(config)
-        console.log(result)
         return result
     } catch(e){
         return e
@@ -40,7 +39,6 @@ export const deleteDocument = async (user_id, doc_id, token) => {
     };
     try{
         const result = await axios.request(config)
-        console.log(result)
         return result
     } catch(e){
         return e
@@ -61,12 +59,10 @@ export const query = async (query, token) => {
 
     try{
         const result = await axios.request(config)
-        console.log(result)
         return result
     } catch(e){
         return e
     }
-
 }
 
 
@@ -84,10 +80,24 @@ export const getDocById = async (user_id, doc_id, token) => {
 
     try{
         const result = await axios.request(config)
-        console.log(result)
         return result
     } catch(e){
         return e
     }
+}
 
+export const getAllDocsMetaData = async (user_id) => {
+    let config = {
+        method: 'get',
+        url: DOCUMENTS_URL + "/" + user_id,
+        headers: { }
+      };
+
+    try{
+        const result = await axios.request(config)
+        console.log(result);
+        return result
+    } catch(e){
+        return e
+    }
 }

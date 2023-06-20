@@ -27,6 +27,9 @@ log_output_path = EXPLORE_LOCAL_FILE[:-len(suffix)] + "log_output.log"
 log_format = "%(asctime)s - %(name)s -  %(message)s"
 
 logging.basicConfig(level=logging.DEBUG, format=log_format, filename=log_output_path)
+google_logger = logging.getLogger("google")
+google_logger.propagate = False
+google_logger.addHandler(logging.NullHandler())
 
 app = FastAPI()
 

@@ -2,17 +2,25 @@ import { Button, Space, Spin } from "antd";
 import { InboxOutlined } from "@mui/icons-material";
 import Dragger from "antd/es/upload/Dragger";
 
-
+/**
+ * 
+ * files: 
+ * [
+ *  file1: {name: file1, size: null, dateModified: null, pdfFile: null, loading: false },
+ *  file2: {name: file2, size: null, dateModified: null, pdfFile: null, loading: false }
+ * ]
+ */
 function DragFile(props) {
 
     const {onCancel, onSubmit, setFile, setFileMetaData, loading} = props;
+    const dateModified = new Date().toLocaleDateString()
 
     const onChange = (event) => {
         if (event.file.status !== "uploading") {
           let reader = new FileReader();
           reader.onload = (e) => {
             setFile(e.target.result);
-            setFileMetaData(event.file)
+            setFileMetaData(event.file);
           };
           reader.readAsDataURL(event.file.originFileObj);
         }

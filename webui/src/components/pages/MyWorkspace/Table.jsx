@@ -20,7 +20,7 @@ function FileTable() {
   const { user, token } = useContext(UserContext);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { files, addFileToStore, removeFileFromStore, setAllDocs } = useFileStore();
+  const { files, addFileToStore, removeFileFromStore,updateFileInStore, setAllFiles } = useFileStore();
 
   /**
    * {
@@ -43,10 +43,9 @@ function FileTable() {
   // ======================================================
 
   const getInitialData = async (user_id) => {
-    console.log("get initial data.")
     let initialDataResponse = await getAllDocsMetaData(user_id, token);
     if (initialDataResponse.status!==200 && initialDataResponse.status!==204){
-      console.log("An error occured while trying to fetch initial data.");
+      alert("An error occured while trying to fetch initial data.");
       return []
     }
     let docs = initialDataResponse.data ? initialDataResponse.data.docs_metadata : null
@@ -66,11 +65,13 @@ function FileTable() {
       setPrefetched(true);
     // }
   }
-  prefetch()
+
 
   useEffect(()=>{
-    if (data){
-      setAllDocs(data)
+    // solves problem of zustand store get cleared
+    // on refresh when standing on "my-workspace".
+    if (data && data.length > 0){
+      setAllFiles(data)
     }
   },[data])
   
@@ -168,7 +169,6 @@ function FileTable() {
         "pdf_encoding": pdfFile
       }
 
-      console.log("token" +token)
       let uploadDocResponse = await uploadDocument(filePayload, token); // backend
     
 
@@ -234,7 +234,7 @@ function FileTable() {
     <div>
       <DragFile 
         onCancel={onCancel}
-        onSubmit={onUploadFile}
+        onSubmit={onAsyncUploadFile}
         setFile={setPdfFile}
         setFileMetaData={setFileMetaData}
         loading={loading}

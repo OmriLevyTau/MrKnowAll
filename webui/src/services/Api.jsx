@@ -6,7 +6,7 @@ const CHAT_URL = serverURL + "/api/v0/query"
 
 
 export const uploadDocument = async (data, token) => {
-
+    console.log("called uploadDocument");
     let config = {
         method: 'post',
         maxBodyLength: Infinity,
@@ -26,6 +26,7 @@ export const uploadDocument = async (data, token) => {
 }
 
 export const deleteDocument = async (user_id, doc_id, token) => {
+    console.log("called deleteDocument");
     let config = {
         method: 'delete',
         maxBodyLength: Infinity,
@@ -46,6 +47,7 @@ export const deleteDocument = async (user_id, doc_id, token) => {
 }
 
 export const query = async (query, token) => {
+    console.log("called query");
     let config = {
         method: 'post',
         maxBodyLength: Infinity,
@@ -67,6 +69,7 @@ export const query = async (query, token) => {
 
 
 export const getDocById = async (user_id, doc_id, token) => {
+    console.log("called getDocById");
     let config = {
         method: 'get',
         maxBodyLength: Infinity,
@@ -87,6 +90,7 @@ export const getDocById = async (user_id, doc_id, token) => {
 }
 
 export const getAllDocsMetaData = async (user_id, token) => {
+    console.log("called getAllDocsMetaData");
     let config = {
         method: 'get',
         url: DOCUMENTS_URL + "/" + user_id,
@@ -98,7 +102,6 @@ export const getAllDocsMetaData = async (user_id, token) => {
 
     try{
         const result = await axios.request(config)
-        console.log(result);
         return result
     } catch(e){
         return e

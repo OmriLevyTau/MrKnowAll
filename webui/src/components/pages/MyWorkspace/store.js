@@ -10,17 +10,29 @@ import { mountStoreDevtool } from 'simple-zustand-devtools';
  * sessionStorage:
  *  similar to localstorage but is only available for the 
  *  duration of the current browser session.
+ * 
+ * files: 
+ * [
+ *  file1: {name: file1, size: null, dateModified: null, pdfFile: null, loading: false },
+ *  file2: {name: file2, size: null, dateModified: null, pdfFile: null, loading: false }
+ * ]
+ * 
  */
 
-
-const useFileStore = create(
+const useFileTableStore = create(
     persist(
         (set) => ({
             files: [],
-            // Method to add a file to the list
             addFileToStore: (file) => {set((state) => ({files: [...state.files, file]}));},
             removeFileFromStore: (name) => {set((state) => ({files: state.files.filter((file) => file.name !== name)}));},
-            setAllDocs: (docs) => {set((state) => ({files: [...docs]}) )}
+            updateFileInStore: (file) => {
+                set((state) => ({
+                  files: state.files.map(
+                    (f) => (f.name === file.name ? [...state.files, file] : [...state.files, f])
+                    )
+                }))
+              },
+            setAllFiles: (docs) => {set((state) => ({files: [...docs]}) )}
       }), 
       {
         name: 'files-storage', // name of the item in the storage (must be unique)
@@ -29,5 +41,6 @@ const useFileStore = create(
     )
 );
 
-  mountStoreDevtool("File Store", useFileStore);
-  export default useFileStore;
+mountStoreDevtool("File Store", useFileTableStore);
+export default useFileTableStore;
+

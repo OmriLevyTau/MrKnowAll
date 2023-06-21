@@ -28,11 +28,9 @@ function AppContext(props){
     const signInWithGoogle = () => {
       return signInWithPopup(auth, GoogleProvider)
       .then((result) => {
-        console.log(result);
-
       })
       .catch((error) => {
-        console.log(error);
+        alert(error);
       })
     };
     
@@ -52,7 +50,6 @@ function AppContext(props){
       if (currentUser) {
           getToken(currentUser);
           setUser(currentUser);
-          console.log(token);
       } else {
         setUser("");
       }

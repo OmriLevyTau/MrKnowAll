@@ -11,10 +11,9 @@ const Account = () => {
     try {
       await logout();
       navigate('/signin');
-      console.log('You are logged out')
       // ??? need to reset user state ???
     } catch (e) {
-      console.log(e.message);
+      alert(e.message);
     }
   };
 

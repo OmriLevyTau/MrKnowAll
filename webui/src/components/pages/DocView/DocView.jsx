@@ -16,7 +16,6 @@ function DocView() {
     async function fetchFile() {
       try {
         const response = await getDocById(user.email, fileName, token)
-        console.log(response)
         // Create a Blob URL for the file content
         const blobUrl = URL.createObjectURL(response.data);
         setFileContent(blobUrl);

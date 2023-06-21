@@ -13,8 +13,8 @@ import { mountStoreDevtool } from 'simple-zustand-devtools';
  * 
  * files: 
  * [
- *  file1: {name: file1, size: null, dateModified: null, pdfFile: null, loading: false },
- *  file2: {name: file2, size: null, dateModified: null, pdfFile: null, loading: false }
+ *  file1: {name: file1, size: null, dateModified: null,  loading: false },
+ *  file2: {name: file2, size: null, dateModified: null,  loading: false }
  * ]
  * 
  */
@@ -25,13 +25,13 @@ const useFileTableStore = create(
             files: [],
             addFileToStore: (file) => {set((state) => ({files: [...state.files, file]}));},
             removeFileFromStore: (name) => {set((state) => ({files: state.files.filter((file) => file.name !== name)}));},
-            updateFileInStore: (file) => {
-                set((state) => ({
-                  files: state.files.map(
-                    (f) => (f.name === file.name ? [...state.files, file] : [...state.files, f])
-                    )
-                }))
-              },
+            updateFileInStore: (fileName, loading) => {
+              set((state) => ({
+                files: state.files.map((file) =>
+                  file.name === fileName ? { ...file, loading } : file
+                ),
+              }));
+            },
             setAllFiles: (docs) => {set((state) => ({files: [...docs]}) )}
       }), 
       {

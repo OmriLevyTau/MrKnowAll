@@ -6,8 +6,8 @@ import Dragger from "antd/es/upload/Dragger";
  * 
  * files: 
  * [
- *  file1: {name: file1, size: null, dateModified: null, pdfFile: null, loading: false },
- *  file2: {name: file2, size: null, dateModified: null, pdfFile: null, loading: false }
+ *  file1: {name: file1, size: null, dateModified: null, loading: false },
+ *  file2: {name: file2, size: null, dateModified: null, loading: false }
  * ]
  */
 function DragFile(props) {

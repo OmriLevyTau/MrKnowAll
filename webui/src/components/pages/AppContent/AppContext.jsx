@@ -25,13 +25,12 @@ function AppContext(props){
     return signInWithEmailAndPassword(auth, email, password)
     };
 
-    const signInWithGoogle = () => {
-      return signInWithPopup(auth, GoogleProvider)
-      .then((result) => {
-      })
-      .catch((error) => {
+    const signInWithGoogle = async () => {
+      try {
+        const result = await signInWithPopup(auth, GoogleProvider);
+      } catch (error) {
         alert(error);
-      })
+      }
     };
     
     const logout = () => {

@@ -8,7 +8,7 @@ import DragFile from "./DragFile";
 import useFileStore from "./store";
 import GenericModal from "../../common/Modal/GenericModal"
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckOutlined } from "@mui/icons-material";
+import { CheckOutlined, SystemSecurityUpdateWarningOutlined } from "@mui/icons-material";
 
 
 function FileTable() {
@@ -70,13 +70,18 @@ function FileTable() {
   // Helpers and configs
   // ======================================================
   const onCancel = () => {
-    if (!fileMetaData || ! pdfFile) {return ; }
     if (!loading){
       setOpen(false);
       setLoading(false);
       setPdfFile(null);
       setFileMetaData(null);
     }    
+  }
+
+  const onRemove = () => {
+    console.log("remove.")
+    setPdfFile(null);
+    setFileMetaData(null);
   }
 
   const columns = [
@@ -242,6 +247,7 @@ function FileTable() {
     <div>
       <DragFile 
         onCancel={onCancel}
+        onRemove={onRemove}
         onSubmit={onAsyncUploadFile}
         setFile={setPdfFile}
         setFileMetaData={setFileMetaData}
@@ -263,7 +269,7 @@ function FileTable() {
             setOpen={setOpen}
             loading={loading}
             setLoading={setLoading} 
-            onCancel={null}
+            onCancel={onCancel}
             modalButtonText="upload"
             modalTitle={"Upload File"}
             modalContent={content}            

@@ -38,9 +38,9 @@ const Signin = () => {
 
   return (
     <div style={{ display: "flex", flexDirection:"column",}} >
-      <div class="split left"/>        
+      <div className="split left"/>        
       
-      <div class="split right" style={{width: "50%",  flexDirection:"column"}}>
+      <div className="split right" style={{width: "50%",  flexDirection:"column"}}>
             <div >
               <h1>Sign in to your account</h1>
               <div className='google-button-container' style={{

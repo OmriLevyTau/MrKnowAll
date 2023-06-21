@@ -1,7 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "antd";
 import backArrow from "../../../images/back-arrow.png";
-import axios from "axios";
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../AppContent/AppContext";
 import { getDocById } from "../../../services/Api";

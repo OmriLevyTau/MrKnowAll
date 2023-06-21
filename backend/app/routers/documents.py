@@ -9,12 +9,16 @@ from app.models.documents import Document
 from app.storage.object_storage_providers.google_object_store import (
     convertDocToPdf, deleteFile, getFileContent, getFileList, uploadFile)
 from app.storage.vector_storage_providers.pinecone import PineconeVectorStorage
+from logging import getLogger
+
 
 docs_router = APIRouter(
     prefix="/api/v0/documents"
 )
 
 PDF_PREFIX = 'data:application/pdf;base64,'
+
+Logger = getLogger(__name__)
 
 pinecone_client = PineconeVectorStorage()
 
@@ -39,18 +43,18 @@ async def upload_doc(doc: Document) -> UploadDocumentResponse:
     user_id = doc.get_document_metadata().get_user_id()
     doc_id = doc.get_document_metadata().get_document_id()
     doc_encoding = doc.pdf_encoding
-    
     if (doc_encoding is not None) and (doc_encoding.startswith(PDF_PREFIX)):
         doc.pdf_encoding = doc.pdf_encoding[len(PDF_PREFIX):]
     
     path = convertDocToPdf(doc, doc_id)
-
+    
     try:
         upload_response = await pinecone_client.upload(user_id=user_id, document=doc, log=True)
         uploadFile(user_id, path, doc_id)
         os.remove(path)
         return UploadDocumentResponse(status=Status.Ok, doc_metadata=doc.get_document_metadata(), uploaded_vectors_num=upload_response.get("upserted_count"))
-    except Exception:
+    except Exception as e:
+        Logger.error("error in uploading file: %s",str(e))
         return UploadDocumentResponse(status=Status.Failed, doc_metadata=doc.get_document_metadata(), uploaded_vectors_num=0)
 
 @docs_router.get("/{user_id}/{doc_id}")

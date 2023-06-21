@@ -127,18 +127,14 @@ def get_document_chunks_helper(pdf_generator, generator_input: str, log: bool=Fa
     read_pdf_from_bytes_generator, and the generator matching input,
     returns a list of sentences composing the document.
     """
-    start_time = timer()
     pages = pdf_generator(generator_input)
-    elapsed_time = timer() - start_time
     # (included in the time it took to get chunks)
-    if log:
-        Logger.debug("breaking doc into %i took %f seconds",len(pages),elapsed_time)
+    
     result = []
     for page in pages:
         page_sentences = split_method(page)
         for sentence in page_sentences:
             result.append(sentence)
-
     return result
 
 

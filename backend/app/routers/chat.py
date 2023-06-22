@@ -12,7 +12,7 @@ chat_router = APIRouter(prefix="/api/v0")
 openai_api = OpenAIAPI(api_key=OPENAI_API_KEY)
 pinecone_client = PineconeVectorStorage()
 
-SCORE_THRESHOLD = 0.1
+SCORE_THRESHOLD = 0.25
 
 
 @chat_router.post("/query")

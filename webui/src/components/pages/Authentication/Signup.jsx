@@ -4,8 +4,9 @@ import { Form, Input, Button } from 'antd';
 import { UserContext } from '../AppContent/AppContext';
 import { GoogleButton } from 'react-google-button' 
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import useFileTableStore from '../MyWorkspace/store';
+import useFileTableStore from '../MyWorkspace/fileStore';
 import { useQueryClient } from '@tanstack/react-query';
+import useChatStore from '../Chat/chatStore';
 
 const Signup = () => {
   const [email, setEmail] = useState('');
@@ -15,6 +16,7 @@ const Signup = () => {
   const navigate = useNavigate()
   const {signInWithGoogle} = useContext(UserContext);
   const {setAllFiles} = useFileTableStore();
+  const {clearChatStore} = useChatStore();
   const queryClient = useQueryClient();
 
 
@@ -26,6 +28,7 @@ const Signup = () => {
       // delete cache
       queryClient.clear();
       setAllFiles([]);
+      clearChatStore();
       navigate('/home');
     } catch (e) {
       setError(e.message)
@@ -40,6 +43,7 @@ const Signup = () => {
       await createUser(email, password);
       // reset cache
       setAllFiles([]);
+      clearChatStore();
       queryClient.clear();
       navigate('/home');
     } catch (e) {

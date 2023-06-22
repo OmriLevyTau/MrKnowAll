@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../pages/AppContent/AppContext";
 import { uploadDocument, deleteDocument, getAllDocsMetaData } from "../../../services/Api";
 import DragFile from "./DragFile";
-import useFileStore from "./store";
+import useFileStore from "./fileStore";
 import GenericModal from "../../common/Modal/GenericModal"
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckOutlined } from "@mui/icons-material";

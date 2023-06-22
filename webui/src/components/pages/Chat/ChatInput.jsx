@@ -3,17 +3,17 @@ import { Button, Modal } from "antd";
 import { useContext, useState } from "react";
 import { UserContext } from "../AppContent/AppContext";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ChatLogContext } from "../AppContent/ChatContext";
 import TextArea from "antd/es/input/TextArea";
 import { query } from "../../../services/Api";
-import useFileStore from "../MyWorkspace/store";
+import useFileStore from "../MyWorkspace/fileStore";
 import {OPENAI_ERROR, SERVER_ERROR, STATUS_OK} from "../Constants";
+import useChatStore from "./chatStore";
 
 
 function ChatInput(props) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { setChatLog, } = useContext(ChatLogContext);
+  const {addMsgToStore, removeLastMsgFromStore} = useChatStore();
   const { files, addFileToStore, removeFileFromStore } = useFileStore(); 
   const { user , token} = useContext(UserContext);
   const [msg, setMsg] = useState("");
@@ -44,10 +44,9 @@ function ChatInput(props) {
 
     // Update chatLog with user's message
     setWaitingChatGpt(true);
-    setChatLog((prevChat) => [...prevChat, { chatgpt: false, content: {"message": msg, "ref": null, "metadata": null} }]);
+    addMsgToStore({ chatgpt: false, content: {"message": msg, "ref": null, "metadata": null}});
     setMsg("");
-
-    setChatLog((prevChat) => [...prevChat, {chatgpt: true,content: {"message": "...", "ref": null, "metadata": null}}]);
+    addMsgToStore({chatgpt: true,content: {"message": "...", "ref": null, "metadata": null}})
 
     // make an api call to the backend
     let chatResponse = await query({
@@ -77,7 +76,8 @@ function ChatInput(props) {
       }
       chatGptResponse = {chatgpt: true,content: content};
     }
-    setChatLog((prevChat) => [...prevChat.slice(0, -1), chatGptResponse]);
+    removeLastMsgFromStore();
+    addMsgToStore(chatGptResponse);
     setWaitingChatGpt(false);
   };
 

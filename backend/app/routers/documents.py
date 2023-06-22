@@ -20,7 +20,6 @@ pinecone_client = PineconeVectorStorage()
 google_client = GoogleStorageClient(GC_JSON_PATH, "mr-know-all")
 
 
-
 @docs_router.get("/{user_id}")
 async def get_all_docs_metadata(user_id: str) -> GetAllDocumentsMetadataResponse:
     response = GetAllDocumentsMetadataResponse(
@@ -47,7 +46,8 @@ async def upload_doc(doc: Document) -> UploadDocumentResponse:
     path = doc.path
 
     if (path is None and doc_encoding is None) or (path is not None and doc_encoding is not None):
-        raise ValueError("Document should consist of path or (exclusive) encoding only.")
+        raise ValueError(
+            "Document should consist of path or (exclusive) encoding only.")
 
     # if doc is defined by encoding
     if doc_encoding is not None:
@@ -77,7 +77,6 @@ async def upload_doc(doc: Document) -> UploadDocumentResponse:
             # it means we've created the temporary file. Hence, we should
             # clean it as well.
             os.remove(path)
-
 
 
 @docs_router.get("/{user_id}/{doc_id}")

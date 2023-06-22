@@ -6,13 +6,16 @@ from app.models.documents import VectorContextQuery
 from app.models.query import Query
 from app.services.openAIAPI import OpenAIAPI
 from app.storage.vector_storage_providers.pinecone import PineconeVectorStorage
-
+from app.storage.chat_history_db import ChatHistoryManager
+from app.models.chat_history import Clear_chat_request
 
 chat_router = APIRouter(prefix="/api/v0")
 openai_api = OpenAIAPI(api_key=OPENAI_API_KEY)
 pinecone_client = PineconeVectorStorage()
 
 SCORE_THRESHOLD = 0.1
+chat_history_manager = ChatHistoryManager("chat_history.db")
+chat_history_manager.create_table()
 
 
 @chat_router.post("/query")
@@ -64,6 +67,8 @@ async def query(query_request: Query) -> QueryResponse:
 
                 map_doc_id_to_context[cur_vec_doc_id] = map_vec_id_to_context
 
+        print(top_k_closest_vectors[0])
+
         # if there is no relevant sentence, we dont communicate with the AI assistant
         if len(map_doc_id_to_context) == 0:
 
@@ -77,7 +82,6 @@ async def query(query_request: Query) -> QueryResponse:
 
         # if we are here, it means that we have at least one sentence that is relevant to the question
         doc_ids = list(map_doc_id_to_context)
-        doc_ids.sort()
 
         for doc_id in doc_ids:
             all_context = all_context + \
@@ -91,14 +95,23 @@ async def query(query_request: Query) -> QueryResponse:
                 all_context = all_context + cur_doc_id_dict[vec_id]
                 all_context = all_context + "\n"
 
-        prompt_prefix = "Please generate response based solely on the information I provide in this text, without saying what is the reference to your response. Do not reference any external knowledge or provide additional details beyond what I have given."
+        prompt_prefix = "Please generate response based solely on the information I provide in this text, including the history of messages from the user and the AI, without saying what is the reference to your response. Do not reference any external knowledge or provide additional details beyond what I have given."
 
         prompt = prompt_prefix + '\n' + 'my question is: ' + \
             query_content + '\n' + 'the information is: ' + all_context
+
+        # get the last messages and responsed from sqlite DB
+        history = chat_history_manager.get_user_messages_with_answers(
+            user_id=user_id)
+
         AI_assistant_query = Query(
             user_id=user_id, query_id=query_id, query_content=prompt)
-        answer = openai_api.generate_answer(AI_assistant_query)
 
+        answer = openai_api.generate_answer(
+            history=history, query=AI_assistant_query)
+
+        chat_history_manager.add_message(
+            user_id=user_id, chat_id=user_id, user_message=query_content, chat_message=answer.content)
         return QueryResponse(status=Status.Ok,
                              query_content=prompt_prefix + '\n' + 'my question is: ' + query_content,
                              context=all_context,
@@ -112,3 +125,21 @@ async def query(query_request: Query) -> QueryResponse:
                              response=OpenAIResponse(
                                  status=Status.Failed, content=str(e)),
                              references=[])
+
+
+@chat_router.post("/clear_chat")
+async def clear_chat(request: Clear_chat_request):
+    try:
+        chat_history_manager = ChatHistoryManager("chat_history.db")
+        # chat_history_manager.print_DB()
+
+        chat_history_manager.delete_chat_history_by_user_id(request.user_id)
+        # chat_history_manager.print_DB()
+
+        if (len(chat_history_manager.get_user_messages_with_answers(request.user_id)) == 0):
+            return {'status': Status.Ok}
+        else:
+            raise Exception
+
+    except Exception as e:
+        return {'status': Status.Failed, 'error': str(e)}

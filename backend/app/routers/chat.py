@@ -68,7 +68,6 @@ async def query(query: Query) -> QueryResponse:
         references_str = ', '.join(references)
         prompt_prefix = "Please generate response based solely on the information I provide in this text. Do not reference any external knowledge or provide additional details beyond what I have given."
         all_context_as_str = ' '.join(all_context)
-        Logger.debug("all context is: %s",all_context_as_str)
         prompt = prompt_prefix + '\n' + 'my question is: ' + query_content + '\n'+ 'the information is: ' + all_context_as_str + '\n'  + 'the documents referenced in the question are: ' + references_str
         AI_assistant_query = Query(user_id=user_id, query_id=query_id, query_content=prompt)
         answer = openai_api.generate_answer(AI_assistant_query)

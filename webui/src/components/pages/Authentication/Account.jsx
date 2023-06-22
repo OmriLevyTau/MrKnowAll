@@ -7,21 +7,13 @@ import useChatStore from '../Chat/chatStore';
 
 
 const Account = () => {
-    const { user, logout} = useContext(UserContext);
-    const {setAllFiles} = useFileTableStore();
-    const {clearChatStore} = useChatStore();
-    const queryClient = useQueryClient()
+  const { user, logout} = useContext(UserContext);
+  const navigate = useNavigate();
 
-
-    const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
       await logout();
-      // clear cache when done
-      queryClient.clear();
-      setAllFiles([]);
-      clearChatStore();
       navigate('/signin');
     } catch (e) {
       alert(e.message);

@@ -107,3 +107,24 @@ export const getAllDocsMetaData = async (user_id, token) => {
         return e
     }
 }
+
+// Fetch initial data
+// ======================================================
+
+export const getInitialData = async (user_id, token) => {
+    let initialDataResponse = await getAllDocsMetaData(user_id, token);
+    if (initialDataResponse.status!==200 && initialDataResponse.status!==204){
+      alert("An error occured while trying to fetch initial data.");
+      return []
+    }
+    let docs = initialDataResponse.data ? initialDataResponse.data.docs_metadata : null
+    if (docs == null){return [];}
+    
+    docs = docs.map((d) => ({
+      name: d.document_id,
+      size: `${Math.round(d.document_size / 1024)} KB`,
+      dateModified: d.creation_time,
+      loading: false
+    }))
+    return docs;
+  }

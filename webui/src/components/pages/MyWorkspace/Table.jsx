@@ -3,7 +3,7 @@ import { useContext, useEffect, useState,} from "react";
 import { DeleteOutlined, FileTextOutlined, LoadingOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../pages/AppContent/AppContext";
-import { uploadDocument, deleteDocument, getAllDocsMetaData } from "../../../services/Api";
+import { uploadDocument, deleteDocument, getAllDocsMetaData, getInitialData } from "../../../services/Api";
 import DragFile from "./DragFile";
 import useFileStore from "./fileStore";
 import GenericModal from "../../common/Modal/GenericModal"
@@ -27,36 +27,16 @@ function FileTable() {
    * }
    */
 
-  const queryClient = useQueryClient()
+// Fetch initial data
+// ======================================================
 
   const {data} = useQuery({
       queryKey:["docs"], 
-      queryFn: () => getInitialData(user.email), 
+      queryFn: () => getInitialData(user.email, token), 
       enabled: user!=null,
       refetchOnWindowFocus: false,
     },
   )
-
-  // Fetch initial data
-  // ======================================================
-
-  const getInitialData = async (user_id) => {
-    let initialDataResponse = await getAllDocsMetaData(user_id, token);
-    if (initialDataResponse.status!==200 && initialDataResponse.status!==204){
-      alert("An error occured while trying to fetch initial data.");
-      return []
-    }
-    let docs = initialDataResponse.data ? initialDataResponse.data.docs_metadata : null
-    if (docs == null){return [];}
-    
-    docs = docs.map((d) => ({
-      name: d.document_id,
-      size: `${Math.round(d.document_size / 1024)} KB`,
-      dateModified: d.creation_time,
-      loading: false
-    }))
-    return docs;
-  }
 
   useEffect(()=>{
     // solves problem of zustand store get cleared
@@ -64,8 +44,7 @@ function FileTable() {
     if (data && data.length > 0){
       setAllFiles(data)
     }
-  },[data])
-  
+  },[data])  
 
   // Helpers and configs
   // ======================================================

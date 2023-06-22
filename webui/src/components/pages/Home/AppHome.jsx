@@ -4,15 +4,39 @@ import mustach from "../../../images/mustach-home2.png"
 import { CloudUploadOutlined, QuestionAnswerOutlined, QuestionMarkSharp } from "@mui/icons-material";
 
 import { useNavigate } from "react-router-dom";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { UserContext } from "../AppContent/AppContext";
 import TopMenu from "../../common/Menu/TopMenu";
 import ChatInput from "../Chat/ChatInput";
+import { useQuery } from "@tanstack/react-query";
+import { getInitialData } from "../../../services/Api";
+import useFileTableStore from "../MyWorkspace/fileStore";
 const { Panel } = Collapse;
 
 function Landing(){
     const navigate = useNavigate();
-    const { user } = useContext(UserContext);
+    const { user, token } = useContext(UserContext);
+    const { setAllFiles } = useFileTableStore();
+
+// Fetch initial data
+// ======================================================
+
+    const {data} = useQuery({
+        queryKey:["docs"], 
+        queryFn: () => getInitialData(user.email, token), 
+        enabled: user!=null,
+        refetchOnWindowFocus: false,
+    },
+    )
+
+    useEffect(()=>{
+    // solves problem of zustand store get cleared
+    // on refresh when standing on "my-workspace".
+    if (data && data.length > 0){
+        setAllFiles(data)
+    }
+    },[data])  
+
 
     const handleLetsStart = () => {
         if (!user){

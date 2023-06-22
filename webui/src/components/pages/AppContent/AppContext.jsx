@@ -8,6 +8,9 @@ import {
     signInWithPopup,
   } from 'firebase/auth';
   import { auth } from '../Authentication/Firebase'
+import useFileTableStore from "../MyWorkspace/fileStore";
+import useChatStore from "../Chat/chatStore";
+import { useQueryClient } from "@tanstack/react-query";
   
 export const GoogleProvider = new GoogleAuthProvider();
 
@@ -16,17 +19,30 @@ export const UserContext = createContext();
 function AppContext(props){
     const [user, setUser] = useState({});
     const [token, setToken] = useState("");
+    const {setAllFiles} = useFileTableStore();
+    const {clearChatStore} = useChatStore();
+    const queryClient = useQueryClient()
+  
+
+    const clearCache = () => {
+      queryClient.clear();
+      setAllFiles([]);
+      clearChatStore();
+    }
 
     const createUser = (email, password) => {
+        clearCache();
         return createUserWithEmailAndPassword(auth, email, password);
       };
     
     const signIn = (email, password) =>  {
-    return signInWithEmailAndPassword(auth, email, password)
+      clearCache();
+      return signInWithEmailAndPassword(auth, email, password)
     };
 
     const signInWithGoogle = async () => {
       try {
+        clearCache();
         const result = await signInWithPopup(auth, GoogleProvider);
       } catch (error) {
         alert(error);
@@ -34,12 +50,12 @@ function AppContext(props){
     };
     
     const logout = () => {
-        return signOut(auth)
+      clearCache();
+      return signOut(auth)
     };
     
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      
       const getToken = async (currentUser) => {
         const token = await currentUser.getIdToken();
         setToken(token);

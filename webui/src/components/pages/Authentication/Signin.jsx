@@ -14,20 +14,13 @@ const Signin = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const {signIn, signInWithGoogle} = useContext(UserContext);
-  const {setAllFiles} = useFileTableStore();
-  const {clearChatStore} = useChatStore();
-  const queryClient = useQueryClient()
-  
+
 
   const handleGoogleSignIn = async (e) => {
     e.preventDefault();
     setError('')
     try {
       await signInWithGoogle();
-      // clear cache
-      queryClient.clear();
-      setAllFiles([]);
-      clearChatStore();
       navigate('/home')
     } catch (e) {
       setError(e.message)
@@ -40,9 +33,6 @@ const Signin = () => {
     setError('')
     try {
       await signIn(email, password);
-      queryClient.clear();
-      setAllFiles([]);
-      clearChatStore();
       navigate('/home')
     } catch (e) {
       setError(e.message)

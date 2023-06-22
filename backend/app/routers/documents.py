@@ -8,7 +8,7 @@ from app.models.api_models import (GetAllDocumentsMetadataResponse, Status,
 from app.models.documents import Document
 from app.storage.object_storage_providers.google_object_store import GoogleStorageClient
 from app.storage.vector_storage_providers.pinecone import PineconeVectorStorage
-from app.config import GC_JSON_PATH
+from app.config import GC_JSON_PATH, GC_BUCKET_NAME
 
 docs_router = APIRouter(
     prefix="/api/v0/documents"
@@ -17,8 +17,7 @@ docs_router = APIRouter(
 PDF_PREFIX = 'data:application/pdf;base64,'
 
 pinecone_client = PineconeVectorStorage()
-google_client = GoogleStorageClient(GC_JSON_PATH, "mr-know-all")
-
+google_client = GoogleStorageClient(GC_JSON_PATH, GC_BUCKET_NAME)
 
 
 @docs_router.get("/{user_id}")
@@ -77,7 +76,6 @@ async def upload_doc(doc: Document) -> UploadDocumentResponse:
             # it means we've created the temporary file. Hence, we should
             # clean it as well.
             os.remove(path)
-
 
 
 @docs_router.get("/{user_id}/{doc_id}")

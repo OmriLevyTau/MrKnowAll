@@ -4,6 +4,8 @@ import { Form, Input, Button } from 'antd';
 import { UserContext } from '../AppContent/AppContext';
 import { GoogleButton } from 'react-google-button' 
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
+import useFileTableStore from '../MyWorkspace/store';
+import { useQueryClient } from '@tanstack/react-query';
 
 const Signup = () => {
   const [email, setEmail] = useState('');
@@ -12,14 +14,19 @@ const Signup = () => {
   const { createUser} = useContext(UserContext);
   const navigate = useNavigate()
   const {signInWithGoogle} = useContext(UserContext);
+  const {setAllFiles} = useFileTableStore();
+  const queryClient = useQueryClient();
 
 
   const handleGoogleSignIn = async (e) => {
     e.preventDefault();
     setError('')
     try {
-      await signInWithGoogle()
-      navigate('/home')
+      await signInWithGoogle();
+      // delete cache
+      queryClient.clear();
+      setAllFiles([]);
+      navigate('/home');
     } catch (e) {
       setError(e.message)
       alert(e.message)
@@ -31,7 +38,10 @@ const Signup = () => {
     setError('');
     try {
       await createUser(email, password);
-      navigate('/home')
+      // reset cache
+      setAllFiles([]);
+      queryClient.clear();
+      navigate('/home');
     } catch (e) {
       setError(e.message);
       alert(e.message);

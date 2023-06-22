@@ -1,17 +1,25 @@
 import React, {useContext} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../AppContent/AppContext';
+import useFileTableStore from '../MyWorkspace/store';
+import { useQueryClient } from '@tanstack/react-query';
+
 
 const Account = () => {
     const { user, logout} = useContext(UserContext);
+    const {setAllFiles} = useFileTableStore();
+    const queryClient = useQueryClient()
+
 
     const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
       await logout();
+      // clear cache when done
+      queryClient.clear();
+      setAllFiles([]);
       navigate('/signin');
-      // ??? need to reset user state ???
     } catch (e) {
       alert(e.message);
     }

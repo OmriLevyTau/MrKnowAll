@@ -8,7 +8,7 @@ import DragFile from "./DragFile";
 import useFileStore from "./store";
 import GenericModal from "../../common/Modal/GenericModal"
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckOutlined, SystemSecurityUpdateWarningOutlined } from "@mui/icons-material";
+import { CheckOutlined } from "@mui/icons-material";
 
 
 function FileTable() {
@@ -33,7 +33,7 @@ function FileTable() {
       queryKey:["docs"], 
       queryFn: () => getInitialData(user.email), 
       enabled: user!=null,
-      refetchOnWindowFocus: false
+      refetchOnWindowFocus: false,
     },
   )
 

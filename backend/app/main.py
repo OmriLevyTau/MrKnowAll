@@ -17,7 +17,6 @@ from app.config import SERVICE_ACCOUNT_KEY
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-
 # create Firebase connection.
 cred = credentials.Certificate(SERVICE_ACCOUNT_KEY)
 firebase = firebase_admin.initialize_app(cred)
@@ -29,13 +28,13 @@ app.include_router(chat_router)
 app.include_router(docs_router)
 
 
-# @app.exception_handler(HTTPException)
-# async def unicorn_exception_handler(request: Request, exc: HTTPException):
-#     return JSONResponse(
-#         status_code=401,
-#         content={
-#             "message": f"Oops! {exc.name} did something. There goes a rainbow..."},
-#     )
+@app.exception_handler(HTTPException)
+async def unicorn_exception_handler(request: Request, exc: HTTPException):
+    return JSONResponse(
+        status_code=401,
+        content={
+            "message": f"Oops! {exc.name} did something. There goes a rainbow..."},
+    )
 
 
 app.add_middleware(

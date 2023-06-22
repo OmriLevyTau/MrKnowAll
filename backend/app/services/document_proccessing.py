@@ -89,7 +89,6 @@ def split_into_sentences_by_nltk(text: str) -> list[str]:
 # this is the function that get_document_chunks_helper will use to split each page
 split_method = split_into_sentences_by_nltk
 
-
 def get_documents_chunks(document: Document, log:bool = False) -> List[str]:
     """
     Given a Document object, return a list of senenteces.
@@ -115,7 +114,7 @@ def get_documents_chunks(document: Document, log:bool = False) -> List[str]:
         doc_id = document.get_document_metadata().get_document_id()
         elapsed_time = timer() - start_time
         if log:
-            Logger.debug("getting chunks for doc with doc id: %s into %i chunks took %f seconds",doc_id,len(chunks),elapsed_time)
+            Logger.debug("getting chunks for doc: %s into %i chunks took %f seconds",doc_id,len(chunks),elapsed_time)
         return chunks    
     
     raise ValueError("document must have path or pdf_encoding only.")    

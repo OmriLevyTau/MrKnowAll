@@ -1,5 +1,5 @@
 import pytest 
-from logging import getLogger,FileHandler,debug,Formatter
+from logging import (getLogger,FileHandler,debug,Formatter,DEBUG)
 from app.config import EXPLORE_LOCAL_FILE
 from app.main import app
 from app.storage.vector_storage_providers.pinecone import PineconeVectorStorage
@@ -17,8 +17,9 @@ log_output_path = EXPLORE_LOCAL_FILE[:-len(suffix)] + "run_time_test_output.log"
 
 test_logger = getLogger(__name__)
 test_logger.propagate = False
-test_logger.setLevel(debug)
+test_logger.setLevel(DEBUG)
 test_handler = FileHandler(filename=log_output_path)
+test_handler.setLevel(DEBUG)
 log_format = ""
 test_formatter = Formatter(log_format)
 test_handler.setFormatter(test_formatter)

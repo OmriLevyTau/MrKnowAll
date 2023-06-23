@@ -5,7 +5,7 @@ from app.routers.documents import docs_router
 
 import firebase_admin
 
-from app.config import ENABLE_AUTH
+from app.param_tuning import ENABLE_AUTH
 from firebase_admin import credentials, auth
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware

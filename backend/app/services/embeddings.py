@@ -1,6 +1,7 @@
 from typing import List
 
 from sentence_transformers import SentenceTransformer
+from app.param_tuning import EMBEDDING_MODEL, ENABLE_EMBEDDING_MULTIPROC
 
 MAX_SEQ = 128
 """
@@ -8,7 +9,7 @@ MAX_SEQ = 128
     upon the first import or execution of this code. 
     Subsequent calls to the get_embeddings function will reuse the already initialized model
 """
-model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+model = SentenceTransformer(EMBEDDING_MODEL)
 model.max_seq_length = 128
 
 

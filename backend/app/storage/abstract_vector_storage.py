@@ -14,6 +14,7 @@ from app.models.query import Query
 from app.services.document_proccessing import get_documents_chunks
 from app.services.embeddings import get_embeddings
 
+SEP = "{~}"
 
 class AbstractVectorStorage(ABC):
     """
@@ -146,7 +147,7 @@ class AbstractVectorStorage(ABC):
             )
             payload.append(
                 DocumentVectorChunk(
-                    vector_id=str(i) + "@" + doc_id,
+                    vector_id= str(i) + SEP + user_id + SEP + doc_id,
                     embedding=embeddings[i],
                     metadata=meta
                 )

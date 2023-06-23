@@ -1,9 +1,15 @@
 from enum import Enum
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel
 
 from app.models.documents import DocumentMetaData
+
+
+class QueryResponseType(str, Enum):
+    Valid = "Valid"
+    TooLongQuery = "TooLongQuery"
+    NoMatchingVectors = "NoMatchingVectors"
 
 
 class Status(str, Enum):
@@ -39,6 +45,7 @@ class OpenAIResponse(BaseModel):
 class QueryResponse(BaseModel):
     status: Status
     response: OpenAIResponse
+    response_type: Optional[QueryResponseType] = None
     query_content: str
     context: str
     references: list[str]

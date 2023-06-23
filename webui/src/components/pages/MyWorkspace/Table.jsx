@@ -7,9 +7,12 @@ import { uploadDocument, deleteDocument, getAllDocsMetaData, getInitialData } fr
 import DragFile from "./DragFile";
 import useFileStore from "./fileStore";
 import GenericModal from "../../common/Modal/GenericModal"
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckOutlined } from "@mui/icons-material";
+import { useQuery } from "@tanstack/react-query";
+import { CheckOutlined, ErrorOutline } from "@mui/icons-material";
 
+const LOADING = "loading";
+const DONE = "done";
+const ERROR = "error";
 
 function FileTable() {
   const navigate = useNavigate();
@@ -18,12 +21,12 @@ function FileTable() {
 
   const { user, token } = useContext(UserContext);
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const { files, addFileToStore, removeFileFromStore, updateFileInStore, setAllFiles } = useFileStore();
+  const [status, setStatus] = useState(false);
+  const { files, addFileToStore, removeFileFromStore, updateFileStatusInStore, setAllFiles } = useFileStore();
 
   /**
    * {
-   *  file1: {name: file1, size: null, dateModified: null,  loading: false },
+   *  file1: {name: file1, size: null, dateModified: null,  status: loading/done/error },
    * }
    */
 
@@ -50,9 +53,9 @@ function FileTable() {
   // Helpers and configs
   // ======================================================
   const onCancel = () => {
-    if (!loading){
+    if (status !== LOADING){
       setOpen(false);
-      setLoading(false);
+      setStatus(false);
       setPdfFile(null);
       setFileMetaData(null);
     }    
@@ -86,14 +89,17 @@ function FileTable() {
     {
       title: "Progress",
       key: "progress",
-      render: (record) => {
-        return (
-          <>
-            {record.loading ? <Spin indicator={<LoadingOutlined style={{fontSize:24}} />} /> : <CheckOutlined /> }
-          </>
-        )
+      render: (record) => {    
+        if (!record.status || record.status === LOADING) {
+          return <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} />} />;
+        } else if (record.status === DONE) {
+          return <CheckOutlined style={{ color: "green" }} />;
+        } else {
+          console.log(record);
+          return <ErrorOutline style={{ color: "red" }} />;
+        }
       }
-    },
+    },    
     {
       title: "Action",
       key: "action",
@@ -114,7 +120,7 @@ function FileTable() {
   // display file
   // ======================================================
   const onDisplayFile = (record) =>{
-    if (record.loading) { return ; }
+    if (record.status !== DONE ) { return ; }
     navigate("/doc-view/" + record.name)
   }
 
@@ -122,7 +128,7 @@ function FileTable() {
   // Delete a File
   // ======================================================
   const onDeleteFile = (record) => {
-    if (record.loading) { return ; }
+    if (record.status !== DONE ) { return ; }
     Modal.confirm({
       title: "Are you sure you want to delete this file?",
       okText: "yes",
@@ -139,12 +145,13 @@ function FileTable() {
   // ======================================================
 
   const onUploadFile = async () => {
-    setLoading(true);
+    setStatus(true);
     try {
       const newFile = {
         name: fileMetaData.name.split(".")[0],
         size: `${Math.round(fileMetaData.size / 1024)} KB`,
         dateModified: new Date().toLocaleDateString(),
+        status: LOADING
       };
   
       let filePayload = {
@@ -161,9 +168,11 @@ function FileTable() {
     // check if error occured when communicating with the backend
     if (uploadDocResponse.status!==200 && uploadDocResponse.status!==204){
       alert("An error occured while trying uploading the file. Please try again.");
+      updateFileStatusInStore(newFile.name, ERROR);
       return; // finally will exectue of course.
     }
 
+    newFile.status = DONE;
     // Otherwise, it was successfull. Add the file to the table.
     addFileToStore(newFile);
 
@@ -172,16 +181,16 @@ function FileTable() {
       setOpen(false);
       setPdfFile(null);
       setFileMetaData(null);
-      setLoading(false);
+      setStatus(false);
     }
   }
 
   // Async upload a File
   // ======================================================
-  // file1: {name: file1, size: null, dateModified: null,  loading: false }§
+  // file1: {name: file1, size: null, dateModified: null,  status: false }
   const onAsyncUploadFile = async () => {
     if (!fileMetaData || ! pdfFile) {return ; }
-    setLoading(true);
+    setStatus(true);
     // Make a deep copy so state can be used to upload additional files.
     const pdfFileCopy = JSON.parse(JSON.stringify(pdfFile));
     const fileMetaDataCopy = JSON.parse(JSON.stringify(fileMetaData));
@@ -190,7 +199,7 @@ function FileTable() {
         name: fileMetaDataCopy.name.split(".")[0],
         size: `${Math.round(fileMetaDataCopy.size / 1024)} KB`,
         dateModified: new Date().toLocaleDateString(),
-        loading: true
+        status: LOADING
       };
   
       let filePayload = {
@@ -201,7 +210,7 @@ function FileTable() {
         "pdf_encoding": pdfFileCopy
       }
     addFileToStore(newFile);
-    setLoading(false);
+    setStatus(false);
     // We'll clear pdfFile and Metadata now, As there's no need
     // to wait upload will done: we have copies now.
     setPdfFile(null);
@@ -211,11 +220,16 @@ function FileTable() {
         // check if error occured when communicating with the backend
         if (uploadDocResponse.status!==200 && uploadDocResponse.status!==204){
           alert("An error occured while trying uploading the file. Please try again.");
+          updateFileStatusInStore(newFile.name, ERROR);
           return; // finally will exectue of course.
         }
-        // Set the loading state of this praticular file to false.
-        updateFileInStore(newFile.name, false);
+        // update the of this praticular file to done.
+        updateFileStatusInStore(newFile.name, DONE);
       })
+      .catch( (error) => {
+        updateFileStatusInStore(newFile.name, ERROR)
+      }
+      )
     }
     finally{
       setOpen(false);
@@ -231,7 +245,7 @@ function FileTable() {
         onSubmit={onAsyncUploadFile}
         setFile={setPdfFile}
         setFileMetaData={setFileMetaData}
-        loading={loading}
+        loading={status}
       />
     </div>
 
@@ -247,8 +261,8 @@ function FileTable() {
       <GenericModal
             open={open} 
             setOpen={setOpen}
-            loading={loading}
-            setLoading={setLoading} 
+            loading={status}
+            setStatus={setStatus} 
             onCancel={onCancel}
             modalButtonText="upload"
             modalTitle={"Upload File"}

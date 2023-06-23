@@ -25,10 +25,10 @@ const useFileTableStore = create(
             files: [],
             addFileToStore: (file) => {set((state) => ({files: [...state.files, file]}));},
             removeFileFromStore: (name) => {set((state) => ({files: state.files.filter((file) => file.name !== name)}));},
-            updateFileInStore: (fileName, loading) => {
+            updateFileStatusInStore: (fileName, status) => {
               set((state) => ({
                 files: state.files.map((file) =>
-                  file.name === fileName ? { ...file, loading } : file
+                  file.name === fileName ? { ...file, status } : file
                 ),
               }));
             },

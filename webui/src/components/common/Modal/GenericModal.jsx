@@ -5,7 +5,7 @@ function GenericModal(props){
     
     const {
         open, setOpen,
-        loading, setLoading,
+        loading, setStatus,
         onCancel,
         modalButtonText, modalTitle,
         modalContent

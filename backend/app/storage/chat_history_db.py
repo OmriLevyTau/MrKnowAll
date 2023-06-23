@@ -28,7 +28,7 @@ class ChatHistoryManager:
     def get_user_messages_with_answers(self, user_id):
         cursor = self.conn.cursor()
         cursor.execute(
-            'SELECT message, message_type FROM chats WHERE user_id = ? ORDER BY id ASC LIMIT 30', (user_id,))
+            'SELECT message, message_type FROM chats WHERE user_id = ? ORDER BY id DESC LIMIT 30', (user_id,))
         rows = cursor.fetchall()
         messages_with_answers = []
 
@@ -37,7 +37,7 @@ class ChatHistoryManager:
                 messages_with_answers.append("user: " + message + ' ')
             elif message_type == 'AI':
                 messages_with_answers.append("AI: " + message + ' ')
-        return ''.join(messages_with_answers)
+        return ''.join(reversed(messages_with_answers))
 
     def delete_chat_history(self):
         cursor = self.conn.cursor()

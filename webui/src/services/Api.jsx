@@ -90,7 +90,6 @@ export const getDocById = async (user_id, doc_id, token) => {
 }
 
 export const getAllDocsMetaData = async (user_id, token) => {
-    console.log("called getAllDocsMetaData");
     let config = {
         method: 'get',
         url: DOCUMENTS_URL + "/" + user_id,
@@ -112,6 +111,7 @@ export const getAllDocsMetaData = async (user_id, token) => {
 // ======================================================
 
 export const getInitialData = async (user_id, token) => {
+    console.log("getInitData.")
     let initialDataResponse = await getAllDocsMetaData(user_id, token);
     if (initialDataResponse.status!==200 && initialDataResponse.status!==204){
       alert("An error occured while trying to fetch initial data.");
@@ -119,12 +119,12 @@ export const getInitialData = async (user_id, token) => {
     }
     let docs = initialDataResponse.data ? initialDataResponse.data.docs_metadata : null
     if (docs == null){return [];}
-    
     docs = docs.map((d) => ({
       name: d.document_id,
       size: `${Math.round(d.document_size / 1024)} KB`,
       dateModified: d.creation_time,
       loading: false
-    }))
+    }));
+    console.log(docs);
     return docs;
   }

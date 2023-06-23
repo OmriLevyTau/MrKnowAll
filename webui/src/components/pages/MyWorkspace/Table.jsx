@@ -41,7 +41,8 @@ function FileTable() {
   useEffect(()=>{
     // solves problem of zustand store get cleared
     // on refresh when standing on "my-workspace".
-    if (data && data.length > 0){
+    console.log("useEffect.")
+    if (data !== undefined && data != null && data.len>0){
       setAllFiles(data)
     }
   },[data])  

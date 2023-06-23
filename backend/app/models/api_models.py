@@ -10,6 +10,7 @@ class QueryResponseType(str, Enum):
     Valid = "Valid"
     TooLongQuery = "TooLongQuery"
     NoMatchingVectors = "NoMatchingVectors"
+    Failed = "Failed"
 
 
 class Status(str, Enum):

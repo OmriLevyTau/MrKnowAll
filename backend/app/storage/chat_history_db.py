@@ -1,4 +1,5 @@
 import sqlite3
+from typing import List
 
 
 class ChatHistoryManager:
@@ -32,12 +33,15 @@ class ChatHistoryManager:
             'SELECT user_message, chat_message FROM chats WHERE user_id = ? ORDER BY id ASC LIMIT 6', (user_id,))
         rows = cursor.fetchall()
         history = ""
+        number_of_qa = 0
 
         for user_message, chat_message in rows:
-            history = history + "user:" + user_message + \
-                "\n" + "AI:" + chat_message + "\n \n "
+            combined_messages = "user-question:" + user_message + \
+                "\n" + "AI-answer:" + chat_message + "\n \n "
+            history = history + combined_messages
+            number_of_qa = number_of_qa + 1
 
-        return history
+        return history, number_of_qa
 
     def delete_chat_history_by_user_id(self, user_id):
         cursor = self.conn.cursor()

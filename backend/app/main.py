@@ -10,8 +10,9 @@ from firebase_admin import credentials, auth
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from fastapi.exceptions import HTTPException
 from fastapi.security import OAuth2PasswordBearer
+from app.storage.chat_history_db import ChatHistoryManager
+
 
 from app.config import SERVICE_ACCOUNT_KEY
 
@@ -28,6 +29,8 @@ app = FastAPI()
 app.include_router(chat_router)
 app.include_router(docs_router)
 
+chat_history_manager = ChatHistoryManager("chat_history.db")
+chat_history_manager.create_table()
 
 # @app.exception_handler(HTTPException)
 # async def unicorn_exception_handler(request: Request, exc: HTTPException):

@@ -58,4 +58,3 @@ class ChatHistoryManager:
         cur = self.conn.cursor()
         cur.execute("SELECT * FROM chats")
         print(cur.fetchall())
-        self.conn.commit()

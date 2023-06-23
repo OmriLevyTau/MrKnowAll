@@ -15,7 +15,6 @@ pinecone_client = PineconeVectorStorage()
 
 SCORE_THRESHOLD = 0.1
 chat_history_manager = ChatHistoryManager("chat_history.db")
-chat_history_manager.create_table()
 
 
 @chat_router.post("/query")
@@ -67,8 +66,6 @@ async def query(query_request: Query) -> QueryResponse:
 
                 map_doc_id_to_context[cur_vec_doc_id] = map_vec_id_to_context
 
-        print(top_k_closest_vectors[0])
-
         # if there is no relevant sentence, we dont communicate with the AI assistant
         if len(map_doc_id_to_context) == 0:
 
@@ -95,7 +92,7 @@ async def query(query_request: Query) -> QueryResponse:
                 all_context = all_context + cur_doc_id_dict[vec_id]
                 all_context = all_context + "\n"
 
-        prompt_prefix = "Please generate response based solely on the information I provide in this text, including the history of messages from the user and the AI, without saying what is the reference to your response. Do not reference any external knowledge or provide additional details beyond what I have given."
+        prompt_prefix = "Please generate response based solely on the information I provide in this text. in your answer, you can use the previous messages from the AI and user for context, but dont base your answer on it. In your answer, dont mention what is the reference to your response. Do not reference any external knowledge or provide additional details beyond what I have given."
 
         prompt = prompt_prefix + '\n' + 'my question is: ' + \
             query_content + '\n' + 'the information is: ' + all_context
@@ -112,6 +109,7 @@ async def query(query_request: Query) -> QueryResponse:
 
         chat_history_manager.add_message(
             user_id=user_id, chat_id=user_id, user_message=query_content, chat_message=answer.content)
+
         return QueryResponse(status=Status.Ok,
                              query_content=prompt_prefix + '\n' + 'my question is: ' + query_content,
                              context=all_context,
@@ -130,7 +128,6 @@ async def query(query_request: Query) -> QueryResponse:
 @chat_router.post("/clear_chat")
 async def clear_chat(request: Clear_chat_request):
     try:
-        chat_history_manager = ChatHistoryManager("chat_history.db")
         # chat_history_manager.print_DB()
 
         chat_history_manager.delete_chat_history_by_user_id(request.user_id)

@@ -7,6 +7,8 @@ from app.models.query import Query
 from app.services.openAIAPI import OpenAIAPI
 from app.storage.vector_storage_providers.pinecone import PineconeVectorStorage
 
+from app.storage.abstract_vector_storage import  SEP
+
 
 chat_router = APIRouter(prefix="/api/v0")
 openai_api = OpenAIAPI(api_key=OPENAI_API_KEY)
@@ -58,11 +60,14 @@ async def query(query_request: Query) -> QueryResponse:
                 for i, key in enumerate(vectors):
                     # vec is a key to dict
                     res = vectors.get(key)
-                    vec_id = res.get("id").split("@")[0]
+                    vec_id = res.get("id").split(SEP)[0]
                     context = res.get("metadata").get("original_content")
                     map_vec_id_to_context[vec_id] = context
 
-                map_doc_id_to_context[cur_vec_doc_id] = map_vec_id_to_context
+                if not cur_vec_doc_id in map_doc_id_to_context:
+                    map_doc_id_to_context[cur_vec_doc_id] = map_vec_id_to_context
+                else:
+                    map_doc_id_to_context[cur_vec_doc_id].update(map_vec_id_to_context)
 
         # if there is no relevant sentence, we dont communicate with the AI assistant
         if len(map_doc_id_to_context) == 0:

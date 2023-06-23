@@ -1,4 +1,4 @@
-import { Table, Modal, Spin, Result,  } from "antd";
+import { Table, Modal, Spin, Result, Popover,  } from "antd";
 import { useContext, useEffect, useState,} from "react";
 import { DeleteOutlined, FileTextOutlined, LoadingOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -95,8 +95,11 @@ function FileTable() {
         } else if (record.status === DONE) {
           return <CheckOutlined style={{ color: "green" }} />;
         } else {
-          console.log(record);
-          return <ErrorOutline style={{ color: "red" }} />;
+          return (
+            <Popover content={"Error while proccessing file. Please delete and try again."} trigger="hover">
+              <ErrorOutline style={{ color: "red" }}/>
+            </Popover>   
+          )
         }
       }
     },    
@@ -128,20 +131,33 @@ function FileTable() {
   // Delete a File
   // ======================================================
   const onDeleteFile = (record) => {
-    if (record.status !== DONE ) { return ; }
-    Modal.confirm({
-      title: "Are you sure you want to delete this file?",
-      okText: "yes",
-      cancelText: "No",
-      okType: "danger",
-      onOk: () => {
-        deleteDocument(user.email, record.name, token); // backend
-        removeFileFromStore(record.name);
-        // getInitialData(user.email, token);
-        
-      },
-    });
-  };
+    if (record.status === LOADING ) { return ; }
+    if (record.status === DONE){
+      Modal.confirm({
+        title: "Are you sure you want to delete this file?",
+        okText: "yes",
+        cancelText: "No",
+        okType: "danger",
+        onOk: () => {
+          deleteDocument(user.email, record.name, token); // backend
+          removeFileFromStore(record.name);
+          // getInitialData(user.email, token);
+        },
+      });
+    } else {
+      Modal.confirm({
+        title: "Remove record from table",
+        okText: "yes",
+        cancelText: "No",
+        okType: "danger",
+        onOk: () => {
+          removeFileFromStore(record.name);
+          // getInitialData(user.email, token);
+        },
+      });
+    }
+  }
+
 
   // Upload a File
   // ======================================================
@@ -229,7 +245,8 @@ function FileTable() {
         updateFileStatusInStore(newFile.name, DONE);
       })
       .catch( (error) => {
-        updateFileStatusInStore(newFile.name, ERROR)
+        updateFileStatusInStore(newFile.name, ERROR);
+        alert("Encountered problem while uploading: " + newFile.name);
       }
       )
     }

@@ -1,8 +1,12 @@
-ENABLE_AUTH = True
+ENABLE_AUTH = False
 
-SPLIT_METHOD = "nltk"
+SPLIT_METHOD= "nltk"
+# SPLIT_METHOD = "hand"
+# TEXT_EXTRACTION_METHOD = "PyPDF2"
+TEXT_EXTRACTION_METHOD = "fitz"
 EMBEDDING_MODEL="sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
 ENABLE_EMBEDDING_MULTIPROC = False
 # EMBEDDING_MODEL="sentence-transformers/all-MiniLM-L6-v2"
 
 PINECONE_BATCH_SIZE = 100
+

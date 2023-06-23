@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import HTTPException
 from fastapi.security import OAuth2PasswordBearer
-
+from logging import basicConfig
 from app.config import SERVICE_ACCOUNT_KEY
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")

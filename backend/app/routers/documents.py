@@ -10,6 +10,8 @@ from app.storage.object_storage_providers.google_object_store import GoogleStora
 from app.storage.vector_storage_providers.pinecone import PineconeVectorStorage
 from app.config import GC_JSON_PATH
 
+
+
 docs_router = APIRouter(
     prefix="/api/v0/documents"
 )
@@ -55,6 +57,7 @@ async def upload_doc(doc: Document) -> UploadDocumentResponse:
         if doc_encoding.startswith(PDF_PREFIX):
             doc.pdf_encoding = doc.pdf_encoding[len(PDF_PREFIX):]
         path = google_client.convert_doc_to_pdf(doc, doc_id)
+        doc.path = path
 
     try:
         upload_response = await pinecone_client.upload(user_id=user_id, document=doc)

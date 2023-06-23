@@ -144,8 +144,7 @@ class PineconeVectorStorage(AbstractVectorStorage):
                                 range(target_vec_id - window_size, target_vec_id + window_size + 1)])
 
         flat_ids = [id for sublist in ids_windows for id in sublist]
-        print("flat_ids:")
-        print(flat_ids)
+
         try:
             context_response = self.index.fetch(ids=flat_ids)
         except Exception as error:

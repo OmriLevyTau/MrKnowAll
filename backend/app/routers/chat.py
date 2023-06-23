@@ -28,8 +28,6 @@ def check_if_valid_query(query_request: Query) -> bool:
         query_content = query_request.query_content
         words_num = len(query_content.split(" "))
         chars_num = len(query_content)
-        print(words_num)
-        print(chars_num)
 
         if words_num > MAX_NUM_OF_WORDS_IN_QUERY or chars_num > MAX_NUM_OF_CHARS_IN_QUERY:
             return False
@@ -50,6 +48,7 @@ async def query(query_request: Query) -> QueryResponse:
     """
 
     try:
+        # get the relevant parameters of the current query
         user_id = query_request.user_id
         query_id = query_request.query_id
         query_content = query_request.query_content
@@ -82,16 +81,13 @@ async def query(query_request: Query) -> QueryResponse:
             map_vec_id_to_context = {}
             cur_vec_doc_id = vector_data.get('metadata').get('document_id')
             cur_vec_score = vector_data.get('score')
-
             # get context only for setnteces that are relevant to the question
             if (cur_vec_score >= SCORE_THRESHOLD):
-                print(vector_data.get('id'))
                 references.add(cur_vec_doc_id)
                 context_query = VectorContextQuery(
                     user_id=user_id, document_id=cur_vec_doc_id, vector_id=vector_data.get('id'))
                 context_query_list.append(context_query)
 
-        print("got here")
         # if there is no relevant sentence, we dont communicate with the AI assistant
         if len(context_query_list) == 0:
             without_API_communication_response = OpenAIResponse(
@@ -136,7 +132,7 @@ async def query(query_request: Query) -> QueryResponse:
                 all_context = all_context + cur_doc_id_dict[vec_id]
                 all_context = all_context + "\n"
 
-        prompt_prefix = "Please generate response based solely on the information I provide in this text. in your answer, you can use the previous messages from the AI and user for context, but dont base your answer on it. In your answer, dont mention what is the reference to your response. Do not reference any external knowledge or provide additional details beyond what I have given."
+        prompt_prefix = "Please generate response based solely on the information I provide in this text. in your answer, you can use the previous messages from the AI and user for context, but dont base your answer on it. In your answer, dont mention what is the reference to your response. Do not reference any external knowledge or provide additional details beyond what I have given. \n"
 
         prompt = prompt_prefix + '\n' + 'my question is: ' + \
             query_content + '\n' + 'the information is: ' + all_context

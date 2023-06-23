@@ -1,16 +1,16 @@
-import { Button, Collapse } from "antd";
+import { Collapse } from "antd";
 import HomeCard from "../../common/Card/HomeCard";
 import mustach from "../../../images/mustach-home2.png"
-import { CloudUploadOutlined, QuestionAnswerOutlined, QuestionMarkSharp } from "@mui/icons-material";
 
 import { useNavigate } from "react-router-dom";
-import { useContext, useEffect } from "react";
+import { useContext, } from "react";
 import { UserContext } from "../AppContent/AppContext";
 import TopMenu from "../../common/Menu/TopMenu";
 import ChatInput from "../Chat/ChatInput";
 import { useQuery } from "@tanstack/react-query";
-import { getInitialData } from "../../../services/Api";
+import { getAllDocsMetaData } from "../../../services/Api";
 import useFileTableStore from "../MyWorkspace/fileStore";
+import { DONE } from "../MyWorkspace/Table";
 const { Panel } = Collapse;
 
 function Landing(){
@@ -18,33 +18,36 @@ function Landing(){
     const { user, token } = useContext(UserContext);
     const { setAllFiles } = useFileTableStore();
 
-// Fetch initial data
-// ======================================================
-
-    const {data} = useQuery({
-        queryKey:["docs"], 
-        queryFn: () => getInitialData(user.email, token), 
-        enabled: (token!==undefined && token!=null),
-        refetchOnWindowFocus: false,
-    },
-    )
-
-    useEffect(()=>{
-    // solves problem of zustand store get cleared
-    // on refresh when standing on "my-workspace".
-    if (data && data.length > 0){
-        setAllFiles(data)
-    }
-    },[data])  
-
-
-    const handleLetsStart = () => {
-        if (!user){
-            navigate('/signin')
+    // Fetch initial data
+    // ======================================================
+    const getUserAllDocsMetaData = async (user_id, token) => {
+        if (!user_id || !token){return []};
+        let initialDataResponse = await getAllDocsMetaData(user_id, token);
+        if (initialDataResponse.status!==200 && initialDataResponse.status!==204){
+            alert("An error occured while trying to fetch initial data: ");
+            return []
         }
-        navigate('/home')
-    }
+        let docs = initialDataResponse.data ? initialDataResponse.data.docs_metadata : null
+        if (docs == null){return [];}
+        docs = docs.map((d) => ({
+            name: d.document_id,
+            size: `${Math.round(d.document_size / 1024)} KB`,
+            dateModified: new Date(d.creation_time).toLocaleDateString(),
+            status: DONE
+        }));
+        setAllFiles(docs);
+        }
 
+        const {data} = useQuery({
+            queryKey:["docs"], 
+            queryFn: () => getUserAllDocsMetaData(user.email, token), 
+            enabled: (token!==undefined && token!=null),
+            refetchOnWindowFocus: false,
+            },
+        )
+
+
+    // ======================================================
 
     return(
         <div className="generic-page-holder" >

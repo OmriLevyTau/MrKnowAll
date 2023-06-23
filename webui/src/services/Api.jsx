@@ -123,9 +123,8 @@ export const getInitialData = async (user_id, token) => {
     docs = docs.map((d) => ({
       name: d.document_id,
       size: `${Math.round(d.document_size / 1024)} KB`,
-      dateModified: d.creation_time,
+      dateModified: new Date(d.creation_time).toLocaleDateString(),
       status: DONE
     }));
-    console.log(docs);
     return docs;
   }

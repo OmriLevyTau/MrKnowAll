@@ -1,10 +1,11 @@
 import base64
-
+import string
+import random
 from google.cloud import storage
 
-from app.config import GC_JSON_PATH
 from app.models.documents import Document, DocumentMetaData
 
+ASCII_LETTERS = string.ascii_letters
 
 class GoogleStorageClient:
     def __init__(self, credentials_path: str, bucket_name: str) -> None:
@@ -84,7 +85,9 @@ class GoogleStorageClient:
     @staticmethod
     def convert_doc_to_pdf(doc: Document, file_name: str) -> str:
         file_string = doc.pdf_encoding
-        path = f'./tmp_files/{file_name}.pdf'
+        rand_str = ''.join(random.choice(ASCII_LETTERS) for i in range(10))
+        unique_file_name = file_name + "_" + rand_str
+        path = f'./tmp_files/{unique_file_name}.pdf'
 
         with open(path, 'wb') as pdfFile:
             pdfFile.write(base64.b64decode(file_string))

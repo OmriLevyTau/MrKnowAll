@@ -25,39 +25,50 @@ function FileTable() {
   const { files, addFileToStore, removeFileFromStore, updateFileStatusInStore, setAllFiles } = useFileStore();
 
   /**
-   * {
+   * [
    *  file1: {name: file1, size: null, dateModified: null,  status: loading/done/error },
-   * }
+   * ]
    */
 
 // Fetch initial data
 // ======================================================
+  const getUserAllDocsMetaData = async (user_id, token) => {
+    if (!user_id || !token){return []};
+    let initialDataResponse = await getAllDocsMetaData(user_id, token);
+    if (initialDataResponse.status!==200 && initialDataResponse.status!==204){
+      return []
+    }
+    let docs = initialDataResponse.data ? initialDataResponse.data.docs_metadata : null
+    if (docs == null){return [];}
+    docs = docs.map((d) => ({
+      name: d.document_id,
+      size: `${Math.round(d.document_size / 1024)} KB`,
+      dateModified: new Date(d.creation_time).toLocaleDateString(),
+      status: DONE
+    }));
+    setAllFiles(docs);
+  }
 
   const {data} = useQuery({
       queryKey:["docs"], 
-      queryFn: () => getInitialData(user.email, token), 
+      queryFn: () => getUserAllDocsMetaData(user.email, token), 
       enabled: (token!==undefined && token!=null),
       refetchOnWindowFocus: false,
     },
   )
 
-  useEffect(()=>{
-    // solves problem of zustand store get cleared
-    // on refresh when standing on "my-workspace".
-    console.log("useEffect.")
-    if (data !== undefined && data != null && data.len>0){
-      setAllFiles(data)
-    }
-  },[data])  
-
   // Helpers and configs
   // ======================================================
+  const reset = () => {
+    setStatus(false);
+    setPdfFile(null);
+    setFileMetaData(null);
+  }
+
   const onCancel = () => {
     if (status !== LOADING){
       setOpen(false);
-      setStatus(false);
-      setPdfFile(null);
-      setFileMetaData(null);
+      reset();
     }    
   }
 
@@ -65,6 +76,11 @@ function FileTable() {
     console.log("remove.")
     setPdfFile(null);
     setFileMetaData(null);
+  }
+
+  const validateFileName = (name) => {
+    let pattern = /^[\x00-\x7F]+$/;
+    return pattern.test(name);
   }
 
   const columns = [
@@ -141,7 +157,6 @@ function FileTable() {
         onOk: () => {
           deleteDocument(user.email, record.name, token); // backend
           removeFileFromStore(record.name);
-          // getInitialData(user.email, token);
         },
       });
     } else {
@@ -152,7 +167,6 @@ function FileTable() {
         okType: "danger",
         onOk: () => {
           removeFileFromStore(record.name);
-          // getInitialData(user.email, token);
         },
       });
     }
@@ -181,11 +195,9 @@ function FileTable() {
       }
 
       let uploadDocResponse = await uploadDocument(filePayload, token); // backend
-    
 
     // check if error occured when communicating with the backend
     if (uploadDocResponse.status!==200 && uploadDocResponse.status!==204){
-      alert("An error occured while trying uploading the file. Please try again.");
       updateFileStatusInStore(newFile.name, ERROR);
       return; // finally will exectue of course.
     }
@@ -197,9 +209,7 @@ function FileTable() {
     }
     finally{
       setOpen(false);
-      setPdfFile(null);
-      setFileMetaData(null);
-      setStatus(false);
+      reset();
     }
   }
 
@@ -227,28 +237,29 @@ function FileTable() {
         },
         "pdf_encoding": pdfFileCopy
       }
-    addFileToStore(newFile);
-    setStatus(false);
-    // We'll clear pdfFile and Metadata now, As there's no need
-    // to wait upload will done: we have copies now.
-    setPdfFile(null);
-    setFileMetaData(null);
-    uploadDocument(filePayload, token)
-      .then((uploadDocResponse) => {
-        // check if error occured when communicating with the backend
-        if (uploadDocResponse.status!==200 && uploadDocResponse.status!==204){
-          alert("An error occured while trying uploading the file. Please try again.");
-          updateFileStatusInStore(newFile.name, ERROR);
-          return; // finally will exectue of course.
-        }
-        // update the of this praticular file to done.
-        updateFileStatusInStore(newFile.name, DONE);
-      })
-      .catch( (error) => {
-        updateFileStatusInStore(newFile.name, ERROR);
-        alert("Encountered problem while uploading: " + newFile.name);
+      let valid = validateFileName(newFile.name);
+      if (!valid){
+        alert("Must be english.")
+        reset(); 
+        return;
       }
-      )
+      
+      addFileToStore(newFile);
+      reset();
+      uploadDocument(filePayload, token)
+        .then((uploadDocResponse) => {
+          // check if error occured when communicating with the backend
+          if (uploadDocResponse.status!==200 && uploadDocResponse.status!==204){
+            updateFileStatusInStore(newFile.name, ERROR);
+            return; // finally will exectue of course.
+          }
+          // update the of this praticular file to done.
+          updateFileStatusInStore(newFile.name, DONE);
+        })
+        .catch( (error) => {
+          updateFileStatusInStore(newFile.name, ERROR);
+          }
+        )
     }
     finally{
       setOpen(false);

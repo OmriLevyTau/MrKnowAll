@@ -52,7 +52,7 @@ function ChatInput(props) {
     let chatResponse = await query({
       "user_id": user.email,
       "query_id": files.length,
-      "query_content": msg
+      "query_content": msg.trim()
     }, token);
    
     let chatGptResponse = {chatgpt: true,content: SERVER_ERROR}; // default.

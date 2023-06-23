@@ -69,6 +69,10 @@ Ant-design
   font: arial;
 
 }
+.ant-menu-item:hover{
+  background-color: rgb(102, 102, 102, 0.3) !important;
+  color: white !important;
+}
 
 
 /*

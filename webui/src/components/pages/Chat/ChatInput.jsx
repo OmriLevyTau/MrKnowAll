@@ -5,6 +5,7 @@ import { UserContext } from "../AppContent/AppContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import TextArea from "antd/es/input/TextArea";
 import { query } from "../../../services/Api";
+import { LoadingOutlined } from "@ant-design/icons";
 import useFileStore from "../MyWorkspace/fileStore";
 import {OPENAI_ERROR, SERVER_ERROR, STATUS_OK} from "../Constants";
 import useChatStore from "./chatStore";
@@ -17,7 +18,7 @@ function ChatInput(props) {
   const { files, addFileToStore, removeFileFromStore } = useFileStore(); 
   const { user , token} = useContext(UserContext);
   const [msg, setMsg] = useState("");
-  const [waitingChatGpt, setWaitingChatGpt] = useState(false);
+  const [waitingChatGpt, setWaitingChatGpt] = useState(false)
   const { width } = props;
 
   // Helpers and configs
@@ -46,7 +47,7 @@ function ChatInput(props) {
     setWaitingChatGpt(true);
     addMsgToStore({ chatgpt: false, content: {"message": msg, "ref": null, "metadata": null}});
     setMsg("");
-    addMsgToStore({chatgpt: true,content: {"message": "...", "ref": null, "metadata": null}})
+    addMsgToStore({chatgpt: true,content: {"message": <LoadingOutlined style={{ color: "black" }} /> , "ref": null, "metadata": null}})
 
     // make an api call to the backend
     let chatResponse = await query({

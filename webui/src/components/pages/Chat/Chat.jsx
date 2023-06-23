@@ -1,4 +1,4 @@
-import  { useEffect, useRef } from 'react';
+import  { useEffect, useRef, useState } from 'react';
 import ChatInput from './ChatInput';
 import ChatLog from './ChatLog';
 import SideMenu from '../../common/Menu/SideMenu';

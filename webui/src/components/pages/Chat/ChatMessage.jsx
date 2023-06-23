@@ -40,7 +40,7 @@ function ChatMessage(props) {
       <div style={{ display:"flex", flexDirection:"column", overflowWrap: "anywhere" , fontFamily:'sans-serif'}} >
         <p>{content.message}</p>
         <br/>
-        {chatgpt && content.ref ? "Based-on: " + content.ref : null}        
+        {chatgpt && content.ref && content.ref.length > 0 ? "Based-on: " + content.ref : null}        
       </div>
     </div>
   </Card>

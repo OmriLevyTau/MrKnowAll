@@ -55,16 +55,18 @@ async def query(query_request: Query) -> QueryResponse:
         query_content = query_request.query_content
 
         if not check_if_valid_query(query_request=query_request):
-            print("not")
             without_API_communication_response = OpenAIResponse(
-                status=Status.Ok, content='We apologize for the inconvenience, but to ensure a smoother experience, we kindly request that you limit your question to a maximum of 128 words and 512 characters. Please take a moment to edit your question accordingly. Your cooperation is greatly appreciated, and we thank you for your understanding!')
+                status=Status.Ok,
+                content='We apologize for the inconvenience, but to ensure a smoother experience, we kindly request that you limit your question to a maximum of 128 words and 512 characters. Please take a moment to edit your question accordingly. Your cooperation is greatly appreciated, and we thank you for your understanding!'
+            )
+
             return QueryResponse(status=Status.Ok,
                                  response_type=QueryResponseType.TooLongQuery,
                                  query_content=query_content,
                                  context='',
                                  response=without_API_communication_response,
                                  references=[])
-        print("yes")
+
         # query vector DB
         vector_db_query_response = await pinecone_client.query(user_id=user_id, query=query_request)
 
@@ -83,15 +85,25 @@ async def query(query_request: Query) -> QueryResponse:
 
             # get context only for setnteces that are relevant to the question
             if (cur_vec_score >= SCORE_THRESHOLD):
+                print(vector_data.get('id'))
                 references.add(cur_vec_doc_id)
                 context_query = VectorContextQuery(
                     user_id=user_id, document_id=cur_vec_doc_id, vector_id=vector_data.get('id'))
                 context_query_list.append(context_query)
 
-        # print("context query list: \n ")
-        # print(context_query_list)
+        print("got here")
+        # if there is no relevant sentence, we dont communicate with the AI assistant
+        if len(context_query_list) == 0:
+            without_API_communication_response = OpenAIResponse(
+                status=Status.Ok, content='We are sorry, but it seems that there is no relevant sentences to your question in your files. You are more than welcome to ask a different question, or upload files which are relevant to your question')
+            return QueryResponse(status=Status.Ok,
+                                 response_type=QueryResponseType.NoMatchingVectors,
+                                 query_content=query_content,
+                                 context='',
+                                 response=without_API_communication_response,
+                                 references=[])
 
-        # get all the
+        # get all the context vectors for the relevane vectors
         context_response = await pinecone_client.get_context_for_list(user_id=user_id, context_query_list=context_query_list)
 
         vectors = context_response.get("vectors")
@@ -103,28 +115,18 @@ async def query(query_request: Query) -> QueryResponse:
             context = res.get("metadata").get("original_content")
             map_vec_id_to_context[vec_id] = context
 
-        if not cur_vec_doc_id in map_doc_id_to_context:
-            map_doc_id_to_context[cur_vec_doc_id] = map_vec_id_to_context
-        else:
-            map_doc_id_to_context[cur_vec_doc_id].update(map_vec_id_to_context)
-
-        # if there is no relevant sentence, we dont communicate with the AI assistant
-        if len(map_doc_id_to_context) == 0:
-            without_API_communication_response = OpenAIResponse(
-                status=Status.Ok, content='We are sorry, but it seems that there is no relevant sentences to your question in your files. You are more than welcome to ask a different question, or upload files which are relevant to your question')
-            return QueryResponse(status=Status.Ok,
-                                 response_type=QueryResponseType.NoMatchingVectors,
-                                 query_content=query_content,
-                                 context='',
-                                 response=without_API_communication_response,
-                                 references=[])
+            if not cur_vec_doc_id in map_doc_id_to_context:
+                map_doc_id_to_context[cur_vec_doc_id] = map_vec_id_to_context
+            else:
+                map_doc_id_to_context[cur_vec_doc_id].update(
+                    map_vec_id_to_context)
 
         # if we are here, it means that we have at least one sentence that is relevant to the question
         doc_ids = list(map_doc_id_to_context)
 
         for doc_id in doc_ids:
             all_context = all_context + \
-                "The following context is coming from the document: " + doc_id + '\n'
+                "\n The following context is coming from the document: " + doc_id + '\n'
             cur_doc_id_dict = map_doc_id_to_context[doc_id]
 
             vec_ids = list(cur_doc_id_dict)

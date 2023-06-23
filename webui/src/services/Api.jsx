@@ -1,4 +1,5 @@
 import axios from "axios";
+import { DONE } from "../components/pages/MyWorkspace/Table";
 
 const serverURL = window.location.origin.replace("3000","8000")
 const DOCUMENTS_URL = serverURL + "/api/v0/documents"
@@ -111,10 +112,10 @@ export const getAllDocsMetaData = async (user_id, token) => {
 // ======================================================
 
 export const getInitialData = async (user_id, token) => {
-    console.log("getInitData.")
+    if (!user_id || !token){return []};
     let initialDataResponse = await getAllDocsMetaData(user_id, token);
     if (initialDataResponse.status!==200 && initialDataResponse.status!==204){
-      alert("An error occured while trying to fetch initial data.");
+      alert("An error occured while trying to fetch initial data: ");
       return []
     }
     let docs = initialDataResponse.data ? initialDataResponse.data.docs_metadata : null
@@ -123,7 +124,7 @@ export const getInitialData = async (user_id, token) => {
       name: d.document_id,
       size: `${Math.round(d.document_size / 1024)} KB`,
       dateModified: d.creation_time,
-      loading: false
+      status: DONE
     }));
     console.log(docs);
     return docs;

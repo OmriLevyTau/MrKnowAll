@@ -24,7 +24,7 @@ function Landing(){
     const {data} = useQuery({
         queryKey:["docs"], 
         queryFn: () => getInitialData(user.email, token), 
-        enabled: user!=null,
+        enabled: (token!==undefined && token!=null),
         refetchOnWindowFocus: false,
     },
     )

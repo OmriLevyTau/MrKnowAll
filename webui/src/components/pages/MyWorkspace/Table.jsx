@@ -10,9 +10,9 @@ import GenericModal from "../../common/Modal/GenericModal"
 import { useQuery } from "@tanstack/react-query";
 import { CheckOutlined, ErrorOutline } from "@mui/icons-material";
 
-const LOADING = "loading";
-const DONE = "done";
-const ERROR = "error";
+export const LOADING = "loading";
+export const DONE = "done";
+export const ERROR = "error";
 
 function FileTable() {
   const navigate = useNavigate();
@@ -36,7 +36,7 @@ function FileTable() {
   const {data} = useQuery({
       queryKey:["docs"], 
       queryFn: () => getInitialData(user.email, token), 
-      enabled: user!=null,
+      enabled: (token!==undefined && token!=null),
       refetchOnWindowFocus: false,
     },
   )
@@ -137,6 +137,8 @@ function FileTable() {
       onOk: () => {
         deleteDocument(user.email, record.name, token); // backend
         removeFileFromStore(record.name);
+        // getInitialData(user.email, token);
+        
       },
     });
   };
@@ -215,7 +217,7 @@ function FileTable() {
     // to wait upload will done: we have copies now.
     setPdfFile(null);
     setFileMetaData(null);
-    uploadDocument(filePayload)
+    uploadDocument(filePayload, token)
       .then((uploadDocResponse) => {
         // check if error occured when communicating with the backend
         if (uploadDocResponse.status!==200 && uploadDocResponse.status!==204){

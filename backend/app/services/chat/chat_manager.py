@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from app.models.query import Query
 from app.param_tuning import MAX_NUM_OF_CHARS_IN_QUERY, MAX_NUM_OF_CHARS_IN_QUESTION, MAX_NUM_OF_WORDS_IN_QUERY
@@ -11,10 +11,10 @@ USER = "user"
 
 
 def validate_query(query_request: Query) -> bool:
-    '''
+    """
     Validates a given Query to AI assistant in terms of its length and
     number of words.
-    '''
+    """
     query_content = query_request.get_query_content()
     words_num = len(query_content.split(" "))
     chars_num = len(query_content)
@@ -25,12 +25,17 @@ def validate_query(query_request: Query) -> bool:
     return True
 
 
-def get_history_for_chat(user_id: str, query: Query) -> List:
-    '''
+def get_history_for_chat(user_id: str, query: Query) -> List[Tuple[str,str]]:
+    """
     Given a user_id and a Query, get the short-term history of the chat.
     That is the last messages of the user and the system, adhering to the
     length restriction.
-    '''
+
+    :param user_id: str
+    :param query: valid Query object
+    :return: [("user", "q2"), ("assistant", "a2"), ("user", "q1"),("assistant", "a1")]
+    """
+
     query_content = query.query_content
     query_content_len = len(query_content)
 
@@ -61,12 +66,11 @@ def get_history_for_chat(user_id: str, query: Query) -> List:
 
 
 def compose_context_response(map_doc_id_to_context: Dict[str, Dict[str, str]]):
-    '''
-    Arguments:
-        map_doc_id_to_context: {doc1: {vec1: "vec1 content", vec2: "vec1 content"},...}
-    Returns:
-        {doc1: "context of doc 1", ...}
-    '''
+    """
+    :param map_doc_id_to_context: {doc1: {vec1: "vec1 content", vec2: "vec1 content"},...}
+    :return: {doc1: "context of doc 1", ...}
+    """
+
     result = dict()
     for doc_id, context_dict in map_doc_id_to_context.items():
         doc_sentences = [sentence for vec_id, sentence in map_doc_id_to_context[doc_id].items()]

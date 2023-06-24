@@ -78,9 +78,14 @@ function FileTable() {
     setFileMetaData(null);
   }
 
-  const validateFileName = (name) => {
+  const validateAscii = (name) => {
     let pattern = /^[\x00-\x7F]+$/;
     return pattern.test(name);
+  }
+
+  const validateIsUnique = (name) => {
+    const matchingFiles = files.filter(f => f.name === name)
+    return (matchingFiles.length === 0)
   }
 
   const columns = [
@@ -230,18 +235,22 @@ function FileTable() {
         status: LOADING
       };
   
+      const name = newFile.name;
       let filePayload = {
         "document_metadata": {
             "user_id": user.email,
-            "document_id": newFile.name
+            "document_id": name
         },
         "pdf_encoding": pdfFileCopy
       }
-      let valid = validateFileName(newFile.name);
+
+      let valid = validateAscii(name);
       if (!valid){
-        alert("Must be english.")
-        reset(); 
-        return;
+        alert("Document name must be in ascii letters.") ;reset(); return;
+      }
+      valid = validateIsUnique(name)
+      if (!valid){
+        alert("Document: " + name + " is already exists") ;reset(); return;
       }
       
       addFileToStore(newFile);

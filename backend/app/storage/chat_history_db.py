@@ -28,20 +28,15 @@ class ChatHistoryManager:
         self.conn.commit()
 
     def get_user_messages_with_answers(self, user_id) -> str:
+        '''
+        returns [(q1, a1), (q2, a2)]
+        '''
         cursor = self.conn.cursor()
         cursor.execute(
-            'SELECT user_message, chat_message FROM chats WHERE user_id = ? ORDER BY id ASC LIMIT 6', (user_id,))
+            'SELECT user_message, chat_message FROM chats WHERE user_id = ? ORDER BY id DESC LIMIT 6', (user_id,))
         rows = cursor.fetchall()
-        history = ""
-        number_of_qa = 0
+        return rows, len(rows)
 
-        for user_message, chat_message in rows:
-            combined_messages = "user-question:" + user_message + \
-                "\n" + "AI-answer:" + chat_message + "\n \n "
-            history = history + combined_messages
-            number_of_qa = number_of_qa + 1
-
-        return history, number_of_qa
 
     def delete_chat_history_by_user_id(self, user_id):
         try:

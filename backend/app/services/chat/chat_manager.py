@@ -8,6 +8,8 @@ from app.storage.chat_history_db import ChatHistoryManager
 
 # create a connection to the local DB for saving the chat history
 chat_history_manager = ChatHistoryManager("chat_history.db")
+ASSISTANT = "assistant"
+USER = "user"
 
 def validate_query(query_request: Query) -> bool:
     '''
@@ -32,32 +34,31 @@ def get_history_for_chat(user_id: str, query: Query) -> str:
     '''
     query_content = query.query_content
     query_content_len = len(query_content)
-    returned_history = ""
 
     # get the last 6 questions and answers
-    history_messages_combined, number_of_questions_and_answers = chat_history_manager.get_user_messages_with_answers(
+    history_rows, num_of_rows = chat_history_manager.get_user_messages_with_answers(
         user_id=user_id)
 
-    history_messages_list = history_messages_combined.split("user-question:")
-
     # if this is the first time there is no history
-    if number_of_questions_and_answers < 1:
-        return ""
+    if num_of_rows < 1:
+        return []
 
-    returned_history = history_messages_list[1]
+    returned_history_list = []
 
-    used_characters = 0 + len(returned_history)
-    index = 2
-
+    used_characters = 0
+    index = 0
+    remained_chars_length = MAX_NUM_OF_CHARS_IN_QUERY - query_content_len
     # in the loop we add history messages only if the entire message we send to openAI API is less then 4096 chars
-    while (
-            index < number_of_questions_and_answers and MAX_NUM_OF_CHARS_IN_QUERY - query_content_len - used_characters - len(
-            history_messages_list[index]) >= 0):
-        returned_history = returned_history + history_messages_list[index]
-        used_characters = used_characters + len(history_messages_list[index])
+    while ((index < num_of_rows) and
+            (remained_chars_length - used_characters -
+            len(history_rows[index][0]) - len(history_rows[index][1])) >= 0):
+        q, a = history_rows[index]
+        returned_history_list.append((ASSISTANT,a))
+        returned_history_list.append((USER,q))
+        used_characters += len(q) + len(a)
         index = index + 1
 
-    return returned_history
+    return returned_history_list[::-1]
 
 
 

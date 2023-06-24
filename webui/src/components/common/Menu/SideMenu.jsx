@@ -3,11 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { pages } from "./MenuUtils";
 import logo from "../../../images/hat.png"
 import useChatStore from "../../pages/Chat/chatStore";
+import { deleteChatHistory } from "../../../services/Api";
+import { useContext } from "react";
+import { UserContext } from "../../pages/AppContent/AppContext";
 
 function SideMenu(props){
     const navigate = useNavigate();
     const {clearChatStore} = useChatStore();
     const {waitingChatGpt } = props;
+    const { user, token } = useContext(UserContext);
     
     const onMenuClick = (item) => {
         navigate(`/${item.key}`)
@@ -25,6 +29,7 @@ function SideMenu(props){
                     alert("Cannot clear chat while waiting for response.")
                     return;
                 }
+                deleteChatHistory(user.email, token);
                 clearChatStore();
             },
             });

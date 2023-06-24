@@ -128,3 +128,24 @@ export const getInitialData = async (user_id, token) => {
     }));
     return docs;
   }
+
+// clear chat history
+// ======================================================
+
+export const deleteChatHistory = async (user_id, token) => {
+    let config = {
+        method: 'delete',
+        url: serverURL + "/api/v0/clear-chat",
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+        },
+        data: {user_id: user_id}
+    };
+    try{
+        const result = await axios.request(config)
+        return result
+    } catch(e){
+        return e
+    }
+}

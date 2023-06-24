@@ -7,7 +7,7 @@ import firebase_admin
 
 from app.param_tuning import ENABLE_AUTH
 from firebase_admin import credentials, auth
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer
@@ -27,15 +27,6 @@ app = FastAPI()
 
 app.include_router(chat_router)
 app.include_router(docs_router)
-
-
-@app.exception_handler(HTTPException)
-async def unicorn_exception_handler(request: Request, exc: HTTPException):
-    return JSONResponse(
-        status_code=401,
-        content={
-            "message": f"Oops! {exc.name} did something. There goes a rainbow..."},
-    )
 
 chat_history_manager = ChatHistoryManager("chat_history.db")
 chat_history_manager.create_table()

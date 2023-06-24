@@ -11,6 +11,7 @@ import {
 import useFileTableStore from "../MyWorkspace/fileStore";
 import useChatStore from "../Chat/chatStore";
 import { useQueryClient } from "@tanstack/react-query";
+import { deleteChatHistory } from "../../../services/Api";
   
 export const GoogleProvider = new GoogleAuthProvider();
 
@@ -25,9 +26,12 @@ function AppContext(props){
   
 
     const clearCache = () => {
+      // clear browser cache
       queryClient.clear();
       setAllFiles([]);
       clearChatStore();
+      // clear chat history db
+      deleteChatHistory(user.email, token);
     }
 
     const createUser = (email, password) => {

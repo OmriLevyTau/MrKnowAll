@@ -85,7 +85,7 @@ async def query(query_request: Query):
         if len(context_query_list) == 0:
             return compose_response(
                 query_content=query_content, response_type=QueryResponseType.NoMatchingVectors,
-                open_ai_response=OpenAIResponse(status=Status.Ok, content="No communication with openAI")
+                open_ai_response=OpenAIResponse(status=Status.Ok, content="No relevant data was found.")
             )
 
         # get all the context vectors for the relevant vectors
@@ -160,10 +160,11 @@ async def query(query_request: Query):
         return JSONResponse(status_code=500, content="Failed processing the query: " + str(e))
 
 
-@chat_router.post("/clear_chat")
+@chat_router.delete("/clear-chat", response_class=JSONResponse)
 async def clear_chat(clear_chat_request: ClearChatRequest):
+    body = clear_chat_request
     try:
         chat_history_manager.delete_chat_history_by_user_id(clear_chat_request.user_id)
-        return JSONResponse(status_code=204, content="Chat deleted")
+        return JSONResponse(status_code=200, content="Chat cleared.")
     except Exception as e:
         return JSONResponse(status_code=500, content=str(e))

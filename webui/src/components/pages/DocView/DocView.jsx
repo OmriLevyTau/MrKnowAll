@@ -1,10 +1,9 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "antd";
-import backArrow from "../../../images/back-arrow.png";
-import axios from "axios";
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../AppContent/AppContext";
 import { getDocById } from "../../../services/Api";
+import { ArrowBack } from "@mui/icons-material";
 
 function DocView() {
   const { fileName } = useParams();
@@ -45,10 +44,11 @@ function DocView() {
         </div>
         <Button
           color="rgb(50,50,50)"
-          onClick={() => navigate("/my-workspace")}
+          onClick={() => navigate(-1)}
           style={{ left: "87%", top: "20%" }}
         >
-          <img src={backArrow} style={{ height: "100%", width: "100%" }} />
+          <ArrowBack style={{ fontSize:"20px" }} />
+          {/* <img src={backArrow} style={{ height: "100%", width: "100%" }} /> */}
         </Button>
       </div>
       <object

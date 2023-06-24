@@ -35,7 +35,7 @@ function ChatMessage(props) {
       setStatus={null}
       onCancel={onCancel}
       modalButtonText="Show context"
-      modalTitle={"chatGPT's answer is based on the following context from your documents."}
+      modalTitle={"This context was provided to chatGPT alongside your question"}
       modalContent={<ChatAnswerContext context={context}/>}
       buttonType={"default"}
       buttonSize={"medium"}                   

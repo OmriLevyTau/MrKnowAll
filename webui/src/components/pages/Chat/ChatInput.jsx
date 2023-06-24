@@ -75,7 +75,8 @@ function ChatInput(props) {
         "ref": responseData.references, 
         "metadata": {"query_content": responseData.query_content, "context": responseData.context }
       }
-      chatGptResponse = {chatgpt: true,content: content};
+      console.log(content);
+      chatGptResponse = {chatgpt: true, content: content};
     }
     removeLastMsgFromStore();
     addMsgToStore(chatGptResponse);

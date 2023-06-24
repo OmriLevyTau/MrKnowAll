@@ -296,7 +296,8 @@ function FileTable() {
             onCancel={onCancel}
             modalButtonText="upload"
             modalTitle={"Upload File"}
-            modalContent={content}            
+            modalContent={content}
+            buttonType={"primary"}            
       />
       <Table
         columns={columns}

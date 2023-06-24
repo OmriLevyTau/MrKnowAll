@@ -10,7 +10,7 @@ from app.models.query import Query
 from app.models.chat_history import ClearChatRequest
 
 from app.services.chat.openai_client import OpenAIAPI
-from app.services.chat.chat_manager import validate_query, get_history_for_chat
+from app.services.chat.chat_manager import validate_query, get_history_for_chat, compose_context_response
 
 from app.storage.vector_storage_providers.pinecone import PineconeVectorStorage
 from app.storage.chat_history_db import ChatHistoryManager
@@ -20,7 +20,6 @@ chat_router = APIRouter(prefix="/api/v0")
 openai_api = OpenAIAPI(api_key=OPENAI_API_KEY)
 pinecone_client = PineconeVectorStorage()
 
-
 chat_history_manager = ChatHistoryManager("chat_history.db")
 
 
@@ -28,7 +27,6 @@ def compose_response(query_content: str, response_type: QueryResponseType, open_
     return QueryResponse(status=Status.Ok,
                          response_type=response_type,
                          query_content=query_content,
-                         context='',
                          response=open_ai_response,
                          references=[]
                          )
@@ -102,6 +100,7 @@ async def query(query_request: Query):
             vec_id = res.get("id").split(SEP)[0]
             context = res.get("metadata").get("original_content")
             map_vec_id_to_context[vec_id] = context
+            cur_vec_doc_id = res.get("metadata").get("document_id")
 
             if cur_vec_doc_id not in map_doc_id_to_context:
                 map_doc_id_to_context[cur_vec_doc_id] = map_vec_id_to_context
@@ -149,10 +148,12 @@ async def query(query_request: Query):
         chat_history_manager.add_message(
             user_id=user_id, chat_id=user_id, user_message=query_content, chat_message=answer.content)
 
+        modified_context = compose_context_response(map_doc_id_to_context)
+
         return QueryResponse(status=Status.Ok,
                              response_type=QueryResponseType.Valid,
                              query_content=prompt_prefix + '\n' + 'my question is: ' + query_content,
-                             context=all_context,
+                             context=modified_context,
                              response=answer,
                              references=references)
 

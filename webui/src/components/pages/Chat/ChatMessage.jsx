@@ -1,4 +1,7 @@
 import { Avatar, Card } from "antd";
+import GenericModal from "../../common/Modal/GenericModal";
+import { useState } from "react";
+import ChatAnswerContext from "./ChatAnswerContext";
 
  
 
@@ -15,6 +18,27 @@ import { Avatar, Card } from "antd";
 
 function ChatMessage(props) {
   const { chatgpt, content } = props;
+  const [open, setOpen] = useState(false)
+
+  const onCancel = () => {
+    setOpen(false);
+  }
+
+  const context =  content.metadata && content.metadata.context ? content.metadata.context : null
+  
+  
+  let contextModal =
+    <GenericModal
+      open={open} 
+      setOpen={setOpen}
+      loading={false}
+      setStatus={null}
+      onCancel={onCancel}
+      modalButtonText="Show context"
+      modalTitle={"chatGPT's answer is based on the following context from your documents."}
+      modalContent={<ChatAnswerContext context={context}/>}
+      buttonType={"default"}                        
+  />
   
 
   const avatar = chatgpt ? "1" : "2";
@@ -40,7 +64,9 @@ function ChatMessage(props) {
       <div style={{ display:"flex", flexDirection:"column", overflowWrap: "anywhere" , fontFamily:'sans-serif'}} >
         <p>{content.message}</p>
         <br/>
-        {chatgpt && content.ref && content.ref.length > 0 ? "Based-on: " + content.ref : null}        
+        <div className="ai-context-modal" style={{ display: "flex", justifyContent: "flex-end", alignContent: "start" }}>
+        {chatgpt && content.metadata && content.metadata.context ? contextModal : null}
+        </div>
       </div>
     </div>
   </Card>

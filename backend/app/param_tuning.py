@@ -17,4 +17,4 @@ MAX_NUM_OF_CHARS_IN_QUESTION = 512
 MAX_NUM_OF_WORDS_IN_QUERY = 128
 
 # the threshold for the vectors score when we send a query
-SCORE_THRESHOLD = 0.1
+SCORE_THRESHOLD = 0.25

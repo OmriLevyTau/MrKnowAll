@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 from pydantic import BaseModel
 
@@ -48,5 +48,5 @@ class QueryResponse(BaseModel):
     response: OpenAIResponse
     response_type: Optional[QueryResponseType] = None
     query_content: str
-    context: str
+    context: Optional[Dict[str, str]]
     references: list[str]

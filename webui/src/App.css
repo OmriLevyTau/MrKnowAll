@@ -46,6 +46,21 @@ Ant-design
   ;
 }
 
+.ant-btn-ghost{
+  color: #4d4d4d;
+  font-family: Nunito, sans-serif;
+  background-color: #fadbe0;
+  box-shadow: none;
+}
+
+.ant-btn.ant-btn-ghost:hover{
+  background-color: #f4aeb9;
+  border-color: #f4aeb9;
+  ;
+}
+
+
+
 .ant-modal-root{
   display: flex;
   flex-direction: row;

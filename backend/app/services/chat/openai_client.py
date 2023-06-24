@@ -33,7 +33,7 @@ class OpenAIAPI:
         data = {
             "model": "gpt-3.5-turbo",
             'messages':  messages,
-            "temperature": 0.8,
+            "temperature": 0.3,
         }
 
         response = requests.post(self.endpoint, headers=headers, json=data)

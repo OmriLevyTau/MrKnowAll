@@ -297,7 +297,8 @@ function FileTable() {
             modalButtonText="upload"
             modalTitle={"Upload File"}
             modalContent={content}
-            buttonType={"primary"}            
+            buttonType={"primary"}
+            buttonSize={"large"}            
       />
       <Table
         columns={columns}

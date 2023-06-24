@@ -62,7 +62,7 @@ function Landing(){
                             <h1 style={{ fontSize: `max(24px, 2.75vw)`,   fontFamily: "Nunito, sans-serif", fontWeight:"bold"}} >Mr. Know All <br /> your new AI powered assistant.</h1>
                         </div>
                         <div style={{ textAlign:"left", wordWrap:"break-word", color:"white", marginTop:"2%" }} >
-                            <p style={{ fontSize: `max(18px, 1.5vw)`,  fontFamily: "Nunito, sans-serif"}} >A tailor made chatGPT assitant, based on your data - and for your purpose.</p>
+                            <p style={{ fontSize: `max(18px, 1.5vw)`,  fontFamily: "Nunito, sans-serif"}} >A tailor made chatGPT assistant, based on your data - and for your purpose.</p>
                         </div>
                     </div>
                 </div>

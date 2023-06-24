@@ -63,7 +63,7 @@ function ChatInput(props) {
       console.log(chatResponse.data)
     }
     // Otherwise, communicating with the backend was successfull. It does *not* mean
-    // communicating with the AI assitant was successfuul. 
+    // communicating with the AI assistant was successfuul. 
     else if ( chatResponse.data.response.status != STATUS_OK){
       chatGptResponse = {chatgpt: true,content: {"message": SERVER_ERROR, "ref": null, "metadata": null}};
     }

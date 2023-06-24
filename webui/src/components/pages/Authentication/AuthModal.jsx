@@ -36,7 +36,8 @@ const AuthModal = () => {
             modalButtonText="Sign up"
             modalTitle={"Login modal"}
             modalContent={<Signup/>}
-            buttonType={"primary"}            
+            buttonType={"primary"}
+            buttonSize={"large"}
         />    
     {/*}
       <Modal title="Basic Modal" o open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>

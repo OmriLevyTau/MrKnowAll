@@ -124,14 +124,16 @@ async def query(query_request: Query):
                 all_context = all_context + "\n"
 
         # the prefix of the query we send to the API. we ask to get answer based only our information and history
-        prompt_prefix = "Please generate response based solely on the information I provide in this text. in your " \
-                        "answer, you can use the previous messages from the AI and user for context, but dont base " \
-                        "your answer on it. In your answer, dont mention what is the reference to your response. Do " \
-                        "not reference any external knowledge or provide additional details beyond what I have given. " \
-                        "\n"
+        prompt_prefix = "Please return a response to the user's message " \
+                        "based solely on the information I provide in the text delimited by three dashes. \n1. If the " \
+                        "user's message does not make sense, simply say you can't answer. \n2. Otherwise, return a response " \
+                        "based on the information I provided and the previous messages. \nDo not refer to any external " \
+                        "knowledge or provide additional details beyond what I have given.\n"
 
-        prompt = prompt_prefix + '\n' + 'my question is: ' + \
-                 query_content + '\n' + 'the information is: ' + all_context
+        question= "user: " + query_content
+        prompt_prefix = prompt_prefix + question
+        prompt_suffix = "\nThis is the text:\n---"+all_context+"\n---"
+        prompt = prompt_prefix + prompt_suffix
 
         # build the query object that will be sent to the AI assistant
         ai_assistant_query = Query(
@@ -152,7 +154,7 @@ async def query(query_request: Query):
 
         return QueryResponse(status=Status.Ok,
                              response_type=QueryResponseType.Valid,
-                             query_content=prompt_prefix + '\n' + 'my question is: ' + query_content,
+                             query_content=prompt_prefix,
                              context=modified_context,
                              response=answer,
                              references=references)

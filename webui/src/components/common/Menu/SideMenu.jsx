@@ -60,40 +60,10 @@ function SideMenu(props){
                 inlineCollapsed={false}
                 />
             </div>
-            <div style={{ marginBottom:"10%" }}>
-                <Button type="primary" onClick={onClearChat} >Clear chat</Button>
+            <div style={{ marginBottom:"11%" }}>
+                <Button type="ghost" onClick={onClearChat} >Clear chat</Button>
             </div>
-        </div>
-
-        // <div 
-        //     className="side-menu"
-        //     style={{justifyContent:"space-between", backgroundColor:"black", width:"14%", display: "flex", flexDirection: "column"}}
-        //     >
-        //     <div >
-        //         <div className="page-menu-logo" onClick={()=>navigate('/home')} style={{marginLeft:"0%", marginTop:"5%", flexDirection:"row", justifyItems:"center"}} >
-        //             <Image width={70} height = {70} src={logo} preview={false} style={{marginLeft:"20%"}}/>
-        //             {/* <span style={{ fontWeight: 'bold', fontSize: "200%", color:"white"}}>Mr. Know All</span>  */}
-        //         </div>
-        //         <Menu 
-        //             className="side-menu" 
-        //             mode="inline" 
-        //             onClick={onMenuClick} 
-        //             onMouseOver={onMouseOver}
-        //             items={pages} 
-        //             style={{
-        //                 color:"white",
-        //                 background: 'rgba(204, 204, 204, 0.0)',
-        //                 fontSize:"120%",
-        //                 marginTop:"10%",
-        //                 fontFamily:"Nunito, sans-serif",
-        //                 marginRight:"5%"
-        //             }} 
-        //             disabledOverflow={true}
-        //             inlineCollapsed={false}
-        //         />
-        //         <Button type="primary" >Clear chat</Button>
-        //     </div>
-        // </div>        
+        </div>   
     )
 };
 

@@ -11,13 +11,12 @@
 """
 from typing import Generator, List
 
-import numpy as np
 import pytest
 
 from app.models.documents import (DocumentMetaData, DocumentVectorChunk,
                                   VectorContextQuery)
 from app.models.query import Query
-from app.services.embeddings import get_embeddings
+from app.services.documnets.embeddings import get_embeddings
 from app.storage.abstract_vector_storage import AbstractVectorStorage
 from app.storage.vector_storage_providers.pinecone import PineconeVectorStorage
 

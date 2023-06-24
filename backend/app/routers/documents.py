@@ -19,7 +19,6 @@ PDF_PREFIX = 'data:application/pdf;base64,'
 pinecone_client = PineconeVectorStorage()
 google_client = GoogleStorageClient(GC_JSON_PATH, GC_BUCKET_NAME)
 
-
 @docs_router.get("/{user_id}")
 async def get_all_docs_metadata(user_id: str):
     try:

@@ -1,5 +1,5 @@
 import requests
-
+from typing import List, Dict
 from app.models.api_models import OpenAIResponse, Status
 from app.models.query import Query
 
@@ -9,14 +9,15 @@ class OpenAIAPI:
         self.api_key = api_key
         self.endpoint = 'https://api.openai.com/v1/chat/completions'
 
-    def generate_answer(self, query: Query) -> OpenAIResponse:
+    def generate_answer(self, history: str, query: Query) -> OpenAIResponse:
+        messages_to_deliver = history + "\n user: " + query.query_content
         headers = {
             'Authorization': f'Bearer {self.api_key}',
         }
         data = {
             "model": "gpt-3.5-turbo",
-            'messages': [{'role': 'user', 'content': query.query_content}],
-            "temperature": 1,
+            'messages':  [{'role': 'user', 'content': messages_to_deliver}],
+            "temperature": 0.8,
         }
 
         response = requests.post(self.endpoint, headers=headers, json=data)

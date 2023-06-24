@@ -8,10 +8,10 @@ from app.models.query import Query
 from app.storage.abstract_vector_storage import AbstractVectorStorage
 from pinecone import Index
 
-from app.storage.abstract_vector_storage import  SEP
+from app.storage.abstract_vector_storage import SEP
 
 # Note this values should be pre-configured by us.
-# Only thing the client takes care of is maintaining a 
+# Only thing the client takes care of is maintaining a
 # dedicated Namespace in within this index for
 # each user.
 
@@ -36,12 +36,14 @@ class PineconeVectorStorage(AbstractVectorStorage):
     @staticmethod
     def _get_index():
         if PINECONE_INDEX not in pinecone.list_indexes():
-            raise ValueError(f"Pinecone Index does not exists: {PINECONE_INDEX}")
+            raise ValueError(
+                f"Pinecone Index does not exists: {PINECONE_INDEX}")
         try:
             index = pinecone.Index(PINECONE_INDEX)
             return index
         except Exception as e:
-            print(f"PINECONE: Error in connecting to pinecone index: {PINECONE_INDEX}: " + str(e))
+            print(
+                f"PINECONE: Error in connecting to pinecone index: {PINECONE_INDEX}: " + str(e))
 
     async def _upload(self, user_id: str, payload: List[DocumentVectorChunk]):
         """
@@ -71,7 +73,8 @@ class PineconeVectorStorage(AbstractVectorStorage):
                 )
                 objects_to_insert.append(obj)
             try:
-                upserted_count += self.index.upsert(vectors=objects_to_insert)["upserted_count"]
+                upserted_count += self.index.upsert(vectors=objects_to_insert)[
+                    "upserted_count"]
             except Exception as error:
                 print(
                     f"Failed to upsert vectors into pinecone. upserted {upserted_count} out of {len(payload)} vectors: " + str(error))
@@ -138,7 +141,7 @@ class PineconeVectorStorage(AbstractVectorStorage):
             doc_id = context_query.get_document_id()
             docs_ids.append(doc_id)
             ids_windows.append([(str(i) + SEP + user_id + SEP + doc_id) for i in
-                      range(target_vec_id - window_size, target_vec_id + window_size + 1)])
+                                range(target_vec_id - window_size, target_vec_id + window_size + 1)])
 
         flat_ids = [id for sublist in ids_windows for id in sublist]
 
@@ -149,7 +152,6 @@ class PineconeVectorStorage(AbstractVectorStorage):
             raise error
 
         return context_response
-
 
     async def get_context(self, user_id: str, context_query: VectorContextQuery):
         """
@@ -164,7 +166,8 @@ class PineconeVectorStorage(AbstractVectorStorage):
         window_size = context_query.get_context_window()
         doc_id = context_query.get_document_id()
         ids_window = [(str(i) + SEP + user_id + SEP + doc_id) for i in
-                      range(target_vec_id - window_size, target_vec_id + window_size + 1)
+                      range(target_vec_id - window_size,
+                            target_vec_id + window_size + 1)
                       ]
         try:
             context_response = self.index.fetch(ids=ids_window)

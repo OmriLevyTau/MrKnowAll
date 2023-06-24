@@ -10,8 +10,9 @@ from firebase_admin import credentials, auth
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from fastapi.exceptions import HTTPException
 from fastapi.security import OAuth2PasswordBearer
+from app.storage.chat_history_db import ChatHistoryManager
+
 
 from app.config import SERVICE_ACCOUNT_KEY
 
@@ -36,6 +37,8 @@ async def unicorn_exception_handler(request: Request, exc: HTTPException):
             "message": f"Oops! {exc.name} did something. There goes a rainbow..."},
     )
 
+chat_history_manager = ChatHistoryManager("chat_history.db")
+chat_history_manager.create_table()
 
 app.add_middleware(
 
@@ -91,7 +94,6 @@ async def middleware_validation(request: Request, call_next):
             return JSONResponse(status_code=401, content="you are not authorized!" + str(e))
     else:
         return JSONResponse(status_code=401, content="you are not authorized!")
-        # raise HTTPException(status_code=401, detail="Unauthorized",)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8000)

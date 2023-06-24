@@ -11,8 +11,8 @@ from app.models.documents import (Document, DocumentMetaData,
                                   DocumentVectorChunkMetadata,
                                   VectorContextQuery)
 from app.models.query import Query
-from app.services.document_proccessing import get_documents_chunks
-from app.services.embeddings import get_embeddings
+from app.services.documnets.document_proccessing import get_documents_chunks
+from app.services.documnets.embeddings import get_embeddings
 
 SEP = "{~}"
 

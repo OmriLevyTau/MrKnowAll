@@ -108,6 +108,16 @@ async def query(query_request: Query) -> QueryResponse:
     2. convert the question into a vector and find the closest vectors based on the file credentials by query the vector DB
     4. retrieve the sentences and their's context in the text
     5. engineering of proper prompt and send to openAI API
+
+    the scheme of the actual prompt:
+    {
+        0. history
+        1. prompt prefix
+        2. "my question is: " + the query content
+        3. "the information is: " + the context of the relevant vectors
+    }
+
+
     """
 
     try:

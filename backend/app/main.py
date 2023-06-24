@@ -32,15 +32,6 @@ app.include_router(docs_router)
 chat_history_manager = ChatHistoryManager("chat_history.db")
 chat_history_manager.create_table()
 
-# @app.exception_handler(HTTPException)
-# async def unicorn_exception_handler(request: Request, exc: HTTPException):
-#     return JSONResponse(
-#         status_code=401,
-#         content={
-#             "message": f"Oops! {exc.name} did something. There goes a rainbow..."},
-#     )
-
-
 app.add_middleware(
 
     # allow cross-origin requests from your frontend application to your FastAPI backend.
@@ -52,11 +43,6 @@ app.add_middleware(
     allow_headers=["Authorization"],
     expose_headers=["Authorization"],  # Expose all headers
 )
-
-
-# @app.exception_handler(HTTPException)
-# async def http_exception_handler(request: Request, exc: HTTPException):
-#     return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
 
 @app.get("/")
@@ -100,7 +86,6 @@ async def middleware_validation(request: Request, call_next):
             return JSONResponse(status_code=401, content="you are not authorized!" + str(e))
     else:
         return JSONResponse(status_code=401, content="you are not authorized!")
-        # raise HTTPException(status_code=401, detail="Unauthorized",)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8000)

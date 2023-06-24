@@ -1,9 +1,7 @@
 import os
 
-import pytest
-
 from app.models.documents import Document, DocumentMetaData
-from app.services.document_proccessing import get_documents_chunks
+from app.services.documnets.document_proccessing import get_documents_chunks
 from tests.test_services.services_test_constants import TEST_PDF_ENCODING
 
 TESTDATA_FILENAME = os.path.join(os.path.dirname(__file__), 'test.pdf')

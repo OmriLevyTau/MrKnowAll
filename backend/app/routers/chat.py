@@ -1,123 +1,52 @@
 from fastapi import APIRouter
-from typing import Optional
+from fastapi.responses import JSONResponse
 
 from app.config import OPENAI_API_KEY
+from app.param_tuning import SCORE_THRESHOLD
+
 from app.models.api_models import QueryResponse, Status, OpenAIResponse, QueryResponseType
 from app.models.documents import VectorContextQuery
 from app.models.query import Query
-from app.services.openAIAPI import OpenAIAPI
+from app.models.chat_history import ClearChatRequest
+
+from app.services.chat.openai_client import OpenAIAPI
+from app.services.chat.chat_manager import validate_query, get_history_for_chat
+
 from app.storage.vector_storage_providers.pinecone import PineconeVectorStorage
 from app.storage.chat_history_db import ChatHistoryManager
-from app.models.chat_history import Clear_chat_request
 from app.storage.abstract_vector_storage import SEP
-from app.param_tuning import MAX_NUM_OF_CHARS_IN_QUERY, MAX_NUM_OF_CHARS_IN_QUESTION, MAX_NUM_OF_WORDS_IN_QUERY, SCORE_THRESHOLD
-
 
 chat_router = APIRouter(prefix="/api/v0")
 openai_api = OpenAIAPI(api_key=OPENAI_API_KEY)
 pinecone_client = PineconeVectorStorage()
 
-
-# create a connection to the local DB for saving the chat history
 chat_history_manager = ChatHistoryManager("chat_history.db")
 
 
-def check_if_valid_query(query_request: Query) -> bool:
-    try:
-        query_content = query_request.query_content
-        words_num = len(query_content.split(" "))
-        chars_num = len(query_content)
-
-        if words_num > MAX_NUM_OF_WORDS_IN_QUERY or chars_num > MAX_NUM_OF_CHARS_IN_QUESTION:
-            return False
-
-        return True
-    except:
-        return False
-
-
-def get_history(user_id: str, query: Query) -> str:
-    query_content = query.query_content
-    query_content_len = len(query_content)
-    returned_history = ""
-
-    # get the last 6 questions and answers
-    history_messages_combined, number_of_questions_and_answers = chat_history_manager.get_user_messages_with_answers(
-        user_id=user_id)
-
-    history_messages_list = history_messages_combined.split("user-question:")
-
-    # if this is the first time there is no history
-    if number_of_questions_and_answers < 1:
-        return ""
-
-    returned_history = history_messages_list[1]
-
-    used_characters = 0 + len(returned_history)
-    index = 2
-
-    # in the loop we add history messages only if the entire message we send to openAI API is less then 4096 chars
-    while (index < number_of_questions_and_answers and MAX_NUM_OF_CHARS_IN_QUERY - query_content_len - used_characters - len(history_messages_list[index]) >= 0):
-        returned_history = returned_history + history_messages_list[index]
-        used_characters = used_characters + len(history_messages_list[index])
-        index = index + 1
-
-    return returned_history
-
-
-def return_query_response(query_content: str, response_type: str, e: Optional[Exception]) -> QueryResponse:
-
-    if response_type == "TooLongQuery":
-        without_API_communication_response = OpenAIResponse(
-            status=Status.Ok,
-            content='We apologize for the inconvenience, but to ensure a smoother experience, we kindly request that you limit your question to a maximum of 128 words and 512 characters. Please take a moment to edit your question accordingly. Your cooperation is greatly appreciated, and we thank you for your understanding!'
-        )
-        return QueryResponse(status=Status.Ok,
-                             response_type=QueryResponseType.TooLongQuery,
-                             query_content=query_content,
-                             context='',
-                             response=without_API_communication_response,
-                             references=[])
-
-    elif response_type == "NoMatchingVectors":
-        without_API_communication_response = OpenAIResponse(
-            status=Status.Ok, content='We are sorry, but it seems that there is no relevant sentences to your question in your files. You are more than welcome to ask a different question, or upload files which are relevant to your question')
-        return QueryResponse(status=Status.Ok,
-                             response_type=QueryResponseType.NoMatchingVectors,
-                             query_content=query_content,
-                             context='',
-                             response=without_API_communication_response,
-                             references=[])
-
-    elif response_type == "Failed":
-        return QueryResponse(status=Status.Failed,
-                             response_type=QueryResponseType.Failed,
-                             query_content=query_content,
-                             context='',
-                             response=OpenAIResponse(
-                                 status=Status.Failed, content=str(e)
-                             ),
-                             references=[])
+def compose_response(query_content: str, response_type: QueryResponseType, open_ai_response: OpenAIResponse):
+    return QueryResponse(status=Status.Ok,
+                         response_type=response_type,
+                         query_content=query_content,
+                         context='',
+                         response=open_ai_response,
+                         references=[]
+                         )
 
 
 @chat_router.post("/query")
-async def query(query_request: Query) -> QueryResponse:
+async def query(query_request: Query):
     """
     the flow of query:
     1. get the original question as a Query object
     2. convert the question into a vector and find the closest vectors based on the file credentials by query the vector DB
-    4. retrieve the sentences and their's context in the text
+    4. retrieve the sentences and theirs context in the text
     5. engineering of proper prompt and send to openAI API
 
     the scheme of the actual prompt:
-    {
-        0. history
-        1. prompt prefix
-        2. "my question is: " + the query content
-        3. "the information is: " + the context of the relevant vectors
-    }
-
-
+    0. history - the previous chat messages
+    1. prompt prefix - what's the model task
+    2. "my question is: " + the query content
+    3. "the information is: " + the context of the relevant vectors
     """
 
     try:
@@ -125,16 +54,15 @@ async def query(query_request: Query) -> QueryResponse:
         user_id = query_request.user_id
         query_id = query_request.query_id
         query_content = query_request.query_content
+        # validate query
+        if not validate_query(query_request=query_request):
+            return JSONResponse(status_code=400, content=QueryResponseType.TooLongQuery)
 
-        if not check_if_valid_query(query_request=query_request):
-            return return_query_response(query_content=query_content, response_type="TooLongQuery", e=None)
-
-        # query vector DB
+        # get most relevant sentences from then user's documents for answering this question
         vector_db_query_response = await pinecone_client.query(user_id=user_id, query=query_request)
-
-        # get the matches to the vector DB query
         top_k_closest_vectors = vector_db_query_response.get("matches")
 
+        # keep only the vectors which are similar by a specific threshold
         all_context = ""
         context_query_list = []
         map_doc_id_to_context = {}
@@ -144,23 +72,29 @@ async def query(query_request: Query) -> QueryResponse:
             map_vec_id_to_context = {}
             cur_vec_doc_id = vector_data.get('metadata').get('document_id')
             cur_vec_score = vector_data.get('score')
-            # get context only for setnteces that are relevant to the question
+            # get context only for sentences that are relevant to the question
             if (cur_vec_score >= SCORE_THRESHOLD):
                 references.add(cur_vec_doc_id)
                 context_query = VectorContextQuery(
-                    user_id=user_id, document_id=cur_vec_doc_id, vector_id=vector_data.get('id'))
+                    user_id=user_id, document_id=cur_vec_doc_id, vector_id=vector_data.get('id')
+                )
                 context_query_list.append(context_query)
 
-        # if there is no relevant sentence, we dont communicate with the AI assistant
+        # if there is no relevant sentence, we don't communicate with the AI assistant
         if len(context_query_list) == 0:
-            return return_query_response(query_content=query_content, response_type="NoMatchingVectors", e=None)
+            return compose_response(
+                query_content=query_content, response_type=QueryResponseType.NoMatchingVectors,
+                open_ai_response=OpenAIResponse(status=Status.Ok, content="No communication with openAI")
+            )
 
-        # get all the context vectors for the relevane vectors
-        context_response = await pinecone_client.get_context_for_list(user_id=user_id, context_query_list=context_query_list)
+        # get all the context vectors for the relevant vectors
+        context_response = await pinecone_client.get_context_for_list(user_id=user_id,
+                                                                      context_query_list=context_query_list)
 
         vectors = context_response.get("vectors")
 
-        # we map every vector we have to all of it's context sentences, and than we save this mapping inside another map, from the document id to all of the (context) vectors it has for this query.
+        # we map every vector we have to all of its context sentences, and then we save this mapping inside another
+        # map, from the document id to all the (context) vectors it has for this query.
         for i, key in enumerate(vectors):
             # vec is a key to dict
             res = vectors.get(key)
@@ -168,19 +102,18 @@ async def query(query_request: Query) -> QueryResponse:
             context = res.get("metadata").get("original_content")
             map_vec_id_to_context[vec_id] = context
 
-            if not cur_vec_doc_id in map_doc_id_to_context:
+            if cur_vec_doc_id not in map_doc_id_to_context:
                 map_doc_id_to_context[cur_vec_doc_id] = map_vec_id_to_context
             else:
-                map_doc_id_to_context[cur_vec_doc_id].update(
-                    map_vec_id_to_context)
+                map_doc_id_to_context[cur_vec_doc_id].update(map_vec_id_to_context)
 
         # if we are here, it means that we have at least one sentence that is relevant to the question
         doc_ids = list(map_doc_id_to_context)
 
-        # for each document, we get the context of all of the vectors that belongs to that document
+        # for each document, we get the context of all the vectors that belongs to that document
         for doc_id in doc_ids:
             all_context = all_context + \
-                "\n The following context is coming from the document: " + doc_id + '\n'
+                          "\n The following context is coming from the document: " + doc_id + '\n'
             cur_doc_id_dict = map_doc_id_to_context[doc_id]
 
             vec_ids = list(cur_doc_id_dict)
@@ -191,21 +124,25 @@ async def query(query_request: Query) -> QueryResponse:
                 all_context = all_context + "\n"
 
         # the prefix of the query we send to the API. we ask to get answer based only our information and history
-        prompt_prefix = "Please generate response based solely on the information I provide in this text. in your answer, you can use the previous messages from the AI and user for context, but dont base your answer on it. In your answer, dont mention what is the reference to your response. Do not reference any external knowledge or provide additional details beyond what I have given. \n"
+        prompt_prefix = "Please generate response based solely on the information I provide in this text. in your " \
+                        "answer, you can use the previous messages from the AI and user for context, but dont base " \
+                        "your answer on it. In your answer, dont mention what is the reference to your response. Do " \
+                        "not reference any external knowledge or provide additional details beyond what I have given. " \
+                        "\n"
 
         prompt = prompt_prefix + '\n' + 'my question is: ' + \
-            query_content + '\n' + 'the information is: ' + all_context
+                 query_content + '\n' + 'the information is: ' + all_context
 
-        # build the query object that will be send to the AI assistant
-        AI_assistant_query = Query(
+        # build the query object that will be sent to the AI assistant
+        ai_assistant_query = Query(
             user_id=user_id, query_id=query_id, query_content=prompt)
 
-        # get the last messages and responsed from sqlite DB
-        history = get_history(user_id=user_id, query=AI_assistant_query)
+        # get the last messages and response from sqlite DB
+        history = get_history_for_chat(user_id=user_id, query=ai_assistant_query)
 
         # get the response from the AI assistant API
         answer = openai_api.generate_answer(
-            history=history, query=AI_assistant_query)
+            history=history, query=ai_assistant_query)
 
         # add the question and the response to the short-term memory
         chat_history_manager.add_message(
@@ -219,21 +156,13 @@ async def query(query_request: Query) -> QueryResponse:
                              references=references)
 
     except Exception as e:
-        return return_query_response(query_content=query_content, response_type="Failed", e=e)
+        return JSONResponse(status_code=500, content="Failed processing the query: " + str(e))
 
 
 @chat_router.post("/clear_chat")
-async def clear_chat(request: Clear_chat_request):
+async def clear_chat(clear_chat_request: ClearChatRequest):
     try:
-        # chat_history_manager.print_DB()
-
-        chat_history_manager.delete_chat_history_by_user_id(request.user_id)
-        # chat_history_manager.print_DB()
-
-        if (len(chat_history_manager.get_user_messages_with_answers(request.user_id)) == 0):
-            return {'status': Status.Ok}
-        else:
-            raise Exception
-
+        chat_history_manager.delete_chat_history_by_user_id(clear_chat_request.user_id)
+        return JSONResponse(status_code=204, content="Chat deleted")
     except Exception as e:
-        return {'status': Status.Failed, 'error': str(e)}
+        return JSONResponse(status_code=500, content=str(e))

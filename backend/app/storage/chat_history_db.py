@@ -44,9 +44,12 @@ class ChatHistoryManager:
         return history, number_of_qa
 
     def delete_chat_history_by_user_id(self, user_id):
-        cursor = self.conn.cursor()
-        cursor.execute('DELETE FROM chats WHERE user_id = ?', (user_id,))
-        self.conn.commit()
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute('DELETE FROM chats WHERE user_id = ?', (user_id,))
+            self.conn.commit()
+        except Exception as error:
+            raise Exception("Failed deleting chat history for user: " + user_id)
 
     def delete_all_chat_history(self):
         cursor = self.conn.cursor()

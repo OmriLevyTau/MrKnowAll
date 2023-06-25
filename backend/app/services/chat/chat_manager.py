@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Set
 
 from app.models.query import Query
 from app.param_tuning import MAX_NUM_OF_CHARS_IN_QUERY, MAX_NUM_OF_CHARS_IN_QUESTION, MAX_NUM_OF_WORDS_IN_QUERY
@@ -86,10 +86,18 @@ def compose_context_response(map_doc_id_to_context: Dict[str, Dict[str, str]]):
 # TODO: add type hint of top_k_closest_vectors
 
 
-def get_context_objects_for_top_k_closest_vectors(user_id: str, top_k_closest_vectors) -> Tuple[set, List[VectorContextQuery]]:
+def build_context_objects_for_top_k_closest_vectors(user_id: str, vectors) -> Tuple[Set, List[VectorContextQuery]]:
+    """
+        given vectors, build and return a list of VectorContextQuery and a unique set of the relevant references.
+
+        :param user_id:
+        :param vectors:
+
+        :return: Tuple[Set,List[VectorContextQuery]]
+        """
     references = set()
     context_query_list = []
-    for vector_data in top_k_closest_vectors:
+    for vector_data in vectors:
         # every vector has its own context
         cur_vec_doc_id = vector_data.get('metadata').get('document_id')
         cur_vec_score = vector_data.get('score')
@@ -108,8 +116,16 @@ def get_context_objects_for_top_k_closest_vectors(user_id: str, top_k_closest_ve
 
 
 def extract_context_from_context_vectors(vectors) -> Dict[str, Dict[str, str]]:
+    """
+        given vectors, build and return a mapping from document_id to another mapping, from vector_id to it's content.
+
+        :param vectors:
+
+        :return: Dict[str, Dict[str, str]]
+    """
     map_vec_id_to_context = {}
     map_doc_id_to_context = {}
+
     # we map every vector we have to all of its context sentences, and then we save this mapping inside another
     # map, from the document id to all the (context) vectors it has for this query.
     for i, key in enumerate(vectors):
@@ -134,7 +150,7 @@ def build_all_context(doc_ids: List[str], map_doc_id_to_context: Dict[str, Dict[
     all_context = ""
     for doc_id in doc_ids:
         all_context = all_context + \
-            "\n The following context is coming from the document: " + doc_id + '\n'
+            "\nThe following context is coming from the document: " + doc_id + '\n'
         cur_doc_id_dict = map_doc_id_to_context[doc_id]
 
         vec_ids = list(cur_doc_id_dict)

@@ -8,7 +8,7 @@ from app.models.query import Query
 from app.models.chat_history import ClearChatRequest
 
 from app.services.chat.openai_client import OpenAIAPI
-from app.services.chat.chat_manager import build_all_context, validate_query, get_history_for_chat, compose_context_response, get_context_objects_for_top_k_closest_vectors, extract_context_from_context_vectors
+from app.services.chat.chat_manager import build_all_context, validate_query, get_history_for_chat, compose_context_response, build_context_objects_for_top_k_closest_vectors, extract_context_from_context_vectors
 
 from app.storage.vector_storage_providers.pinecone import PineconeVectorStorage
 from app.storage.chat_history_db import ChatHistoryManager
@@ -18,6 +18,13 @@ openai_api = OpenAIAPI(api_key=OPENAI_API_KEY)
 pinecone_client = PineconeVectorStorage()
 
 chat_history_manager = ChatHistoryManager("chat_history.db")
+
+# the prefix of the query we send to the API. we ask to get answer based only our information and history
+PROMPT_PREFIX = "Please return a response to the user's message " \
+                "based solely on the information I provide in the text delimited by three dashes. \n1. If the " \
+                "user's message does not make sense, simply say you can't answer. \n2. Otherwise, return a response " \
+                "based on the information I provided and the previous messages. \nDo not refer to any external " \
+                "knowledge or provide additional details beyond what I have given.\n"
 
 
 def compose_response(query_content: str, response_type: QueryResponseType, open_ai_response: OpenAIResponse):
@@ -63,8 +70,8 @@ async def query(query_request: Query):
         map_doc_id_to_context = {}
 
         # get the references and the VectorContextQuery for each relevant vector
-        references, context_query_list = get_context_objects_for_top_k_closest_vectors(
-            user_id=user_id, top_k_closest_vectors=top_k_closest_vectors)
+        references, context_query_list = build_context_objects_for_top_k_closest_vectors(
+            user_id=user_id, vectors=top_k_closest_vectors)
 
         # if there is no relevant sentence, we don't communicate with the AI assistant
         if len(context_query_list) == 0:
@@ -88,15 +95,8 @@ async def query(query_request: Query):
         all_context = build_all_context(
             doc_ids=doc_ids, map_doc_id_to_context=map_doc_id_to_context)
 
-        # the prefix of the query we send to the API. we ask to get answer based only our information and history
-        prompt_prefix = "Please return a response to the user's message " \
-                        "based solely on the information I provide in the text delimited by three dashes. \n1. If the " \
-                        "user's message does not make sense, simply say you can't answer. \n2. Otherwise, return a response " \
-                        "based on the information I provided and the previous messages. \nDo not refer to any external " \
-                        "knowledge or provide additional details beyond what I have given.\n"
-
         question = "user: " + query_content
-        prompt_prefix = prompt_prefix + question
+        prompt_prefix = PROMPT_PREFIX + question
         prompt_suffix = "\nThis is the text:\n---"+all_context+"\n---"
         prompt = prompt_prefix + prompt_suffix
 
@@ -104,7 +104,7 @@ async def query(query_request: Query):
         ai_assistant_query = Query(
             user_id=user_id, query_id=query_id, query_content=prompt)
 
-        # get the last messages and response from sqlite DB
+        # get the most recent chat history
         history = get_history_for_chat(
             user_id=user_id, query=ai_assistant_query)
 
@@ -112,7 +112,7 @@ async def query(query_request: Query):
         answer = openai_api.generate_answer(
             history=history, query=ai_assistant_query)
 
-        # add the question and the response to the short-term memory
+        # add the question and the response to the short-term chat history
         chat_history_manager.add_message(
             user_id=user_id, chat_id=user_id, user_message=query_content, chat_message=answer.content)
 

@@ -2,4 +2,5 @@
 *explore.py
 *mr-know-all*
 *.idea*
+.idea\MrKnowAll.iml
 *.db

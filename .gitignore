@@ -162,3 +162,7 @@ cython_debug/
 
 *.vscode
 backend/app/storage/object_storage_providers/mr-know-all-387618-f2bc1e5e3b0b.json
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/modules.xml
+.idea/MrKnowAll.iml
+.idea/vcs.xml

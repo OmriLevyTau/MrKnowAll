@@ -1,26 +1,53 @@
-import { Button, Collapse } from "antd";
+import { Collapse } from "antd";
 import HomeCard from "../../common/Card/HomeCard";
 import mustach from "../../../images/mustach-home2.png"
-import { CloudUploadOutlined, QuestionAnswerOutlined, QuestionMarkSharp } from "@mui/icons-material";
 
 import { useNavigate } from "react-router-dom";
-import { useContext } from "react";
+import { useContext, } from "react";
 import { UserContext } from "../AppContent/AppContext";
 import TopMenu from "../../common/Menu/TopMenu";
 import ChatInput from "../Chat/ChatInput";
+import { useQuery } from "@tanstack/react-query";
+import { getAllDocsMetaData } from "../../../services/Api";
+import useFileTableStore from "../MyWorkspace/fileStore";
+import { DONE } from "../MyWorkspace/Table";
 const { Panel } = Collapse;
 
 function Landing(){
     const navigate = useNavigate();
-    const { user } = useContext(UserContext);
+    const { user, token } = useContext(UserContext);
+    const { setAllFiles } = useFileTableStore();
 
-    const handleLetsStart = () => {
-        if (!user){
-            navigate('/signin')
+    // Fetch initial data
+    // ======================================================
+    const getUserAllDocsMetaData = async (user_id, token) => {
+        if (!user_id || !token){return []};
+        let initialDataResponse = await getAllDocsMetaData(user_id, token);
+        if (initialDataResponse.status!==200 && initialDataResponse.status!==204){
+            alert("An error occured while trying to fetch initial data: ");
+            return []
         }
-        navigate('/home')
-    }
+        let docs = initialDataResponse.data ? initialDataResponse.data.docs_metadata : null
+        if (docs == null){return [];}
+        docs = docs.map((d) => ({
+            name: d.document_id,
+            size: `${Math.round(d.document_size / 1024)} KB`,
+            dateModified: new Date(d.creation_time).toLocaleDateString(),
+            status: DONE
+        }));
+        setAllFiles(docs);
+        }
 
+        const {data} = useQuery({
+            queryKey:["docs"], 
+            queryFn: () => getUserAllDocsMetaData(user.email, token), 
+            enabled: (token!==undefined && token!=null),
+            refetchOnWindowFocus: false,
+            },
+        )
+
+
+    // ======================================================
 
     return(
         <div className="generic-page-holder" >
@@ -32,10 +59,10 @@ function Landing(){
                     </div>
                     <div  style={{ display:"flex", flexDirection:"column", width:"100%", height:"100%", justifyContent:"flex-start", marginRight:"3%", marginTop:"10%"}} >
                         <div style={{ textAlign:"left", wordWrap:"break-word", color:"white" }} >
-                            <h1 style={{ fontSize: `max(24px, 2.75vw)`,   fontFamily: "Nunito, sans-serif", fontWeight:"bold"}} >Mr. Know All <br /> your new AI powered assitant.</h1>
+                            <h1 style={{ fontSize: `max(24px, 2.75vw)`,   fontFamily: "Nunito, sans-serif", fontWeight:"bold"}} >Mr. Know All <br /> your new AI powered assistant.</h1>
                         </div>
                         <div style={{ textAlign:"left", wordWrap:"break-word", color:"white", marginTop:"2%" }} >
-                            <p style={{ fontSize: `max(18px, 1.5vw)`,  fontFamily: "Nunito, sans-serif"}} >A tailor made chatGPT assitant, based on your data - and for your purpose.</p>
+                            <p style={{ fontSize: `max(18px, 1.5vw)`,  fontFamily: "Nunito, sans-serif"}} >A tailor made chatGPT assistant, based on your data - and for your purpose.</p>
                         </div>
                     </div>
                 </div>

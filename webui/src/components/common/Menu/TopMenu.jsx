@@ -26,9 +26,8 @@ function TopMenu(){
         try {
           await logout();
           navigate('/signin');
-          console.log('You are logged out')
         } catch (e) {
-          console.log(e.message);
+          alert(e.message);
         }
       };
 

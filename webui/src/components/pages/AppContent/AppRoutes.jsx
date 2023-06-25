@@ -8,14 +8,12 @@ import Signin from "../Authentication/Signin";
 import Signup from "../Authentication/Signup";
 import Account from "../Authentication/Account";
 import ProtectedRoute from "./ProtectedRoute";
-import ChatContext from "./ChatContext";
 import Landing from "../Landing/Landing";
 import AppHome from "../Home/AppHome";
 
 function AppRoutes(){
     return(
         <AppContext>
-            <ChatContext>
                 <BrowserRouter>
                     <Routes>
                         <Route path='/home' element={<ProtectedRoute><AppHome /> </ProtectedRoute>}></Route>
@@ -29,7 +27,6 @@ function AppRoutes(){
                         <Route path='/account' element={<ProtectedRoute><Account /> </ProtectedRoute>}></Route>
                     </Routes>            
                 </BrowserRouter> 
-            </ChatContext>           
         </AppContext>
     )
 }

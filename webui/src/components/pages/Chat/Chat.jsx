@@ -1,13 +1,13 @@
-import  { useContext, useEffect, useRef } from 'react';
+import  { useEffect, useRef, useState } from 'react';
 import ChatInput from './ChatInput';
 import ChatLog from './ChatLog';
 import SideMenu from '../../common/Menu/SideMenu';
-import { ChatLogContext } from '../AppContent/ChatContext';
+import useChatStore from './chatStore';
 
 
 function Chat(){
     const messageRef = useRef();
-    const { chatLog } = useContext(ChatLogContext);
+    const {chatMsg} = useChatStore();
 
     useEffect(() => {
       if (messageRef.current) {
@@ -19,7 +19,7 @@ function Chat(){
           })
       }
     },
-    [chatLog])
+    [chatMsg])
 
 
   return (

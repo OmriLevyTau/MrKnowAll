@@ -3,21 +3,22 @@ import { Button, Modal } from "antd";
 import { useContext, useState } from "react";
 import { UserContext } from "../AppContent/AppContext";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ChatLogContext } from "../AppContent/ChatContext";
 import TextArea from "antd/es/input/TextArea";
 import { query } from "../../../services/Api";
-import useFileStore from "../MyWorkspace/store";
+import { LoadingOutlined } from "@ant-design/icons";
+import useFileStore from "../MyWorkspace/fileStore";
 import {OPENAI_ERROR, SERVER_ERROR, STATUS_OK} from "../Constants";
+import useChatStore from "./chatStore";
 
 
 function ChatInput(props) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { setChatLog, } = useContext(ChatLogContext);
+  const {addMsgToStore, removeLastMsgFromStore} = useChatStore();
   const { files, addFileToStore, removeFileFromStore } = useFileStore(); 
   const { user , token} = useContext(UserContext);
   const [msg, setMsg] = useState("");
-  const [waitingChatGpt, setWaitingChatGpt] = useState(false);
+  const [waitingChatGpt, setWaitingChatGpt] = useState(false)
   const { width } = props;
 
   // Helpers and configs
@@ -44,16 +45,15 @@ function ChatInput(props) {
 
     // Update chatLog with user's message
     setWaitingChatGpt(true);
-    setChatLog((prevChat) => [...prevChat, { chatgpt: false, content: {"message": msg, "ref": null, "metadata": null} }]);
+    addMsgToStore({ chatgpt: false, content: {"message": msg, "ref": null, "metadata": null}});
     setMsg("");
-
-    setChatLog((prevChat) => [...prevChat, {chatgpt: true,content: {"message": "...", "ref": null, "metadata": null}}]);
+    addMsgToStore({chatgpt: true,content: {"message": <LoadingOutlined style={{ color: "black" }} /> , "ref": null, "metadata": null}})
 
     // make an api call to the backend
     let chatResponse = await query({
       "user_id": user.email,
       "query_id": files.length,
-      "query_content": msg
+      "query_content": msg.trim()
     }, token);
    
     let chatGptResponse = {chatgpt: true,content: SERVER_ERROR}; // default.
@@ -63,7 +63,7 @@ function ChatInput(props) {
       console.log(chatResponse.data)
     }
     // Otherwise, communicating with the backend was successfull. It does *not* mean
-    // communicating with the AI assitant was successfuul. 
+    // communicating with the AI assistant was successfuul. 
     else if ( chatResponse.data.response.status != STATUS_OK){
       chatGptResponse = {chatgpt: true,content: {"message": SERVER_ERROR, "ref": null, "metadata": null}};
     }
@@ -75,9 +75,11 @@ function ChatInput(props) {
         "ref": responseData.references, 
         "metadata": {"query_content": responseData.query_content, "context": responseData.context }
       }
-      chatGptResponse = {chatgpt: true,content: content};
+      console.log(content);
+      chatGptResponse = {chatgpt: true, content: content};
     }
-    setChatLog((prevChat) => [...prevChat.slice(0, -1), chatGptResponse]);
+    removeLastMsgFromStore();
+    addMsgToStore(chatGptResponse);
     setWaitingChatGpt(false);
   };
 

@@ -2,6 +2,11 @@ import { createContext, useState } from "react";
 
 export const ChatLogContext = createContext();
 
+/**
+ * 
+ * @deprecated
+ * We're using {@link chatStore.js} instead.
+ */
 function ChatContext(props) {
   const [chatLog, setChatLog] = useState([]);
   const [dataSource, setDataSource] = useState([]);

@@ -1,5 +1,8 @@
 import { Avatar, Card } from "antd";
-
+import GenericModal from "../../common/Modal/GenericModal";
+import { useState } from "react";
+import ChatAnswerContext from "./ChatAnswerContext";
+import chatIcon from "../../../images/mr-know-all-icon.jpg"
  
 
  /**
@@ -15,13 +18,36 @@ import { Avatar, Card } from "antd";
 
 function ChatMessage(props) {
   const { chatgpt, content } = props;
+  const [open, setOpen] = useState(false)
+
+  const onCancel = () => {
+    setOpen(false);
+  }
+
+  const context =  content.metadata && content.metadata.context ? content.metadata.context : null
+  
+  
+  let contextModal =
+    <GenericModal
+      open={open} 
+      setOpen={setOpen}
+      loading={false}
+      setStatus={null}
+      onCancel={onCancel}
+      modalButtonText="Show context"
+      modalTitle={"This context was provided to chatGPT alongside your question"}
+      modalContent={<ChatAnswerContext context={context}/>}
+      buttonType={"default"}
+      buttonSize={"medium"}                   
+  />
   
 
-  const avatar = chatgpt ? "1" : "2";
+  const avatar = chatgpt ? chatIcon : "https://xsgames.co/randomusers/avatar.php?g=pixel&key=1";
   const back = chatgpt ? "#FDF1F3" : "white";
 
   return (
     <Card
+    bodyStyle={{ width:"100%" }}
     style={{
         width: "100%",
         display:"flex", 
@@ -33,14 +59,19 @@ function ChatMessage(props) {
         backgroundColor: back
     }}
   >
-    <div style={{ display:"flex", flexDirection:"row", }}>
-      <div style={{width:'25px', marginRight: '20px'}}>
-        <Avatar src={"https://xsgames.co/randomusers/avatar.php?g=pixel&key="+avatar}  />
+    <div style={{ display:"flex", flexDirection:"column", width:"100%"}}>
+      <div style={{ display:"flex", flexDirection:"row", width:"100%"}}>
+        <div style={{width:'25px', marginRight: '20px'}}>
+          <Avatar src={avatar}  />
+        </div>
+        <div style={{ display:"flex", flexDirection:"column", overflowWrap: "anywhere" , fontFamily:'sans-serif', fontSize:'16px'}} >
+          <p>{content.message}</p>
+          {chatgpt && content.metadata && content.metadata.context ? <br/> : null}
+        </div>
       </div>
-      <div style={{ display:"flex", flexDirection:"column", overflowWrap: "anywhere" , fontFamily:'sans-serif'}} >
-        <p>{content.message}</p>
-        <br/>
-        {chatgpt && content.ref ? "Based-on: " + content.ref : null}        
+      <div className="ai-context-modal" style={{ display: "flex", justifyContent:"space-between", alignItems:"end", width:"100%" }}>
+        <div></div>
+        {chatgpt && content.metadata && content.metadata.context ? contextModal : null}
       </div>
     </div>
   </Card>

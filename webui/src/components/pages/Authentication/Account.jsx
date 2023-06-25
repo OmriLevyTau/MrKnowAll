@@ -1,20 +1,22 @@
 import React, {useContext} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../AppContent/AppContext';
+import useFileTableStore from '../MyWorkspace/fileStore';
+import { useQueryClient } from '@tanstack/react-query';
+import useChatStore from '../Chat/chatStore';
+
 
 const Account = () => {
-    const { user, logout} = useContext(UserContext);
+  const { user, logout} = useContext(UserContext);
+  const navigate = useNavigate();
 
-    const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
       await logout();
       navigate('/signin');
-      console.log('You are logged out')
-      // ??? need to reset user state ???
     } catch (e) {
-      console.log(e.message);
+      alert(e.message);
     }
   };
 

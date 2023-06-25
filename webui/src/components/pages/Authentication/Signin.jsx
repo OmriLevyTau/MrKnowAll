@@ -5,6 +5,7 @@ import { Form, Input, Button, Image } from 'antd';
 import { GoogleButton } from 'react-google-button' 
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 
+
 const Signin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -12,11 +13,12 @@ const Signin = () => {
   const navigate = useNavigate();
   const {signIn, signInWithGoogle} = useContext(UserContext);
 
+
   const handleGoogleSignIn = async (e) => {
     e.preventDefault();
     setError('')
     try {
-      await signInWithGoogle()
+      await signInWithGoogle();
       navigate('/home')
     } catch (e) {
       setError(e.message)
@@ -28,7 +30,7 @@ const Signin = () => {
     e.preventDefault();
     setError('')
     try {
-      await signIn(email, password)
+      await signIn(email, password);
       navigate('/home')
     } catch (e) {
       setError(e.message)
@@ -38,9 +40,9 @@ const Signin = () => {
 
   return (
     <div style={{ display: "flex", flexDirection:"column",}} >
-      <div class="split left"/>        
+      <div className="split left"/>        
       
-      <div class="split right" style={{width: "50%",  flexDirection:"column"}}>
+      <div className="split right" style={{width: "50%",  flexDirection:"column"}}>
             <div >
               <h1>Sign in to your account</h1>
               <div className='google-button-container' style={{

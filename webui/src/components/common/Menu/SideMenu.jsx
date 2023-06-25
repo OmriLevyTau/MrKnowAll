@@ -37,33 +37,57 @@ function SideMenu(props){
     
 
     return (
+    <div className="side-menu" style={{ backgroundColor: "black", width: "200px", display: "flex", flexDirection: "column" }}>
+        <div className="page-menu-logo" onClick={() => navigate('/home')} style={{ marginLeft: "0%", marginTop: "5%", display: "flex", flexDirection: "row", justifyItems: "center" }}>
+            <Image width={70} height={70} src={logo} preview={false} style={{ marginLeft: "20%" }} />
+        </div>
+        <Menu
+            className="side-menu"
+            mode="inline"
+            onClick={onMenuClick}
+            items={pages}
+            style={{
+                color: "white",
+                background: 'rgba(204, 204, 204, 0.0)',
+                fontSize: "120%",
+                marginTop: "10%",
+                flex: 1, // Expand the menu to take remaining space
+            }}
+            disabledOverflow={true}
+            inlineCollapsed={false}
+        />
+        <div style={{ alignSelf: "center", marginBottom: "13%" }}> {/* Align to bottom and adjust marginBottom */}
+            <Button type="ghost" onClick={onClearChat}>Clear chat</Button>
+        </div>
+    </div>
+
         
-        <div className="side-menu" style={{ justifyContent: "space-between",alignItems:"center" ,backgroundColor: "black", width: "14%", display: "flex", flexDirection: "column" }}>
-            <div>
-                <div className="page-menu-logo" onClick={() => navigate('/home')} style={{ marginLeft: "0%", marginTop: "5%", flexDirection: "row", justifyItems: "center" }}>
-                    <Image width={70} height={70} src={logo} preview={false} style={{ marginLeft: "20%" }} />
-                </div>
-                <Menu
-                className="side-menu"
-                mode="inline"
-                onClick={onMenuClick}
-                items={pages}
-                style={{
-                    color: "white",
-                    background: 'rgba(204, 204, 204, 0.0)',
-                    fontSize: "120%",
-                    marginTop: "10%",
-                    fontFamily: "Nunito, sans-serif",
-                    marginRight: "5%"
-                }}
-                disabledOverflow={true}
-                inlineCollapsed={false}
-                />
-            </div>
-            <div style={{ marginBottom:"11%" }}>
-                <Button type="ghost" onClick={onClearChat} >Clear chat</Button>
-            </div>
-        </div>   
+        // <div className="side-menu" style={{ backgroundColor: "black", width: "14%", display: "flex", flexDirection: "column" }}>
+        //         <div className="page-menu-logo" onClick={() => navigate('/home')} style={{ marginLeft: "0%", marginTop: "5%", display:"flex", flexDirection: "row", justifyItems: "center" }}>
+        //             <Image width={70} height={70} src={logo} preview={false} style={{ marginLeft: "20%" }} />
+        //         </div>
+        //         <Menu
+        //         className="side-menu"
+        //         mode="inline"
+        //         onClick={onMenuClick}
+        //         items={pages}
+        //         style={{
+        //             color: "white",
+        //             background: 'rgba(204, 204, 204, 0.0)',
+        //             fontSize: "120%",
+        //             marginTop: "10%",
+        //             fontFamily: "Nunito, sans-serif",
+        //             marginRight: "5%",
+        //             display: "flex",
+        //             flexDirection:"column"
+        //         }}
+        //         disabledOverflow={true}
+        //         inlineCollapsed={false}
+        //         />
+        //     <div style={{ marginBottom:"11%" }}>
+        //         <Button type="ghost" onClick={onClearChat} >Clear chat</Button>
+        //     </div>
+        // </div>   
     )
 };
 

@@ -189,5 +189,4 @@ def get_documents_chunks_fitz(doc_path: str) -> List[str]:
             page_text = page.get_text()
             page_sentences = split_method(page_text)
             result.extend(page_sentences)
-    print(result)
     return result 

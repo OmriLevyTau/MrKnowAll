@@ -3,6 +3,10 @@ from typing import Dict, List, Tuple
 from app.models.query import Query
 from app.param_tuning import MAX_NUM_OF_CHARS_IN_QUERY, MAX_NUM_OF_CHARS_IN_QUESTION, MAX_NUM_OF_WORDS_IN_QUERY
 from app.storage.chat_history_db import ChatHistoryManager
+from app.models.documents import VectorContextQuery
+from app.param_tuning import SCORE_THRESHOLD
+from app.storage.abstract_vector_storage import SEP
+
 
 # create a connection to the local DB for saving the chat history
 chat_history_manager = ChatHistoryManager("chat_history.db")
@@ -25,7 +29,7 @@ def validate_query(query_request: Query) -> bool:
     return True
 
 
-def get_history_for_chat(user_id: str, query: Query) -> List[Tuple[str,str]]:
+def get_history_for_chat(user_id: str, query: Query) -> List[Tuple[str, str]]:
     """
     Given a user_id and a Query, get the short-term history of the chat.
     That is the last messages of the user and the system, adhering to the
@@ -73,8 +77,71 @@ def compose_context_response(map_doc_id_to_context: Dict[str, Dict[str, str]]):
 
     result = dict()
     for doc_id, context_dict in map_doc_id_to_context.items():
-        doc_sentences = [sentence for vec_id, sentence in map_doc_id_to_context[doc_id].items()]
+        doc_sentences = [sentence for vec_id,
+                         sentence in map_doc_id_to_context[doc_id].items()]
         doc_context = "\n".join(doc_sentences)
         result[doc_id] = doc_context
     return result
 
+# TODO: add type hint of top_k_closest_vectors
+
+
+def get_context_objects_for_top_k_closest_vectors(user_id: str, top_k_closest_vectors) -> Tuple[set, List[VectorContextQuery]]:
+    references = set()
+    context_query_list = []
+    for vector_data in top_k_closest_vectors:
+        # every vector has its own context
+        cur_vec_doc_id = vector_data.get('metadata').get('document_id')
+        cur_vec_score = vector_data.get('score')
+        # get context only for sentences that are relevant to the question
+        if (cur_vec_score >= SCORE_THRESHOLD):
+            references.add(cur_vec_doc_id)
+            context_query = VectorContextQuery(
+                user_id=user_id, document_id=cur_vec_doc_id, vector_id=vector_data.get(
+                    'id')
+            )
+            context_query_list.append(context_query)
+
+    return references, context_query_list
+
+# TODO: add type hint of vectors
+
+
+def extract_context_from_context_vectors(vectors) -> Dict[str, Dict[str, str]]:
+    map_vec_id_to_context = {}
+    map_doc_id_to_context = {}
+    # we map every vector we have to all of its context sentences, and then we save this mapping inside another
+    # map, from the document id to all the (context) vectors it has for this query.
+    for i, key in enumerate(vectors):
+        # vec is a key to dict
+        res = vectors.get(key)
+        vec_id = res.get("id").split(SEP)[0]
+        context = res.get("metadata").get("original_content")
+        map_vec_id_to_context[vec_id] = context
+        cur_vec_doc_id = res.get("metadata").get("document_id")
+
+        if cur_vec_doc_id not in map_doc_id_to_context:
+            map_doc_id_to_context[cur_vec_doc_id] = map_vec_id_to_context
+        else:
+            map_doc_id_to_context[cur_vec_doc_id].update(
+                map_vec_id_to_context)
+
+    return map_doc_id_to_context
+
+
+def build_all_context(doc_ids: List[str], map_doc_id_to_context: Dict[str, Dict[str, str]]) -> str:
+    # for each document, we get the context of all the vectors that belongs to that document
+    all_context = ""
+    for doc_id in doc_ids:
+        all_context = all_context + \
+            "\n The following context is coming from the document: " + doc_id + '\n'
+        cur_doc_id_dict = map_doc_id_to_context[doc_id]
+
+        vec_ids = list(cur_doc_id_dict)
+
+        vec_ids.sort()
+        for vec_id in vec_ids:
+            all_context = all_context + cur_doc_id_dict[vec_id]
+            all_context = all_context + "\n"
+
+    return all_context

@@ -178,7 +178,6 @@ def pdf_chunks_generator(pdf_reader: PyPDF2.PdfReader, pdf_file_descriptor: Bina
 
 
 def get_documents_chunks_fitz(doc_path: str) -> List[str]:
-    print("using fitz")
     result = []
     if (SPLIT_METHOD == "nltk"):
         split_method = split_into_sentences_by_nltk

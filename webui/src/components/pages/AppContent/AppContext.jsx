@@ -6,6 +6,8 @@ import {
     onAuthStateChanged,
     GoogleAuthProvider,
     signInWithPopup,
+    setPersistence,
+    browserSessionPersistence
   } from 'firebase/auth';
   import { auth } from '../Authentication/Firebase'
 import useFileTableStore from "../MyWorkspace/fileStore";
@@ -58,23 +60,32 @@ function AppContext(props){
       return signOut(auth)
     };
     
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      const getToken = async (currentUser) => {
-        const token = await currentUser.getIdToken();
-        setToken(token);
-      };
-     
-      
-      if (currentUser) {
+    useEffect(() => {
+      const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        const getToken = async (currentUser) => {
+          const token = await currentUser.getIdToken();
+          setToken(token);
+        };
+    
+        if (currentUser) {
           getToken(currentUser);
           setUser(currentUser);
-      } else {
-        setUser("");
-      }
-    });
-    return () => unsubscribe();
-  }, []);
+        } else {
+          setUser("");
+        }
+      });
+    
+      // Set session-based persistence
+      setPersistence(auth, browserSessionPersistence)
+        .then(() => {
+          // Persistence set successfully
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    
+      return () => unsubscribe();
+    }, []);
 
   // get user data from backend for initial display.
 

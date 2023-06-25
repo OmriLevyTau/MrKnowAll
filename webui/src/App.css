@@ -477,9 +477,13 @@ About Page
 /* Control the left side */
 .left {
   left: 0;
-  background-image: url("images/mustach3.png");
-  background-size:cover;
+  background-image: url("images/mustach3_signin.png");
+  background-size: 100%;
+  background-position: center;
+  background-color: black;
+  background-repeat: no-repeat;
   width:40%;
+  height: 100%;
   justify-content: center;
   background-repeat: no-repeat;
 }

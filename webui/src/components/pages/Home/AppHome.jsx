@@ -36,6 +36,7 @@ function Landing(){
             status: DONE
         }));
         setAllFiles(docs);
+        return docs;
         }
 
         const {data} = useQuery({
@@ -69,7 +70,7 @@ function Landing(){
                 <div className="new-home-layout" style={{backgroundColor:'black', width:"100%", marginTop:'0%'}}>
                     <div className="new-home-header-search" style={{marginBottom:"0%", marginTop:"0%", display:"flex", flexDirection:"column", alignItems:"center"}}>                    
                         <h2 className = "new-home-header-title" style={{color:'white',  fontFamily: "Nunito, sans-serif"}} >Ask me anything.. about your data!</h2>
-                        <ChatInput width={"55%"} />
+                        <ChatInput width={"60%"}  />
                     </div>
                 </div>
                 <div className="image" style={{width:"50%", marginBottom:"3%", display:"flex", flexDirection:"row", marginTop:"2%", justifyItems:"center"}}>

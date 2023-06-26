@@ -105,18 +105,20 @@ class PineconeVectorStorage(AbstractVectorStorage):
         return delete_response
 
     async def _query(self, user_id: str, query: Query):
-
-        top = DEFAULT_TOP_K_VECTORS
+        top_k = DEFAULT_TOP_K_VECTORS
         if query.top_k:
-            top = query.top_k
+            top_k = query.top_k
+
+        filter_map = {"user_id": {"$eq": user_id}}
+        advanced_filtering = query.advanced_filtering
+        if advanced_filtering is not None:
+            filter_map.update(advanced_filtering)
 
         try:
             query_response = self.index.query(
                 vector=query.embedding,
-                top_k=top,
-                filter={
-                    "user_id": {"$eq": user_id}
-                },
+                top_k=top_k,
+                filter=filter_map,
                 include_metadata=True
             )
         except Exception as error:

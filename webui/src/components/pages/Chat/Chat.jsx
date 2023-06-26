@@ -6,20 +6,20 @@ import useChatStore from './chatStore';
 
 
 function Chat(){
-    const messageRef = useRef();
-    const {chatMsg} = useChatStore();
+  const messageRef = useRef();
+  const {chatMsg} = useChatStore();
 
-    useEffect(() => {
-      if (messageRef.current) {
-        messageRef.current.scrollIntoView(
-          {
-            behavior: 'smooth',
-            block: 'end',
-            inline: 'nearest'
-          })
-      }
-    },
-    [chatMsg])
+  useEffect(() => {
+    if (messageRef.current) {
+      messageRef.current.scrollIntoView(
+        {
+          behavior: 'smooth',
+          block: 'end',
+          inline: 'nearest'
+        })
+    }
+  },)
+
 
 
   return (
@@ -52,13 +52,13 @@ function Chat(){
             flexDirection: "column",
             height: "100%",
             width: "80%",
-            justifyContent: "space-between",
             paddingBottom: "1.5%",
+            justifyContent:"space-between"
           }}
         >
           <ChatLog />
           <div ref={messageRef}>
-            <ChatInput width={"100%"} />
+            <ChatInput width={"100%"} withAdvancedFiltering={true} />
           </div>
         </div>
       </div>

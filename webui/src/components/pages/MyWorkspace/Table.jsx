@@ -47,6 +47,7 @@ function FileTable() {
       status: DONE
     }));
     setAllFiles(docs);
+    return docs;
   }
 
   const {data} = useQuery({

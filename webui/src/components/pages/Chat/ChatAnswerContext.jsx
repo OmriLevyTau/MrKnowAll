@@ -12,7 +12,7 @@ function ChatAnswerContext(props){
         navigate("/doc-view/" + doc_id)
     }
 
-
+    
     return (
         <div>
             <p>
@@ -26,8 +26,8 @@ function ChatAnswerContext(props){
                     <List.Item>
                         <Collapse style={{width:'100%'}}>
                             <Panel header={item[0]}>
-                                <div style={{ display:"flex", flexDirection:"column", width:"100%" }}> 
-                                    <pre style={{ background:"inherit", width:"100%", 
+                                <div style={{ display:"flex", flexDirection:"column", width:"100%", height: "300px" }}> 
+                                    <pre style={{ background:"inherit", width:"100%", overflowY:"scroll",
                                         overflowX: "hidden", whiteSpace: "pre-wrap", border:"none"}}>
                                         {item[1]}
                                     </pre>

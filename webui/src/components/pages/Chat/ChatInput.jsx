@@ -1,5 +1,5 @@
 import { SendOutlined } from "@mui/icons-material";
-import { Button, Modal } from "antd";
+import { Button, Modal, Select, Space } from "antd";
 import { useContext, useState } from "react";
 import { UserContext } from "../AppContent/AppContext";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -19,7 +19,9 @@ function ChatInput(props) {
   const { user , token} = useContext(UserContext);
   const [msg, setMsg] = useState("");
   const [waitingChatGpt, setWaitingChatGpt] = useState(false)
-  const { width } = props;
+  const { width, withAdvancedFiltering } = props;
+  const [selectedFilesFiltering, setSelectedFilesFiltering] = useState([])
+
 
   // Helpers and configs
   // ======================================================
@@ -32,6 +34,10 @@ function ChatInput(props) {
       style:{textAlign:"fit-content"}
     });
     setMsg("");
+  }
+
+  const onAddFileFiltering = (e) =>{
+    setSelectedFilesFiltering(prev => e);
   }
 
   // Send a message on chat
@@ -49,18 +55,23 @@ function ChatInput(props) {
     setMsg("");
     addMsgToStore({chatgpt: true,content: {"message": <LoadingOutlined style={{ color: "black" }} /> , "ref": null, "metadata": null}})
 
-    // make an api call to the backend
-    let chatResponse = await query({
+    const userQuery = {
       "user_id": user.email,
       "query_id": files.length,
-      "query_content": msg.trim()
-    }, token);
+      "query_content": msg.trim(),
+    }
+
+    if (selectedFilesFiltering && selectedFilesFiltering.length > 0){
+      userQuery["advanced_filtering"] = {"document_id": {"$in": selectedFilesFiltering}}
+    }
+
+    // make an api call to the backend
+    let chatResponse = await query(userQuery, token);
    
     let chatGptResponse = {chatgpt: true,content: SERVER_ERROR}; // default.
     // check if error occured while communicating with the server
     if (chatResponse.status!==200 && chatResponse.status!==204){
       chatGptResponse = {chatgpt: true, content: {"message": SERVER_ERROR, "ref": null, "metadata": null}};
-      console.log(chatResponse.data)
     }
     // Otherwise, communicating with the backend was successfull. It does *not* mean
     // communicating with the AI assistant was successfuul. 
@@ -83,50 +94,44 @@ function ChatInput(props) {
     setWaitingChatGpt(false);
   };
 
+  const Selection =       
+  <Select 
+    mode="multiple" 
+    allowClear 
+    options={files.map(item => ({value: item.name, label: item.name}))} 
+    style={{ width: '20%' }} 
+    placeholder="Filter files"
+    onChange={onAddFileFiltering}
+    maxTagCount={1}
+    maxTagTextLength={12}
+    disabled={waitingChatGpt}
+  />
+
   return (
-    <div
-      className="chat-input-holder"
-      style={{
-        width: width,
-        paddingBottom: "2%",
-        display: "flex",
-        flexDirection: "row",
-      }}
-    >
-      <div
-        className="text-area-container"
-        style={{ position: "relative", width: "100%"}}
-        
-      >
+    <div className="chat-input-holder" style={{ width: width, marginBottom: "30px",display: "flex",flexDirection: "row",}}>
+      <div className="text-area-container" style={{ position: "relative", width: "100%"}}>
         <TextArea
-          autoSize={{ minRows: 1, maxRows: 4 }}
+          autoSize={{ minRows: 1, maxRows: 2 }}
           /* onPressEnter={sendMsg} */
           onChange={(e) => setMsg(e.target.value)}
           value={msg}
-          placeholder="Ask me anything, and get answers based on your data!" 
+          placeholder="Ask anything!" 
           style={{
             boxSizing: "border-box",
             fontFamily: "Nunito, sans-serif",
             boxShadow: "1px 1px 1px 1px #F9F7F7",
             position: "absolute",
             fontSize: "100%",
-            fontWeight: "50%",
-            
+            fontWeight: "50%",            
           }}
         />
-        <Button
-          onClick={sendMsg}
-          
-          style={{
-            display: "flex",
-            float: "right",
-          }}
-          disabled={waitingChatGpt}
-        >
+        <Button onClick={sendMsg} style={{display: "flex",float: "right",}} disabled={waitingChatGpt} >
           <SendOutlined style={{height:"100%" ,fontSize:"18px", borderColor:"1px transparent"}}/>
         </Button>
       </div>
+      { withAdvancedFiltering ? Selection : null}
     </div>
+
   );
 }
 

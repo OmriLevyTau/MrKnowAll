@@ -63,7 +63,7 @@ function AppContext(props){
     useEffect(() => {
       const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
         const getToken = async (currentUser) => {
-          const token = await currentUser.getIdToken();
+          const token = await currentUser.getIdToken(true);
           setToken(token);
         };
     

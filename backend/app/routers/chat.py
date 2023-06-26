@@ -2,25 +2,29 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
 from app.config import OPENAI_API_KEY
-from app.param_tuning import SCORE_THRESHOLD
 
 from app.models.api_models import QueryResponse, Status, OpenAIResponse, QueryResponseType
-from app.models.documents import VectorContextQuery
 from app.models.query import Query
 from app.models.chat_history import ClearChatRequest
 
 from app.services.chat.openai_client import OpenAIAPI
-from app.services.chat.chat_manager import validate_query, get_history_for_chat, compose_context_response
+from app.services.chat.chat_manager import build_all_context, validate_query, get_history_for_chat, compose_context_response, build_context_objects_for_top_k_closest_vectors, extract_context_from_context_vectors
 
 from app.storage.vector_storage_providers.pinecone import PineconeVectorStorage
 from app.storage.chat_history_db import ChatHistoryManager
-from app.storage.abstract_vector_storage import SEP
 
 chat_router = APIRouter(prefix="/api/v0")
 openai_api = OpenAIAPI(api_key=OPENAI_API_KEY)
 pinecone_client = PineconeVectorStorage()
 
 chat_history_manager = ChatHistoryManager("chat_history.db")
+
+# the prefix of the query we send to the API. we ask to get answer based only our information and history
+PROMPT_PREFIX = "Please return a response to the user's message " \
+                "based solely on the information I provide in the text delimited by three dashes. \n1. If the " \
+                "user's message does not make sense, simply say you can't answer. \n2. Otherwise, return a response " \
+                "based on the information I provided and the previous messages. \nDo not refer to any external " \
+                "knowledge or provide additional details beyond what I have given.\n"
 
 
 def compose_response(query_content: str, response_type: QueryResponseType, open_ai_response: OpenAIResponse):
@@ -63,27 +67,18 @@ async def query(query_request: Query):
 
         # keep only the vectors which are similar by a specific threshold
         all_context = ""
-        context_query_list = []
         map_doc_id_to_context = {}
-        references = set()
-        for vector_data in top_k_closest_vectors:
-            # every vector has its own context
-            map_vec_id_to_context = {}
-            cur_vec_doc_id = vector_data.get('metadata').get('document_id')
-            cur_vec_score = vector_data.get('score')
-            # get context only for sentences that are relevant to the question
-            if (cur_vec_score >= SCORE_THRESHOLD):
-                references.add(cur_vec_doc_id)
-                context_query = VectorContextQuery(
-                    user_id=user_id, document_id=cur_vec_doc_id, vector_id=vector_data.get('id')
-                )
-                context_query_list.append(context_query)
+
+        # get the references and the VectorContextQuery for each relevant vector
+        references, context_query_list = build_context_objects_for_top_k_closest_vectors(
+            user_id=user_id, vectors=top_k_closest_vectors)
 
         # if there is no relevant sentence, we don't communicate with the AI assistant
         if len(context_query_list) == 0:
             return compose_response(
                 query_content=query_content, response_type=QueryResponseType.NoMatchingVectors,
-                open_ai_response=OpenAIResponse(status=Status.Ok, content="No relevant data was found.")
+                open_ai_response=OpenAIResponse(
+                    status=Status.Ok, content="No relevant data was found.")
             )
 
         # get all the context vectors for the relevant vectors
@@ -92,46 +87,16 @@ async def query(query_request: Query):
 
         vectors = context_response.get("vectors")
 
-        # we map every vector we have to all of its context sentences, and then we save this mapping inside another
-        # map, from the document id to all the (context) vectors it has for this query.
-        for i, key in enumerate(vectors):
-            # vec is a key to dict
-            res = vectors.get(key)
-            vec_id = res.get("id").split(SEP)[0]
-            context = res.get("metadata").get("original_content")
-            map_vec_id_to_context[vec_id] = context
-            cur_vec_doc_id = res.get("metadata").get("document_id")
-
-            if cur_vec_doc_id not in map_doc_id_to_context:
-                map_doc_id_to_context[cur_vec_doc_id] = map_vec_id_to_context
-            else:
-                map_doc_id_to_context[cur_vec_doc_id].update(map_vec_id_to_context)
+        map_doc_id_to_context = extract_context_from_context_vectors(vectors)
 
         # if we are here, it means that we have at least one sentence that is relevant to the question
         doc_ids = list(map_doc_id_to_context)
 
-        # for each document, we get the context of all the vectors that belongs to that document
-        for doc_id in doc_ids:
-            all_context = all_context + \
-                          "\n The following context is coming from the document: " + doc_id + '\n'
-            cur_doc_id_dict = map_doc_id_to_context[doc_id]
+        all_context = build_all_context(
+            doc_ids=doc_ids, map_doc_id_to_context=map_doc_id_to_context)
 
-            vec_ids = list(cur_doc_id_dict)
-
-            vec_ids.sort()
-            for vec_id in vec_ids:
-                all_context = all_context + cur_doc_id_dict[vec_id]
-                all_context = all_context + "\n"
-
-        # the prefix of the query we send to the API. we ask to get answer based only our information and history
-        prompt_prefix = "Please return a response to the user's message " \
-                        "based solely on the information I provide in the text delimited by three dashes. \n1. If the " \
-                        "user's message does not make sense, simply say you can't answer. \n2. Otherwise, return a response " \
-                        "based on the information I provided and the previous messages. \nDo not refer to any external " \
-                        "knowledge or provide additional details beyond what I have given.\n"
-
-        question= "user: " + query_content
-        prompt_prefix = prompt_prefix + question
+        question = "user: " + query_content
+        prompt_prefix = PROMPT_PREFIX + question
         prompt_suffix = "\nThis is the text:\n---"+all_context+"\n---"
         prompt = prompt_prefix + prompt_suffix
 
@@ -139,14 +104,15 @@ async def query(query_request: Query):
         ai_assistant_query = Query(
             user_id=user_id, query_id=query_id, query_content=prompt)
 
-        # get the last messages and response from sqlite DB
-        history = get_history_for_chat(user_id=user_id, query=ai_assistant_query)
+        # get the most recent chat history
+        history = get_history_for_chat(
+            user_id=user_id, query=ai_assistant_query)
 
         # get the response from the AI assistant API
         answer = openai_api.generate_answer(
             history=history, query=ai_assistant_query)
 
-        # add the question and the response to the short-term memory
+        # add the question and the response to the short-term chat history
         chat_history_manager.add_message(
             user_id=user_id, chat_id=user_id, user_message=query_content, chat_message=answer.content)
 
@@ -165,9 +131,9 @@ async def query(query_request: Query):
 
 @chat_router.delete("/clear-chat", response_class=JSONResponse)
 async def clear_chat(clear_chat_request: ClearChatRequest):
-    body = clear_chat_request
     try:
-        chat_history_manager.delete_chat_history_by_user_id(clear_chat_request.user_id)
+        chat_history_manager.delete_chat_history_by_user_id(
+            clear_chat_request.user_id)
         return JSONResponse(status_code=200, content="Chat cleared.")
     except Exception as e:
         return JSONResponse(status_code=500, content=str(e))

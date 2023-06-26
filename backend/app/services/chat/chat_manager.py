@@ -4,7 +4,7 @@ from app.models.query import Query
 from app.param_tuning import MAX_NUM_OF_CHARS_IN_QUERY, MAX_NUM_OF_CHARS_IN_QUESTION, MAX_NUM_OF_WORDS_IN_QUERY
 from app.storage.chat_history_db import ChatHistoryManager
 from app.models.documents import VectorContextQuery
-from app.param_tuning import SCORE_THRESHOLD
+from app.param_tuning import DEFAULT_SIMILARITY_SCORE_THRESHOLD
 from app.storage.abstract_vector_storage import SEP
 
 
@@ -102,7 +102,7 @@ def build_context_objects_for_top_k_closest_vectors(user_id: str, vectors) -> Tu
         cur_vec_doc_id = vector_data.get('metadata').get('document_id')
         cur_vec_score = vector_data.get('score')
         # get context only for sentences that are relevant to the question
-        if (cur_vec_score >= SCORE_THRESHOLD):
+        if (cur_vec_score >= DEFAULT_SIMILARITY_SCORE_THRESHOLD):
             references.add(cur_vec_doc_id)
             context_query = VectorContextQuery(
                 user_id=user_id, document_id=cur_vec_doc_id, vector_id=vector_data.get(
@@ -123,12 +123,12 @@ def extract_context_from_context_vectors(vectors) -> Dict[str, Dict[str, str]]:
 
         :return: Dict[str, Dict[str, str]]
     """
-    map_vec_id_to_context = {}
     map_doc_id_to_context = {}
 
     # we map every vector we have to all of its context sentences, and then we save this mapping inside another
     # map, from the document id to all the (context) vectors it has for this query.
     for i, key in enumerate(vectors):
+        map_vec_id_to_context = {}
         # vec is a key to dict
         res = vectors.get(key)
         vec_id = res.get("id").split(SEP)[0]

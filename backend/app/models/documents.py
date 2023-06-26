@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from app.param_tuning import CONTEXT_WINDOW
+from app.param_tuning import DEFAULT_CONTEXT_WINDOW
 
 
 class DocumentMetaData(BaseModel):
@@ -72,7 +72,7 @@ class VectorContextQuery(BaseModel):
     user_id: str
     document_id: str
     vector_id: str
-    context_window: Optional[int] = CONTEXT_WINDOW
+    context_window: Optional[int] = DEFAULT_CONTEXT_WINDOW
 
     def get_document_id(self) -> str:
         return self.document_id

@@ -4,7 +4,7 @@ from app.models.api_models import OpenAIResponse, Status
 from app.models.query import Query
 from app.services.chat.chat_manager import ASSISTANT, USER
 
-from app.param_tuning import OPEN_AI_TEMPERATURE
+from app.param_tuning import DEFAULT_OPEN_AI_TEMPERATURE, DEFAULT_OPENAI_GPT_MODEL
 
 ROLE = "role"
 CONTENT = "content"
@@ -42,9 +42,9 @@ class OpenAIAPI:
             'Authorization': f'Bearer {self.api_key}',
         }
         data = {
-            "model": "gpt-3.5-turbo",
+            "model": DEFAULT_OPENAI_GPT_MODEL,
             'messages':  messages,
-            "temperature": OPEN_AI_TEMPERATURE,
+            "temperature": DEFAULT_OPEN_AI_TEMPERATURE,
         }
 
         response = requests.post(self.endpoint, headers=headers, json=data)

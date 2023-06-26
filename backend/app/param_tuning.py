@@ -21,5 +21,6 @@ MAX_NUM_OF_WORDS_IN_QUERY = 128
 
 # the threshold for the vectors score when we send a query
 SCORE_THRESHOLD = 0.3
-
 OPEN_AI_TEMPERATURE=0.1
+CONTEXT_WINDOW = 2
+TOP_K_VECTORS = 4

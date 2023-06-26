@@ -2,7 +2,7 @@ from typing import Dict, List
 
 import pinecone
 from app.config import PINECONE_API_KEY, PINECONE_ENVIRONMENT, PINECONE_INDEX
-from app.param_tuning import PINECONE_BATCH_SIZE
+from app.param_tuning import PINECONE_BATCH_SIZE, TOP_K_VECTORS
 from app.models.documents import DocumentVectorChunk, VectorContextQuery
 from app.models.query import Query
 from app.storage.abstract_vector_storage import AbstractVectorStorage
@@ -106,7 +106,7 @@ class PineconeVectorStorage(AbstractVectorStorage):
 
     async def _query(self, user_id: str, query: Query):
 
-        top = 3
+        top = TOP_K_VECTORS
         if query.top_k:
             top = query.top_k
 

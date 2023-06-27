@@ -53,7 +53,7 @@ function FileTable() {
   const {data} = useQuery({
       queryKey:["docs"], 
       queryFn: () => getUserAllDocsMetaData(user.email, token), 
-      enabled: (token!==undefined && token!=null),
+      enabled: (user!==null && user!==undefined && token!==undefined && token!=null),
       refetchOnWindowFocus: false,
     },
   )

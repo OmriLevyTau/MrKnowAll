@@ -51,7 +51,7 @@ function AppContext(props){
         clearCache();
         const result = await signInWithPopup(auth, GoogleProvider);
       } catch (error) {
-        alert(error);
+        console.log(error);
       }
     };
     

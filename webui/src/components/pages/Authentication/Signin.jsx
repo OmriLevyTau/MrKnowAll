@@ -22,7 +22,7 @@ const Signin = () => {
       navigate('/home')
     } catch (e) {
       setError(e.message)
-      alert(e.message)
+      console.log(e.message)
     }
   }
 
@@ -34,7 +34,7 @@ const Signin = () => {
       navigate('/home')
     } catch (e) {
       setError(e.message)
-      alert(e.message)
+      console.log(e.message)
     }
   };
 

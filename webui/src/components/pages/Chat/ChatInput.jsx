@@ -45,6 +45,7 @@ function ChatInput(props) {
 
   const sendMsg = async () => {
     // Some basic validations.
+    
     if (msg === "") {return;}
     if (files.length < 1) {noFilesModal();return;} 
     else if (location.pathname !== "chat") {navigate("/chat");}

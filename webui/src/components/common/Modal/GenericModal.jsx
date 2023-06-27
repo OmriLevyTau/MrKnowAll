@@ -5,10 +5,12 @@ function GenericModal(props){
     
     const {
         open, setOpen,
-        loading, setLoading,
+        loading, setStatus,
         onCancel,
         modalButtonText, modalTitle,
-        modalContent
+        modalContent,
+        buttonType,
+        buttonSize
     } = props;
 
     const showModal = () => {setOpen(true)}
@@ -18,7 +20,7 @@ function GenericModal(props){
         <div>
             {
                 modalButtonText!=null ? 
-                <Button type="primary" onClick={showModal} footer={null} size="large" style={{width:"100%"}}>
+                <Button type={buttonType} onClick={showModal} footer={null} size={buttonSize} style={{width:"100%"}}>
                     {modalButtonText}
                 </Button> : null
             }

@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 from pydantic import BaseModel
 
@@ -12,6 +12,7 @@ class Query(BaseModel):
     query_content: str
     top_k: Optional[int] = None
     embedding: Optional[List[float]] = None
+    advanced_filtering: Optional[Dict] = None
 
     def get_query_content(self) -> str:
         return self.query_content

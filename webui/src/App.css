@@ -46,6 +46,33 @@ Ant-design
   ;
 }
 
+.ant-btn-ghost{
+  color: #4d4d4d;
+  font-family: Nunito, sans-serif;
+  background-color: #fadbe0;
+  box-shadow: none;
+}
+
+.ant-btn.ant-btn-ghost:hover{
+  background-color: #f4aeb9;
+  border-color: #f4aeb9;
+  ;
+}
+
+.ant-btn-default{
+  color: #4d4d4d;
+  font-family: Nunito, sans-serif;
+  box-shadow: none;
+}
+
+.ant-btn.ant-btn-default:hover{
+  color: #EEBC1D;
+  border-color: #EEBC1D;
+  ;
+}
+
+
+
 .ant-modal-root{
   display: flex;
   flex-direction: row;
@@ -68,6 +95,10 @@ Ant-design
   position: relative;
   font: arial;
 
+}
+.ant-menu-item:hover{
+  background-color: rgb(102, 102, 102, 0.3) !important;
+  color: white !important;
 }
 
 
@@ -458,9 +489,13 @@ About Page
 /* Control the left side */
 .left {
   left: 0;
-  background-image: url("images/mustach3.png");
-  background-size:cover;
+  background-image: url("images/mustach3_signin.png");
+  background-size: 100%;
+  background-position: center;
+  background-color: black;
+  background-repeat: no-repeat;
   width:40%;
+  height: 100%;
   justify-content: center;
   background-repeat: no-repeat;
 }

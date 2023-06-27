@@ -9,14 +9,20 @@ import io
 import re
 from io import BufferedReader
 from typing import List, BinaryIO
-
+from app.param_tuning import (SPLIT_METHOD)
 import nltk
 import PyPDF2
-
+import fitz
 from app.models.documents import Document
+from app.param_tuning import TEXT_EXTRACTION_METHOD
+
+
 
 # Download the necessary data for sentence tokenization
 nltk.download("punkt")
+
+
+
 
 alphabets = "([A-Za-z])"
 prefixes = "(Mr|St|Mrs|Ms|Dr)[.]"
@@ -79,6 +85,8 @@ def split_into_sentences_by_nltk(text: str) -> list[str]:
     return nltk.sent_tokenize(text)
 
 
+
+
 def get_documents_chunks(document: Document) -> List[str]:
     """
     Given a Document object, return a list of sentences.
@@ -89,20 +97,20 @@ def get_documents_chunks(document: Document) -> List[str]:
     """
     doc_path = document.path
     doc_encoding = document.pdf_encoding
-
     chunks = None
-
+    if (TEXT_EXTRACTION_METHOD == "fitz") and (doc_path is not None):
+        return get_documents_chunks_fitz(doc_path=doc_path)
     # get text chunks from encoded pdf string
-    if (doc_encoding is not None) and (doc_path is None):
+    if doc_encoding is not None:
         chunks = get_document_chunks_helper(pdf_generator=read_pdf_from_bytes_generator, generator_input=doc_encoding)
         # get pdf chunks from pdf file
-    if (doc_path is not None) and (doc_encoding is None):
+    elif (doc_path is not None) and (doc_encoding is None):
         chunks = get_document_chunks_helper(pdf_generator=read_pdf_from_path_generator, generator_input=doc_path)
 
     if chunks is not None:
         return chunks
 
-    raise ValueError("document must have path or pdf_encoding only.")
+    raise ValueError("document must have path or pdf_encoding")
 
 
 def get_document_chunks_helper(pdf_generator, generator_input: str) -> List[str]:
@@ -111,13 +119,16 @@ def get_document_chunks_helper(pdf_generator, generator_input: str) -> List[str]
     read_pdf_from_bytes_generator, and the generator matching input,
     returns a list of sentences composing the document.
     """
+
+    if (SPLIT_METHOD == "nltk"):
+        split_method = split_into_sentences_by_nltk
+    elif (SPLIT_METHOD == "hand"):
+        split_method = split_into_sentences_by_hand
     pages = pdf_generator(generator_input)
     result = []
     for page in pages:
-        page_sentences = split_into_sentences_by_nltk(page)
-        for sentence in page_sentences:
-            result.append(sentence)
-
+        page_sentences = split_method(page)
+        result.extend(page_sentences)
     return result
 
 
@@ -164,3 +175,17 @@ def pdf_chunks_generator(pdf_reader: PyPDF2.PdfReader, pdf_file_descriptor: Bina
 
     if pdf_file_descriptor is not None:
         pdf_file_descriptor.close()
+
+
+def get_documents_chunks_fitz(doc_path: str) -> List[str]:
+    result = []
+    if (SPLIT_METHOD == "nltk"):
+        split_method = split_into_sentences_by_nltk
+    elif (SPLIT_METHOD == "hand"):
+        split_method = split_into_sentences_by_hand
+    with fitz.open(doc_path) as file_desc: 
+        for page in file_desc:
+            page_text = page.get_text()
+            page_sentences = split_method(page_text)
+            result.extend(page_sentences)
+    return result 

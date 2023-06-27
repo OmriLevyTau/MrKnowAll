@@ -1,25 +1,25 @@
-import  { useContext, useEffect, useRef } from 'react';
+import  { useEffect, useRef, useState } from 'react';
 import ChatInput from './ChatInput';
 import ChatLog from './ChatLog';
 import SideMenu from '../../common/Menu/SideMenu';
-import { ChatLogContext } from '../AppContent/ChatContext';
+import useChatStore from './chatStore';
 
 
 function Chat(){
-    const messageRef = useRef();
-    const { chatLog } = useContext(ChatLogContext);
+  const messageRef = useRef();
+  const {chatMsg} = useChatStore();
 
-    useEffect(() => {
-      if (messageRef.current) {
-        messageRef.current.scrollIntoView(
-          {
-            behavior: 'smooth',
-            block: 'end',
-            inline: 'nearest'
-          })
-      }
-    },
-    [chatLog])
+  useEffect(() => {
+    if (messageRef.current) {
+      messageRef.current.scrollIntoView(
+        {
+          behavior: 'smooth',
+          block: 'end',
+          inline: 'nearest'
+        })
+    }
+  },)
+
 
 
   return (
@@ -52,13 +52,13 @@ function Chat(){
             flexDirection: "column",
             height: "100%",
             width: "80%",
-            justifyContent: "space-between",
             paddingBottom: "1.5%",
+            justifyContent:"space-between"
           }}
         >
           <ChatLog />
           <div ref={messageRef}>
-            <ChatInput width={"100%"} />
+            <ChatInput width={"100%"} withAdvancedFiltering={true} />
           </div>
         </div>
       </div>

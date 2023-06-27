@@ -18,8 +18,8 @@ const Signup = () => {
     e.preventDefault();
     setError('')
     try {
-      await signInWithGoogle()
-      navigate('/home')
+      await signInWithGoogle();
+      navigate('/home');
     } catch (e) {
       setError(e.message)
       alert(e.message)
@@ -31,7 +31,7 @@ const Signup = () => {
     setError('');
     try {
       await createUser(email, password);
-      navigate('/home')
+      navigate('/home');
     } catch (e) {
       setError(e.message);
       alert(e.message);

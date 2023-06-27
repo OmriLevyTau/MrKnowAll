@@ -1,4 +1,5 @@
 import axios from "axios";
+import { DONE } from "../components/pages/MyWorkspace/Table";
 
 const serverURL = window.location.origin.replace("3000","8000")
 const DOCUMENTS_URL = serverURL + "/api/v0/documents"
@@ -6,7 +7,7 @@ const CHAT_URL = serverURL + "/api/v0/query"
 
 
 export const uploadDocument = async (data, token) => {
-
+    console.log("called uploadDocument");
     let config = {
         method: 'post',
         maxBodyLength: Infinity,
@@ -26,6 +27,7 @@ export const uploadDocument = async (data, token) => {
 }
 
 export const deleteDocument = async (user_id, doc_id, token) => {
+    console.log("called deleteDocument");
     let config = {
         method: 'delete',
         maxBodyLength: Infinity,
@@ -46,6 +48,7 @@ export const deleteDocument = async (user_id, doc_id, token) => {
 }
 
 export const query = async (query, token) => {
+    console.log("called query");
     let config = {
         method: 'post',
         maxBodyLength: Infinity,
@@ -67,6 +70,7 @@ export const query = async (query, token) => {
 
 
 export const getDocById = async (user_id, doc_id, token) => {
+    console.log("called getDocById");
     let config = {
         method: 'get',
         maxBodyLength: Infinity,
@@ -98,7 +102,48 @@ export const getAllDocsMetaData = async (user_id, token) => {
 
     try{
         const result = await axios.request(config)
-        console.log(result);
+        return result
+    } catch(e){
+        return e
+    }
+}
+
+// Fetch initial data
+// ======================================================
+
+export const getInitialData = async (user_id, token) => {
+    if (!user_id || !token){return []};
+    let initialDataResponse = await getAllDocsMetaData(user_id, token);
+    if (initialDataResponse.status!==200 && initialDataResponse.status!==204){
+      alert("An error occured while trying to fetch initial data: ");
+      return []
+    }
+    let docs = initialDataResponse.data ? initialDataResponse.data.docs_metadata : null
+    if (docs == null){return [];}
+    docs = docs.map((d) => ({
+      name: d.document_id,
+      size: `${Math.round(d.document_size / 1024)} KB`,
+      dateModified: new Date(d.creation_time).toLocaleDateString(),
+      status: DONE
+    }));
+    return docs;
+  }
+
+// clear chat history
+// ======================================================
+
+export const deleteChatHistory = async (user_id, token) => {
+    let config = {
+        method: 'delete',
+        url: serverURL + "/api/v0/clear-chat",
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+        },
+        data: {user_id: user_id}
+    };
+    try{
+        const result = await axios.request(config)
         return result
     } catch(e){
         return e

@@ -2,16 +2,16 @@ from typing import Dict, List
 
 import pinecone
 from app.config import PINECONE_API_KEY, PINECONE_ENVIRONMENT, PINECONE_INDEX
-from app.param_tuning import PINECONE_BATCH_SIZE
+from app.param_tuning import PINECONE_BATCH_SIZE, DEFAULT_TOP_K_VECTORS
 from app.models.documents import DocumentVectorChunk, VectorContextQuery
 from app.models.query import Query
 from app.storage.abstract_vector_storage import AbstractVectorStorage
 from pinecone import Index
 
-from app.storage.abstract_vector_storage import  SEP
+from app.storage.abstract_vector_storage import SEP
 
 # Note this values should be pre-configured by us.
-# Only thing the client takes care of is maintaining a 
+# Only thing the client takes care of is maintaining a
 # dedicated Namespace in within this index for
 # each user.
 
@@ -36,12 +36,14 @@ class PineconeVectorStorage(AbstractVectorStorage):
     @staticmethod
     def _get_index():
         if PINECONE_INDEX not in pinecone.list_indexes():
-            raise ValueError(f"Pinecone Index does not exists: {PINECONE_INDEX}")
+            raise ValueError(
+                f"Pinecone Index does not exists: {PINECONE_INDEX}")
         try:
             index = pinecone.Index(PINECONE_INDEX)
             return index
         except Exception as e:
-            print(f"PINECONE: Error in connecting to pinecone index: {PINECONE_INDEX}: " + str(e))
+            print(
+                f"PINECONE: Error in connecting to pinecone index: {PINECONE_INDEX}: " + str(e))
 
     async def _upload(self, user_id: str, payload: List[DocumentVectorChunk]):
         """
@@ -71,7 +73,8 @@ class PineconeVectorStorage(AbstractVectorStorage):
                 )
                 objects_to_insert.append(obj)
             try:
-                upserted_count += self.index.upsert(vectors=objects_to_insert)["upserted_count"]
+                upserted_count += self.index.upsert(vectors=objects_to_insert)[
+                    "upserted_count"]
             except Exception as error:
                 print(
                     f"Failed to upsert vectors into pinecone. upserted {upserted_count} out of {len(payload)} vectors: " + str(error))
@@ -102,18 +105,20 @@ class PineconeVectorStorage(AbstractVectorStorage):
         return delete_response
 
     async def _query(self, user_id: str, query: Query):
-
-        top = 3
+        top_k = DEFAULT_TOP_K_VECTORS
         if query.top_k:
-            top = query.top_k
+            top_k = query.top_k
+
+        filter_map = {"user_id": {"$eq": user_id}}
+        advanced_filtering = query.advanced_filtering
+        if advanced_filtering is not None:
+            filter_map.update(advanced_filtering)
 
         try:
             query_response = self.index.query(
                 vector=query.embedding,
-                top_k=top,
-                filter={
-                    "user_id": {"$eq": user_id}
-                },
+                top_k=top_k,
+                filter=filter_map,
                 include_metadata=True
             )
         except Exception as error:
@@ -138,7 +143,7 @@ class PineconeVectorStorage(AbstractVectorStorage):
             doc_id = context_query.get_document_id()
             docs_ids.append(doc_id)
             ids_windows.append([(str(i) + SEP + user_id + SEP + doc_id) for i in
-                      range(target_vec_id - window_size, target_vec_id + window_size + 1)])
+                                range(target_vec_id - window_size, target_vec_id + window_size + 1)])
 
         flat_ids = [id for sublist in ids_windows for id in sublist]
 
@@ -149,7 +154,6 @@ class PineconeVectorStorage(AbstractVectorStorage):
             raise error
 
         return context_response
-
 
     async def get_context(self, user_id: str, context_query: VectorContextQuery):
         """
@@ -164,7 +168,8 @@ class PineconeVectorStorage(AbstractVectorStorage):
         window_size = context_query.get_context_window()
         doc_id = context_query.get_document_id()
         ids_window = [(str(i) + SEP + user_id + SEP + doc_id) for i in
-                      range(target_vec_id - window_size, target_vec_id + window_size + 1)
+                      range(target_vec_id - window_size,
+                            target_vec_id + window_size + 1)
                       ]
         try:
             context_response = self.index.fetch(ids=ids_window)

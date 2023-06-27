@@ -81,7 +81,7 @@ function MyWorkspace() {
                   fontFamily: "Nunito, sans-serif",
                 }}
               ></h3>
-              <ChatInput width={"80%"} />
+              <ChatInput width={"80%"} withAdvancedFiltering={true}/>
             </div>
           </div>
         </div>

@@ -32,10 +32,10 @@ function Landing(){
                     </div>
                     <div  style={{ display:"flex", flexDirection:"column", width:"100%", height:"100%", justifyContent:"flex-start", marginRight:"3%", marginTop:"10%" }} >
                         <div style={{ textAlign:"left", wordWrap:"break-word", color:"white" }} >
-                            <h1 style={{ fontSize: `max(24px, 3vw)` }} >Meet Mr. Know All <br /> your new AI powered assitant.</h1>
+                            <h1 style={{ fontSize: `max(24px, 3vw)` }} >Meet Mr. Know All <br /> your new AI powered assistant.</h1>
                         </div>
                         <div style={{ textAlign:"left", wordWrap:"break-word", color:"white", marginTop:"2%" }} >
-                            <p style={{ fontSize: `max(18px, 1.5vw)` }} >A tailor made chatGPT assitant, based on your data - and for your purpose.</p>
+                            <p style={{ fontSize: `max(18px, 1.5vw)` }} >A tailor made chatGPT assistant, based on your data - and for your purpose.</p>
                         </div>
                      </div>
                 </div>
@@ -52,7 +52,7 @@ function Landing(){
                     />
                     <LandingCard 
                         title="Chat"
-                        content="Chat with your new AI assitant"
+                        content="Chat with your new AI assistant"
                         icon={<QuestionAnswerOutlined style={{fontSize:`max(18px, 4vw)`}} />}
                     />
                 </div>

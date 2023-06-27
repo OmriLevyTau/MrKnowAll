@@ -1,7 +1,5 @@
-import { useContext } from "react";
-import { UserContext } from "../AppContent/AppContext";
-import { ChatLogContext } from "../AppContent/ChatContext";
 import ChatMessage from "./ChatMessage";
+import useChatStore from "./chatStore";
 
 /**
  *
@@ -12,8 +10,8 @@ import ChatMessage from "./ChatMessage";
  *  }
  */
 function ChatLog() {
-  const { chatLog } = useContext(ChatLogContext);
-  const msgArray = chatLog.map((msg, index) => (
+  const {chatMsg} = useChatStore();
+  const msgArray = chatMsg.map((msg, index) => (
     <ChatMessage chatgpt={msg.chatgpt} content={msg.content} key={index} />
   ));
 

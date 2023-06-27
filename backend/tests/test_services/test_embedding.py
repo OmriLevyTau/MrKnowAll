@@ -1,5 +1,4 @@
-from app.services.embeddings import get_embeddings
-import pytest
+from app.services.documnets.embeddings import get_embeddings
 
 
 def test_embeddings():

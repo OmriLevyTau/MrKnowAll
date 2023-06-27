@@ -24,7 +24,7 @@ function Landing(){
         if (!user_id || !token){return []};
         let initialDataResponse = await getAllDocsMetaData(user_id, token);
         if (initialDataResponse.status!==200 && initialDataResponse.status!==204){
-            alert("An error occured while trying to fetch initial data: ");
+            console.log("An error occured while trying to fetch initial data: ");
             return []
         }
         let docs = initialDataResponse.data ? initialDataResponse.data.docs_metadata : null
@@ -42,7 +42,7 @@ function Landing(){
         const {data} = useQuery({
             queryKey:["docs"], 
             queryFn: () => getUserAllDocsMetaData(user.email, token), 
-            enabled: (token!==undefined && token!=null),
+            enabled: (user!==null && user!==undefined && token!==undefined && token!=null),
             refetchOnWindowFocus: false,
             },
         )
